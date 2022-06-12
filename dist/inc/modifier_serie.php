@@ -32,6 +32,20 @@ if (!empty($_POST['serie']) && !empty($_POST['donnees'])) {
 						unlink('../fichiers/' . $serie . '/vignette_' . $image);
 					}
 				}
+				if (!empty($_POST['audio'])) {
+					$audio = $_POST['audio'];
+					if (file_exists('../fichiers/' . $serie . '/' . $audio)) {
+						unlink('../fichiers/' . $serie . '/' . $audio);
+					}
+				}
+				if (!empty($_POST['fichiers'])) {
+					$fichiers = json_decode($_POST['fichiers'], true);
+					foreach ($fichiers as $fichier) {
+						if (file_exists('../fichiers/' . $serie . '/' . $fichier)) {
+							unlink('../fichiers/' . $serie . '/' . $fichier);
+						}
+					}
+				}
 				echo 'serie_modifiee';
 			} else {
 				echo 'erreur';
