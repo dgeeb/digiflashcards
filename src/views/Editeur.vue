@@ -26,8 +26,13 @@
 			</div>
 
 			<div id="conteneur">
-				<div id="visualiser" v-if="vue === 'editeur'">
-					<a :href="definirRacine() + '#/f/' + id + '?vue=apprenant'" target="_blank"><i class="material-icons">preview</i>{{ $t('apercuApprenant') }}</a>
+				<div id="actions" v-if="vue === 'editeur'">
+					<div id="importer-csv">
+						<label role="button" tabindex="0" for="televerser_csv"><i class="material-icons">upload_file</i><span>{{ $t('importerCSV') }}</span></label>
+						<input id="televerser_csv" type="file" accept=".csv" @change="importerCSV" style="display: none;">
+						<a href="./static/digiflashcards_template.csv" target="_blank">{{ $t('telechargerModele') }}</a>
+					</div>
+					<a :href="definirRacine() + '#/f/' + id + '?vue=apprenant'" target="_blank"><i class="material-icons">preview</i><span>{{ $t('apercuApprenant') }}</span></a>
 				</div>
 
 				<draggable id="cartes" class="admin" v-model="cartes" :animation="250" :sort="true" :swap-threshold="0.5" :force-fallback="true" :fallback-tolerance="10" handle=".statique" filter=".supprimer" :preventOnFilter="true" draggable=".carte" v-if="cartes.length > 0 && vue === 'editeur'" @end="modifierPositionCarte">
@@ -41,9 +46,11 @@
 								<span class="supprimer" :class="{'desactive': cartes.length < 3}" role="button" tabindex="0" @click="afficherSupprimerCarte(index)" :title="$t('supprimer')"><i class="material-icons">delete</i></span>
 							</div>
 						</div>
+
 						<div class="conteneur recto">
 							<span class="label">{{ $t('terme') }}</span>
 							<span class="texte"><textarea :class="{'avec-image': item.recto.image !== ''}" :value="item.recto.texte" @input="enregistrerTexte($event, index, 'recto')" /></span>
+
 							<span class="conteneur-chargement" v-if="chargement === 'image_recto_' + index">
 								<span class="chargement" />
 								<span class="progression" v-if="progression > 0">{{ progression }} %</span>
@@ -52,11 +59,20 @@
 								<label class="image" role="button" tabindex="0" :for="'televerser_image_recto_' + index" :title="$t('ajouterImage')"><i class="material-icons">add_photo_alternate</i></label>
 								<input :id="'televerser_image_recto_' + index" type="file" accept=".jpg, .jpeg, .png, .gif" @change="televerserImage($event, index, 'recto')" style="display: none;">
 							</template>
-							<span class="image" @click="afficherImage(index, 'recto', '/fichiers/' + id + '/' + item.recto.image)" :title="$t('afficherImage')" v-else-if="chargement !== 'image_recto_' + index && item.recto.image !== ''" :style="{'background-image': 'url(' + definirRacine() + 'fichiers/' + id + '/vignette_' + item.recto.image + ')'}" />
+							<span class="image" @click="afficherImage(index, 'recto', definirLienMedia(item.recto.image, ''))" :title="$t('afficherImage')" v-else-if="chargement !== 'image_recto_' + index && item.recto.image !== ''" :style="{'background-image': 'url(' + definirLienMedia(item.recto.image, 'vignette_') + ')'}" />
+
+							<span class="conteneur-chargement" v-if="chargement === 'audio_recto_' + index">
+								<span class="chargement" />
+								<span class="progression" v-if="progression > 0">{{ progression }} %</span>
+							</span>
+							<span class="audio" role="button" tabindex="0" @click="afficherAudio(index, 'recto', '')" :title="$t('ajouterAudio')" v-else-if="chargement !== 'audio_recto_' + index && item.recto.audio === ''"><i class="material-icons">audiotrack</i></span>
+							<span class="audio televerse" role="button" tabindex="0" @click="afficherAudio(index, 'recto', definirLienMedia(item.recto.audio, ''))" :title="$t('afficherAudio')" v-else-if="chargement !== 'audio_recto_' + index && item.recto.audio !== ''"><i class="material-icons">graphic_eq</i></span>
 						</div>
+
 						<div class="conteneur verso">
 							<span class="label">{{ $t('definition') }}</span>
 							<span class="texte"><textarea :class="{'avec-image': item.verso.image !== ''}" :value="item.verso.texte" @input="enregistrerTexte($event, index, 'verso')" /></span>
+
 							<span class="conteneur-chargement" v-if="chargement === 'image_verso_' + index">
 								<span class="chargement" />
 								<span class="progression" v-if="progression > 0">{{ progression }} %</span>
@@ -65,7 +81,14 @@
 								<label class="image" role="button" tabindex="0" :for="'televerser_image_verso_' + index" :title="$t('ajouterImage')"><i class="material-icons">add_photo_alternate</i></label>
 								<input :id="'televerser_image_verso_' + index" type="file" accept=".jpg, .jpeg, .png, .gif" @change="televerserImage($event, index, 'verso')" style="display: none;">
 							</template>
-							<span class="image" @click="afficherImage(index, 'verso', '/fichiers/' + id + '/' + item.verso.image)" :title="$t('afficherImage')" v-else-if="chargement !== 'image_verso_' + index && item.verso.image !== ''" :style="{'background-image': 'url(' + definirRacine() + 'fichiers/' + id + '/vignette_' + item.verso.image + ')'}" />
+							<span class="image" @click="afficherImage(index, 'verso', definirLienMedia(item.verso.image))" :title="$t('afficherImage')" v-else-if="chargement !== 'image_verso_' + index && item.verso.image !== ''" :style="{'background-image': 'url(' + definirLienMedia(item.verso.image, 'vignette_') + ')'}" />
+
+							<span class="conteneur-chargement audio" v-if="chargement === 'audio_verso_' + index">
+								<span class="chargement" />
+								<span class="progression" v-if="progression > 0">{{ progression }} %</span>
+							</span>
+							<span class="audio" role="button" tabindex="0" @click="afficherAudio(index, 'verso', '')" :title="$t('ajouterAudio')" v-else-if="chargement !== 'audio_verso_' + index && item.verso.audio === ''"><i class="material-icons">audiotrack</i></span>
+							<span class="audio televerse" role="button" tabindex="0" @click="afficherAudio(index, 'verso', definirLienMedia(item.verso.audio, ''))" :title="$t('afficherAudio')" v-else-if="chargement !== 'audio_verso_' + index && item.verso.audio !== ''"><i class="material-icons">graphic_eq</i></span>
 						</div>
 					</article>
 				</draggable>
@@ -73,22 +96,29 @@
 				<div id="cartes" class="apprenant" v-else-if="cartes.length > 0 && vue === 'apprenant' && onglet === 'cartes'">
 					<article :id="'carte_' + index" class="carte" :class="{'flip': recto === false}" @click="recto = !recto" v-show="navigationCartes === index" v-for="(item, index) in cartes" :key="'carte_' + index">
 						<div class="recto" v-show="!transition">
-							<div class="conteneur-image avec-texte" v-if="item.recto.image !== '' && item.recto.texte !== ''">
-								<span class="image"><img :src="definirRacine() + 'fichiers/' + id + '/' + item.recto.image" @click="afficherZoomImage($event, definirRacine() + 'fichiers/' + id + '/' + item.recto.image)"></span>
-							</div>
-							<div class="conteneur-image" v-else-if="item.recto.image !== '' && item.recto.texte === ''">
-								<span class="image"><img :src="definirRacine() + 'fichiers/' + id + '/' + item.recto.image"></span>
+							<div class="conteneur-media" :class="{'avec-texte': item.recto.texte !== ''}" v-if="item.recto.image !== '' || item.recto.audio !== ''">
+								<div class="conteneur-image" :class="{'avec-audio': item.recto.audio !== ''}" v-if="item.recto.image !== ''">
+									<span class="image" v-if="item.recto.texte !== ''"><img :src="definirLienMedia(item.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(item.recto.image, ''))"></span>
+									<span class="image" v-else><img :src="definirLienMedia(item.recto.image, '')"></span>
+								</div>
+								<div class="conteneur-audio" :class="{'avec-image': item.recto.image !== ''}" v-if="item.recto.audio !== ''">
+									<span class="audio" :class="{'lecture': lecture}"><i class="material-icons" @click="lireAudio($event, definirLienMedia(item.recto.audio, ''))">volume_up</i></span>
+								</div>
 							</div>
 							<div class="conteneur-texte" v-if="item.recto.texte !== ''">
 								<span class="texte" v-html="item.recto.texte" />
 							</div>
 						</div>
+
 						<div class="verso" v-show="!transition">
-							<div class="conteneur-image avec-texte" v-if="item.verso.image !== '' && item.verso.texte !== ''">
-								<span class="image"><img :src="definirRacine() + 'fichiers/' + id + '/' + item.verso.image" @click="afficherZoomImage($event, definirRacine() + 'fichiers/' + id + '/' + item.verso.image)"></span>
-							</div>
-							<div class="conteneur-image" v-else-if="item.verso.image !== '' && item.verso.texte === ''">
-								<span class="image"><img :src="definirRacine() + 'fichiers/' + id + '/' + item.verso.image"></span>
+							<div class="conteneur-media" :class="{'avec-texte': item.verso.texte !== ''}" v-if="item.verso.image !== '' || item.verso.audio !== ''">
+								<div class="conteneur-image" :class="{'avec-audio': item.verso.audio !== ''}" v-if="item.verso.image !== ''">
+									<span class="image" v-if="item.verso.texte !== ''"><img :src="definirLienMedia(item.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(item.verso.image, ''))"></span>
+									<span class="image" v-else><img :src="definirLienMedia(item.verso.image, '')"></span>
+								</div>
+								<div class="conteneur-audio" :class="{'avec-image': item.verso.image !== ''}" v-if="item.verso.audio !== ''">
+									<span class="audio" :class="{'lecture': lecture}"><i class="material-icons" @click="lireAudio($event, definirLienMedia(item.verso.audio, ''))">volume_up</i></span>
+								</div>
 							</div>
 							<div class="conteneur-texte" v-if="item.verso.texte !== ''">
 								<span class="texte" v-html="item.verso.texte" />
@@ -107,7 +137,8 @@
 					<article class="exercice" v-show="navigationQuiz === indexQuiz" v-for="(itemQuiz, indexQuiz) in exercicesQuiz" :key="'exercice_quiz_' + indexQuiz">
 						<template v-for="(itemQuestion, indexQuestion) in itemQuiz">
 							<div class="question" v-if="itemQuestion.correct === true" :key="'question_quiz_' + indexQuiz + '_' + indexQuestion">
-								<span class="image" :class="{'avec-texte': itemQuestion.recto.texte !== ''}" v-if="itemQuestion.recto.image !== ''"><img :src="definirRacine() + 'fichiers/' + id + '/' + itemQuestion.recto.image" @click="afficherZoomImage($event, definirRacine() + 'fichiers/' + id + '/' + itemQuestion.recto.image)"></span>
+								<span class="image" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-audio': itemQuestion.recto.audio !== ''}" v-if="itemQuestion.recto.image !== ''"><img :src="definirLienMedia(itemQuestion.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.recto.image, ''))"></span>
+								<span class="audio" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-image': itemQuestion.recto.image !== '', 'lecture': lecture}" v-if="itemQuestion.recto.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemQuestion.recto.audio, ''))">volume_up</i></span>
 								<span class="texte" v-if="itemQuestion.recto.texte !== ''" v-html="itemQuestion.recto.texte" />
 							</div>
 						</template>
@@ -117,7 +148,8 @@
 								<label class="conteneur-coche" :class="{'correct': itemReponse.reponse && itemReponse.correct, 'incorrect': itemReponse.reponse && !itemReponse.correct}">
 									<input type="radio" :checked="itemReponse.reponse" :disabled="itemReponse.repondu" :value="itemReponse.correct" :name="'reponse_quiz_' + indexQuiz" :data-index="indexReponse">
 									<span class="radio" />
-									<span class="image" :class="{'avec-texte': itemReponse.verso.texte !== ''}" v-if="itemReponse.verso.image !== ''"><img :src="definirRacine() + 'fichiers/' + id + '/' + itemReponse.verso.image" @click="afficherZoomImage($event, definirRacine() + 'fichiers/' + id + '/' + itemReponse.verso.image)"></span>
+									<span class="image" :class="{'avec-texte': itemReponse.verso.texte !== ''}" v-if="itemReponse.verso.image !== ''"><img :src="definirLienMedia(itemReponse.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemReponse.verso.image, ''))"></span>
+									<span class="audio" :class="{'avec-texte': itemReponse.verso.texte !== '', 'avec-image': itemReponse.verso.image !== '', 'lecture': lectureQuiz === indexReponse}" v-if="itemReponse.verso.audio !== ''"><i class="material-icons" @click="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.verso.audio, ''))">volume_up</i></span>
 									<span class="texte" v-if="itemReponse.verso.texte !== ''" v-html="itemReponse.verso.texte" />
 								</label>
 							</div>
@@ -138,11 +170,13 @@
 				<div id="exercices" v-else-if="exercicesEcrire.length > 0 && vue === 'apprenant' && onglet === 'ecrire'">
 					<article class="exercice" v-show="navigationEcrire === indexEcrire" v-for="(itemEcrire, indexEcrire) in exercicesEcrire" :key="'exercice_ecrire_' + indexEcrire">
 						<div class="question">
-							<template v-if="itemEcrire.recto.image !== '' && itemEcrire.recto.texte === '' && itemEcrire.verso.texte !== ''">
-								<span class="image"><img :src="definirRacine() + 'fichiers/' + id + '/' + itemEcrire.recto.image" @click="afficherZoomImage($event, definirRacine() + 'fichiers/' + id + '/' + itemEcrire.recto.image)"></span>
+							<template v-if="(itemEcrire.recto.image !== '' || itemEcrire.recto.audio !== '') && itemEcrire.recto.texte === '' && itemEcrire.verso.texte !== ''">
+								<span class="image" v-if="itemEcrire.recto.image !== ''"><img :src="definirLienMedia(itemEcrire.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.recto.image, ''))"></span>
+								<span class="audio" :class="{'avec-image': itemEcrire.recto.image !== '', 'lecture': lecture}" v-if="itemEcrire.recto.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemEcrire.recto.audio, ''))">volume_up</i></span>
 							</template>
-							<template v-else-if="(itemEcrire.verso.image !== '' || itemEcrire.verso.texte !== '') && itemEcrire.recto.texte !== ''">
-								<span class="image" :class="{'avec-texte': itemEcrire.verso.texte !== ''}" v-if="itemEcrire.verso.image !== ''"><img :src="definirRacine() + 'fichiers/' + id + '/' + itemEcrire.verso.image" @click="afficherZoomImage($event, definirRacine() + 'fichiers/' + id + '/' + itemEcrire.verso.image)"></span>
+							<template v-else-if="(itemEcrire.verso.image !== '' || itemEcrire.verso.audio !== '' || itemEcrire.verso.texte !== '') && itemEcrire.recto.texte !== ''">
+								<span class="image" :class="{'avec-texte': itemEcrire.verso.texte !== '', 'avec-audio': itemEcrire.verso.audio !== ''}" v-if="itemEcrire.verso.image !== ''"><img :src="definirLienMedia(itemEcrire.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.verso.image, ''))"></span>
+								<span class="audio" :class="{'avec-texte': itemEcrire.verso.texte !== '', 'avec-image': itemEcrire.verso.image !== '', 'lecture': lecture}" v-if="itemEcrire.verso.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemEcrire.verso.audio, ''))">volume_up</i></span>
 								<span class="texte" v-if="itemEcrire.verso.texte !== ''" v-html="itemEcrire.verso.texte" />
 							</template>
 						</div>
@@ -355,6 +389,55 @@
 			<img :src="image">
 		</div>
 
+		<div class="conteneur-modale" v-else-if="modale === 'ajouter-audio'">
+			<div id="modale-ajouter-audio" class="modale">
+				<header>
+					<span class="titre">{{ titreAjouterAudio }}</span>
+					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAjouterAudio"><i class="material-icons">close</i></span>
+				</header>
+				<div class="conteneur">
+					<div class="contenu">
+						<template v-if="audio === '' && !enregistrement">
+							<span id="enregistrer" class="bouton" role="button" tabindex="0" @click="enregistrerAudio"><i class="material-icons">fiber_manual_record</i><span>{{ $t('enregistrerAudio') }}</span></span>
+							<div class="separateur">
+								<span>{{ $t('ou') }}</span>
+							</div>
+							<label :for="'televerser_audio_' + carteIndex" class="bouton" role="button" tabindex="0">{{ $t('selectionnerFichierMP3') }}</label>
+							<input :id="'televerser_audio_' + carteIndex" type="file" @change="selectionnerAudio" style="display: none" accept=".mp3">
+						</template>
+						<div id="enregistrement" v-else-if="audio === '' && enregistrement">
+							<span class="bouton stopper" role="button" tabindex="0" @click="arreterEnregistrementAudio"><i class="material-icons">stop</i></span>
+							<span class="duree">{{ dureeEnregistrement }}</span>
+						</div>
+						<template v-else>
+							<audio controls><source :src="audio"></audio>
+							<div class="actions">
+								<span class="bouton" role="button" tabindex="0" @click="audio = ''">{{ $t('annuler') }}</span>
+								<span class="bouton" role="button" tabindex="0" @click="ajouterAudio(carteIndex, carteType)">{{ $t('valider') }}</span>
+							</div>
+						</template>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="conteneur-modale" v-else-if="modale === 'audio'">
+			<div id="modale-audio" class="modale">
+				<header>
+					<span class="titre" />
+					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAudio"><i class="material-icons">close</i></span>
+				</header>
+				<div class="conteneur">
+					<div class="contenu">
+						<audio controls><source :src="audio"></audio>
+						<div class="actions">
+							<span class="bouton" role="button" tabindex="0" @click="supprimerAudio(carteIndex, carteType)">{{ $t('supprimer') }}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<div class="conteneur-modale score" v-else-if="modale === 'score-quiz'" @click="modale = ''">
 			<div class="conteneur">
 				<span class="icone"><i class="material-icons">emoji_events</i></span>
@@ -392,6 +475,7 @@ import latinise from 'voca/latinise'
 import JSZip from 'jszip'
 import imagesLoaded from 'imagesloaded'
 import fitty from 'fitty'
+import Papa from 'papaparse'
 import { VueDraggableNext } from 'vue-draggable-next'
 
 export default {
@@ -409,7 +493,7 @@ export default {
 			questions: ['motPrefere', 'filmPrefere', 'chansonPreferee', 'prenomMere', 'prenomPere', 'nomRue', 'nomEmployeur', 'nomAnimal'],
 			reponse: '',
 			nom: '',
-			cartes: [{ recto: { texte: '', image: '', audio: '', langue: 'fr' }, verso: { texte: '', image: '', audio: '', langue: 'fr' } }, { recto: { texte: '', image: '', audio: '', langue: 'fr' }, verso: { texte: '', image: '', audio: '', langue: 'fr' } }, { recto: { texte: '', image: '', audio: '', langue: 'fr' }, verso: { texte: '', image: '', audio: '', langue: 'fr' } }],
+			cartes: [{ recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }],
 			carteIndex: '',
 			carteType: '',
 			nouveaunom: '',
@@ -431,13 +515,32 @@ export default {
 			exercicesQuiz: [],
 			navigationEcrire: 0,
 			exercicesEcrire: [],
-			chargementImage: false
+			chargementImage: false,
+			image: '',
+			audio: '',
+			blob: '',
+			audioEnregistre: '',
+			lecture: false,
+			lectureQuiz: '',
+			contexte: '',
+			captureAudio: '',
+			intervalle: '',
+			enregistrement: false,
+			dureeEnregistrement: '00 : 00',
+			titreAjouterAudio: ''
 		}
 	},
 	watch: {
 		modale: function (valeur) {
 			if (valeur !== '') {
 				this.menu = ''
+			}
+		},
+		recto: function () {
+			if (this.audio !== '') {
+				this.audio.pause()
+				this.audio = ''
+				this.lecture = false
 			}
 		}
 	},
@@ -475,7 +578,7 @@ export default {
 				}
 				if (this.vue === 'apprenant') {
 					this.cartes = this.cartes.filter(function (carte) {
-						return (carte.recto.texte !== '' || carte.recto.image !== '') && (carte.verso.texte !== '' || carte.verso.image !== '')
+						return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '')
 					}.bind(this))
 					const tailleFonte = this.tailleFonte
 					this.$nextTick(function () {
@@ -521,6 +624,9 @@ export default {
 		document.getElementsByTagName('html')[0].setAttribute('lang', this.$parent.$parent.langue)
 
 		this.definirTailleFonte()
+
+		const AudioContext = window.AudioContext || window.webkitAudioContext
+		this.contexte = new AudioContext()
 
 		const lien = this.definirRacine() + '#/f/' + this.id
 		const clipboard = new ClipboardJS('#copier-lien .lien', {
@@ -642,6 +748,13 @@ export default {
 				}.bind(this))
 			}
 		},
+		definirLienMedia (media, prefixe) {
+			if (this.verifierLien(media) === false) {
+				return this.definirRacine() + 'fichiers/' + this.id + '/' + prefixe + media
+			} else {
+				return media
+			}
+		},
 		modifierLangue (langue) {
 			this.$root.$i18n.locale = langue
 			this.$parent.$parent.langue = langue
@@ -675,6 +788,11 @@ export default {
 				this.navigationCartes = this.cartes.length - 1
 			}
 			this.recto = true
+			if (this.audio !== '') {
+				this.audio.pause()
+				this.audio = ''
+				this.lecture = false
+			}
 			setTimeout(function () {
 				imagesLoaded('#cartes', function () {
 					this.$parent.$parent.chargementTransparent = false
@@ -699,6 +817,11 @@ export default {
 				this.navigationCartes = 0
 			}
 			this.recto = true
+			if (this.audio !== '') {
+				this.audio.pause()
+				this.audio = ''
+				this.lecture = false
+			}
 			setTimeout(function () {
 				imagesLoaded('#cartes', function () {
 					this.$parent.$parent.chargementTransparent = false
@@ -715,7 +838,7 @@ export default {
 			}.bind(this), 200)
 		},
 		ajouterCarte () {
-			this.cartes.push({ recto: { texte: '', image: '', audio: '', langue: 'fr' }, verso: { texte: '', image: '', audio: '', langue: 'fr' } })
+			this.cartes.push({ recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } })
 			this.$nextTick(function () {
 				document.body.scrollTop = document.body.scrollHeight
 				document.querySelector('#cartes .carte:last-child textarea').focus()
@@ -775,7 +898,7 @@ export default {
 						this.progression = Math.round(pourcentage)
 					}
 				}.bind(this)
-				xhr.open('POST', this.$parent.$parent.hote + 'inc/televerser_fichier.php', true)
+				xhr.open('POST', this.$parent.$parent.hote + 'inc/televerser_image.php', true)
 				xhr.send(formData)
 			} else {
 				this.$parent.$parent.message = this.$t('tailleMax', { taille: 1 })
@@ -820,7 +943,10 @@ export default {
 			this.fermerModaleImage()
 			this.$parent.$parent.chargement = true
 			const cartes = JSON.parse(JSON.stringify(this.cartes))
-			const image = cartes[index][type].image
+			let image = ''
+			if (cartes[index][type].image !== '' && this.verifierLien(cartes[index][type].image) === false) {
+				image = cartes[index][type].image
+			}
 			cartes[index][type].image = ''
 			const xhr = new XMLHttpRequest()
 			xhr.onload = function () {
@@ -841,6 +967,212 @@ export default {
 			xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 			xhr.setRequestHeader('Content-type', 'application/json')
 			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes }), image: image }
+			xhr.send(JSON.stringify(json))
+			this.supprimerDonneesExercices()
+		},
+		ajouterAudio (index, type) {
+			let fichier = ''
+			if (this.blob.name) {
+				const extension = this.blob.name.substring(this.blob.name.lastIndexOf('.') + 1).toLowerCase()
+				if (extension !== 'mp3') {
+					this.fermerModaleAjouterAudio()
+					this.$parent.$parent.message = this.$t('erreurFormat')
+					return false
+				}
+				fichier = this.blob.name
+			} else {
+				fichier = 'enregistrement.wav'
+			}
+			if (this.blob.size < 1024000 || fichier === 'enregistrement.wav') {
+				const blob = this.blob
+				this.fermerModaleAjouterAudio()
+				this.chargement = 'audio_' + type + '_' + index
+				const formData = new FormData()
+				formData.append('ancienfichier', this.cartes[index][type].audio)
+				formData.append('serie', this.id)
+				formData.append('blob', blob, fichier)
+				let xhr = new XMLHttpRequest()
+				xhr.onload = function () {
+					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+						this.chargement = ''
+						this.progression = 0
+						if (xhr.responseText === 'erreur') {
+							this.$parent.$parent.message = this.$t('erreurTeleversement')
+						} else {
+							this.cartes[index][type].audio = xhr.responseText
+							xhr = new XMLHttpRequest()
+							xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
+							xhr.setRequestHeader('Content-type', 'application/json')
+							const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes }) }
+							xhr.send(JSON.stringify(json))
+							this.supprimerDonneesExercices()
+						}
+					} else {
+						this.chargement = ''
+						this.progression = 0
+						this.$parent.$parent.message = this.$t('erreurTeleversement')
+					}
+				}.bind(this)
+				xhr.upload.onprogress = function (e) {
+					if (e.lengthComputable) {
+						const pourcentage = (e.loaded / e.total) * 100
+						this.progression = Math.round(pourcentage)
+					}
+				}.bind(this)
+				xhr.open('POST', this.$parent.$parent.hote + 'inc/televerser_audio.php', true)
+				xhr.send(formData)
+			} else {
+				this.$parent.$parent.message = this.$t('tailleMax', { taille: 1 })
+			}
+		},
+		selectionnerAudio (event) {
+			this.blob = event.target.files[0]
+			this.audio = URL.createObjectURL(event.target.files[0])
+		},
+		enregistrerAudio () {
+			navigator.mediaDevices.enumerateDevices().then(function (devices) {
+				let entreeAudio = false
+				for (const device of devices) {
+					if (device.kind === 'audioinput') {
+						entreeAudio = true
+						break
+					}
+				}
+				if (entreeAudio === true) {
+					navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function (flux) {
+						this.titreAjouterAudio = this.$t('enregistrementAudio')
+						this.captureAudio = flux
+						this.enregistrement = true
+						// eslint-disable-next-line
+						this.audioEnregistre = new Recorder(this.contexte.createMediaStreamSource(flux), { numChannels: 1 })
+						this.audioEnregistre.record()
+						const temps = Date.now()
+						this.intervalle = setInterval(function () {
+							const delta = Date.now() - temps
+							let secondes = Math.floor((delta / 1000) % 60)
+							let minutes = Math.floor((delta / 1000 / 60) << 0)
+							if (secondes < 10) {
+								secondes = '0' + secondes
+							}
+							if (minutes < 10) {
+								minutes = '0' + minutes
+							}
+							this.dureeEnregistrement = minutes + ' : ' + secondes
+							if (this.dureeEnregistrement === '00 : 10') {
+								this.arreterEnregistrementAudio()
+							}
+						}.bind(this), 100)
+					}.bind(this)).catch(function () {
+						this.enregistrement = false
+						this.audioEnregistre = ''
+						this.captureAudio = ''
+						this.$parent.$parent.message = this.$t('erreurMicro')
+					}.bind(this))
+				} else {
+					this.captureAudio = ''
+					this.$parent.$parent.message = this.$t('aucuneEntreeAudio')
+				}
+			}.bind(this))
+		},
+		arreterEnregistrementAudio () {
+			if (this.audioEnregistre !== '') {
+				this.audioEnregistre.stop()
+				this.captureAudio.getAudioTracks()[0].stop()
+				this.audioEnregistre.exportWAV(function (blob) {
+					this.blob = blob
+					this.enregistrement = false
+					this.audio = URL.createObjectURL(blob)
+					this.captureAudio = ''
+					this.audioEnregistre = ''
+					this.titreAjouterAudio = this.$t('ajouterAudio')
+					this.dureeEnregistrement = '00 : 00'
+					if (this.intervalle !== '') {
+						clearInterval(this.intervalle)
+						this.intervalle = ''
+					}
+				}.bind(this))
+			}
+		},
+		lireAudio (event, audio) {
+			event.preventDefault()
+			event.stopPropagation()
+			if (this.audio !== '' && this.lecture) {
+				this.audio.pause()
+				this.lecture = false
+			} else if (this.audio !== '' && !this.lecture) {
+				this.audio.play()
+				this.lecture = true
+			} else if (this.audio === '') {
+				this.lecture = true
+				this.audio = new Audio(audio)
+				this.audio.play()
+				this.audio.onended = function() {
+					this.lecture = false
+					this.audio = ''
+				}.bind(this)
+			}
+		},
+		afficherAudio (index, type, audio) {
+			this.carteIndex = index
+			this.carteType = type
+			if (audio === '') {
+				this.titreAjouterAudio = this.$t('ajouterAudio')
+				this.modale = 'ajouter-audio'
+			} else {
+				this.audio = audio
+				this.modale = 'audio'
+			}
+		},
+		fermerModaleAudio () {
+			this.modale = ''
+			this.audio = ''
+			this.carteIndex = ''
+			this.carteType = ''
+		},
+		fermerModaleAjouterAudio () {
+			this.modale = ''
+			this.audio = ''
+			this.blob = ''
+			this.enregistrement = false
+			this.captureAudio = ''
+			this.audioEnregistre = ''
+			this.titreAjouterAudio = this.$t('ajouterAudio')
+			this.dureeEnregistrement = '00 : 00'
+			this.carteIndex = ''
+			this.carteType = ''
+			if (this.intervalle !== '') {
+				clearInterval(this.intervalle)
+				this.intervalle = ''
+			}
+		},
+		supprimerAudio (index, type) {
+			this.fermerModaleAudio()
+			this.$parent.$parent.chargement = true
+			const cartes = JSON.parse(JSON.stringify(this.cartes))
+			let audio = ''
+			if (cartes[index][type].audio !== '' && this.verifierLien(cartes[index][type].audio) === false) {
+				audio = cartes[index][type].audio
+			}
+			cartes[index][type].audio = ''
+			const xhr = new XMLHttpRequest()
+			xhr.onload = function () {
+				if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+					this.$parent.$parent.chargement = false
+					if (xhr.responseText === 'erreur') {
+						this.$parent.$parent.message = this.$t('erreurServeur')
+					} else if (xhr.responseText === 'non_autorise') {
+						this.$parent.$parent.message = this.$t('actionNonAutorisee')
+					} else if (xhr.responseText === 'serie_modifiee') {
+						this.cartes = cartes
+					}
+				} else {
+					this.$parent.$parent.chargement = false
+					this.$parent.$parent.message = this.$t('erreurServeur')
+				}
+			}.bind(this)
+			xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
+			xhr.setRequestHeader('Content-type', 'application/json')
+			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes }), audio: audio }
 			xhr.send(JSON.stringify(json))
 			this.supprimerDonneesExercices()
 		},
@@ -879,6 +1211,22 @@ export default {
 			this.modale = ''
 			this.$parent.$parent.chargement = true
 			const cartes = JSON.parse(JSON.stringify(this.cartes))
+			const index = this.carteIndex
+			const fichiers = []
+			if (cartes[index].recto.image !== '' && this.verifierLien(cartes[index].recto.image) === false) {
+				fichiers.push(cartes[index].recto.image)
+				fichiers.push('vignette_' + cartes[index].recto.image)
+			}
+			if (cartes[index].recto.audio !== '' && this.verifierLien(cartes[index].recto.audio) === false) {
+				fichiers.push(cartes[index].recto.audio)
+			}
+			if (cartes[index].verso.image !== '' && this.verifierLien(cartes[index].verso.image) === false) {
+				fichiers.push(cartes[index].verso.image)
+				fichiers.push('vignette_' + cartes[index].verso.image)
+			}
+			if (cartes[index].verso.audio !== '' && this.verifierLien(cartes[index].verso.audio) === false) {
+				fichiers.push(cartes[index].verso.audio)
+			}
 			cartes.splice(this.carteIndex, 1)
 			const xhr = new XMLHttpRequest()
 			xhr.onload = function () {
@@ -901,9 +1249,283 @@ export default {
 			}.bind(this)
 			xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 			xhr.setRequestHeader('Content-type', 'application/json')
-			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes }) }
+			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes }), fichiers: JSON.stringify(fichiers) }
 			xhr.send(JSON.stringify(json))
 			this.supprimerDonneesExercices()
+		},
+		definirExercicesQuiz () {
+			const cartes = []
+			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
+			copieCartes.forEach(function (item) {
+				if ((item.recto.texte !== '' || item.recto.image !== '' || item.recto.audio !== '') && (item.verso.texte !== '' || item.verso.image !== '' || item.verso.audio !== '')) {
+					cartes.push(item)
+				}
+			})
+			const cartesExercice = this.melangerEntrees(cartes)
+			const donnees = []
+			cartesExercice.forEach(function (item) {
+				let indexItem = ''
+				let cartesSansItem = []
+				const copieCartesSansItem = JSON.parse(JSON.stringify(this.cartes))
+				copieCartesSansItem.forEach(function (item) {
+					if ((item.recto.texte !== '' || item.recto.image !== '' || item.recto.audio !== '') && (item.verso.texte !== '' || item.verso.image !== '' || item.verso.audio !== '')) {
+						cartesSansItem.push(item)
+					}
+				})
+				cartesSansItem = this.melangerEntrees(cartesSansItem)
+				cartesSansItem.forEach(function (obj, index) {
+					if (obj.recto.texte === item.recto.texte && obj.recto.image === item.recto.image && obj.recto.audio === item.recto.audio) {
+						obj.correct = true
+						indexItem = index
+					} else {
+						obj.correct = false
+					}
+					obj.reponse = false
+					obj.repondu = false
+				})
+				const liste = []
+				for (let i = 0; i <= cartes.length; i++) {
+					if (i !== indexItem) {
+						liste.push(i)
+					}
+				}
+				liste.splice(0, 3)
+				for (let j = liste.length - 1; j >= 0; j--) {
+					cartesSansItem.splice(liste[j], 1)
+				}
+				const items = this.melangerEntrees(cartesSansItem)
+				donnees.push(items)
+			}.bind(this))
+			if (cartesExercice.length > 20) {
+				this.exercicesQuiz = donnees.slice(0, -(cartesExercice.length - 20))
+				localStorage.setItem('digiflashcards_quiz', JSON.stringify(donnees.slice(0, -(cartesExercice.length - 20))))
+			} else {
+				this.exercicesQuiz = donnees
+				localStorage.setItem('digiflashcards_quiz', JSON.stringify(donnees))
+			}
+		},
+		afficherQuestionQuizPrecedente () {
+			this.$parent.$parent.chargementTransparent = true
+			if (this.navigationQuiz > 0) {
+				this.navigationQuiz--
+			} else {
+				this.navigationQuiz = this.exercicesQuiz.length - 1
+			}
+			if (this.audio !== '') {
+				this.audio.pause()
+				this.audio = ''
+				this.lecture = false
+				this.lectureQuiz = ''
+			}
+			setTimeout(function () {
+				imagesLoaded('#exercices', function () {
+					this.$parent.$parent.chargementTransparent = false
+				}.bind(this))
+			}.bind(this), 200)
+		},
+		afficherQuestionQuizSuivante () {
+			this.$parent.$parent.chargementTransparent = true
+			if (this.navigationQuiz < this.exercicesQuiz.length - 1) {
+				this.navigationQuiz++
+			} else {
+				this.navigationQuiz = 0
+			}
+			if (this.audio !== '') {
+				this.audio.pause()
+				this.audio = ''
+				this.lecture = false
+				this.lectureQuiz = ''
+			}
+			setTimeout(function () {
+				imagesLoaded('#exercices', function () {
+					this.$parent.$parent.chargementTransparent = false
+				}.bind(this))
+			}.bind(this), 200)
+		},
+		lireAudioQuiz (event, index, audio) {
+			event.preventDefault()
+			event.stopPropagation()
+			if (this.audio !== '' && this.lectureQuiz === index && this.audio.paused) {
+				this.audio.play()
+				this.lectureQuiz = index
+			} else if (this.audio !== '' && this.lectureQuiz === index && !this.audio.paused) {
+				this.audio.pause()
+				this.lectureQuiz = ''
+			} else {
+				this.lectureQuiz = index
+				this.audio = new Audio(audio)
+				this.audio.play()
+				this.audio.onended = function() {
+					this.lectureQuiz = ''
+					this.audio = ''
+				}.bind(this)
+			}
+		},
+		verifierQuiz () {
+			const input = document.querySelector('#reponses_' + this.navigationQuiz + ' input[type=radio]:checked')
+			if (input) {
+				const reponse = input.value
+				const index = parseInt(input.getAttribute('data-index'))
+				if (JSON.parse(reponse) === true) {
+					const validation = new Audio('./static/validation.mp3')
+					validation.play()
+				}
+				this.exercicesQuiz[this.navigationQuiz][index].reponse = true
+				this.exercicesQuiz[this.navigationQuiz].forEach(function (item) {
+					item.repondu = true
+				})
+				localStorage.setItem('digiflashcards_quiz', JSON.stringify(this.exercicesQuiz))
+				if (this.verifierReponsesQuiz() === this.exercicesQuiz.length) {
+					this.modale = 'score-quiz'
+					if (this.definirScoreQuiz() > 79) {
+						this.lancerConfettis()
+					}
+				}
+			}
+		},
+		verifierReponsesQuiz () {
+			let reponses = 0
+			this.exercicesQuiz.forEach(function (items) {
+				items.forEach(function (item) {
+					if (item.reponse) {
+						reponses++
+					}
+				})
+			})
+			return reponses
+		},
+		definirScoreQuiz () {
+			let correct = 0
+			this.exercicesQuiz.forEach(function (items) {
+				items.forEach(function (item) {
+					if (item.reponse && item.correct) {
+						correct++
+					}
+				})
+			})
+			return Math.round((correct / this.exercicesQuiz.length) * 100)
+		},
+		reinitialiserQuiz () {
+			this.$parent.$parent.chargement = true
+			if (localStorage.getItem('digiflashcards_quiz')) {
+				localStorage.removeItem('digiflashcards_quiz')
+				this.navigationQuiz = 0
+				this.definirExercicesQuiz()
+			}
+			setTimeout(function () {
+				this.$parent.$parent.chargement = false
+			}.bind(this), 200)
+		},
+		definirExercicesEcrire () {
+			const cartes = []
+			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
+			copieCartes.forEach(function (item) {
+				if ((item.recto.texte !== '' && (item.verso.texte !== '' || item.verso.image !== '' || item.verso.audio !== '')) || (item.verso.texte !== '' && (item.recto.texte !== '' || item.recto.image !== '' || item.recto.audio !== ''))) {
+					item.correct = ''
+					item.reponse = ''
+					item.valide = false
+					cartes.push(item)
+				}
+			})
+			const cartesExercice = this.melangerEntrees(cartes)
+			if (cartesExercice.length > 20) {
+				this.exercicesEcrire = cartesExercice.slice(0, -(cartesExercice.length - 20))
+				localStorage.setItem('digiflashcards_ecrire', JSON.stringify(cartesExercice.slice(0, -(cartesExercice.length - 20))))
+			} else {
+				this.exercicesEcrire = cartesExercice
+				localStorage.setItem('digiflashcards_ecrire', JSON.stringify(cartesExercice))
+			}
+		},
+		afficherQuestionEcrirePrecedente () {
+			this.$parent.$parent.chargementTransparent = true
+			if (this.navigationEcrire > 0) {
+				this.navigationEcrire--
+			} else {
+				this.navigationEcrire = this.exercicesEcrire.length - 1
+			}
+			if (this.audio !== '') {
+				this.audio.pause()
+				this.audio = ''
+				this.lecture = false
+			}
+			setTimeout(function () {
+				imagesLoaded('#exercices', function () {
+					this.$parent.$parent.chargementTransparent = false
+					this.$nextTick(function () {
+						document.querySelector('#champ_' + this.navigationEcrire).focus()
+					}.bind(this))
+				}.bind(this))
+			}.bind(this), 200)
+		},
+		afficherQuestionEcrireSuivante () {
+			this.$parent.$parent.chargementTransparent = true
+			if (this.navigationEcrire < this.exercicesEcrire.length - 1) {
+				this.navigationEcrire++
+			} else {
+				this.navigationEcrire = 0
+			}
+			if (this.audio !== '') {
+				this.audio.pause()
+				this.audio = ''
+				this.lecture = false
+			}
+			setTimeout(function () {
+				imagesLoaded('#exercices', function () {
+					this.$parent.$parent.chargementTransparent = false
+					this.$nextTick(function () {
+						document.querySelector('#champ_' + this.navigationEcrire).focus()
+					}.bind(this))
+				}.bind(this))
+			}.bind(this), 200)
+		},
+		verifierEcrire () {
+			const reponse = document.querySelector('#champ_' + this.navigationEcrire).value
+			if (reponse.trim() !== '') {
+				if (((this.exercicesEcrire[this.navigationEcrire].recto.image !== '' || this.exercicesEcrire[this.navigationEcrire].recto.audio !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte === '' && this.exercicesEcrire[this.navigationEcrire].verso.texte !== '' && reponse.trim().toLowerCase() === this.exercicesEcrire[this.navigationEcrire].verso.texte.toLowerCase()) || ((this.exercicesEcrire[this.navigationEcrire].verso.image !== '' || this.exercicesEcrire[this.navigationEcrire].verso.audio !== '' || this.exercicesEcrire[this.navigationEcrire].verso.texte !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte !== '' && reponse.trim().toLowerCase() === this.exercicesEcrire[this.navigationEcrire].recto.texte.toLowerCase())) {
+					this.exercicesEcrire[this.navigationEcrire].correct = true
+					const validation = new Audio('./static/validation.mp3')
+					validation.play()
+				} else {
+					this.exercicesEcrire[this.navigationEcrire].correct = false
+				}
+				this.exercicesEcrire[this.navigationEcrire].reponse = reponse
+				localStorage.setItem('digiflashcards_ecrire', JSON.stringify(this.exercicesEcrire))
+				if (this.verifierReponsesEcrire() === this.exercicesEcrire.length) {
+					this.modale = 'score-ecrire'
+					if (this.definirScoreEcrire() > 79) {
+						this.lancerConfettis()
+					}
+				}
+			}
+		},
+		verifierReponsesEcrire () {
+			let reponses = 0
+			this.exercicesEcrire.forEach(function (item) {
+				if (item.reponse !== '') {
+					reponses++
+				}
+			})
+			return reponses
+		},
+		definirScoreEcrire () {
+			let correct = 0
+			this.exercicesEcrire.forEach(function (item) {
+				if (item.correct) {
+					correct++
+				}
+			})
+			return Math.round((correct / this.exercicesEcrire.length) * 100)
+		},
+		reinitialiserEcrire () {
+			this.$parent.$parent.chargement = true
+			if (localStorage.getItem('digiflashcards_ecrire')) {
+				localStorage.removeItem('digiflashcards_ecrire')
+				this.navigationEcrire = 0
+				this.definirExercicesEcrire()
+			}
+			setTimeout(function () {
+				this.$parent.$parent.chargement = false
+			}.bind(this), 200)
 		},
 		ouvrirModaleSerie () {
 			this.modale = 'serie'
@@ -1053,13 +1675,19 @@ export default {
 			const zip = new JSZip()
 			const fichiers = []
 			this.cartes.forEach(function (carte) {
-				if (carte.recto.image !== '') {
+				if (carte.recto.image !== '' && this.verifierLien(carte.recto.image) === false) {
 					fichiers.push(carte.recto.image)
 				}
-				if (carte.verso.image !== '') {
+				if (carte.recto.audio !== '' && this.verifierLien(carte.recto.audio) === false) {
+					fichiers.push(carte.recto.audio)
+				}
+				if (carte.verso.image !== '' && this.verifierLien(carte.verso.image) === false) {
 					fichiers.push(carte.verso.image)
 				}
-			})
+				if (carte.verso.audio !== '' && this.verifierLien(carte.verso.audio) === false) {
+					fichiers.push(carte.verso.audio)
+				}
+			}.bind(this))
 			const donneesFichiers = []
 			for (const fichier of fichiers) {
 				const donneesFichier = new Promise(function (resolve) {
@@ -1111,13 +1739,33 @@ export default {
 							let indexFichier = 0
 							const fichiers = []
 							donnees.cartes.forEach(function (carte) {
-								if (carte.recto.image !== '') {
+								if (carte.recto.image !== '' && this.verifierLien(carte.recto.image) === false) {
 									fichiers.push(carte.recto.image)
 								}
-								if (carte.verso.image !== '') {
+								if (carte.recto.audio !== '' && this.verifierLien(carte.recto.audio) === false) {
+									fichiers.push(carte.recto.audio)
+								}
+								if (carte.verso.image !== '' && this.verifierLien(carte.verso.image) === false) {
 									fichiers.push(carte.verso.image)
 								}
-							})
+								if (carte.verso.audio !== '' && this.verifierLien(carte.verso.audio) === false) {
+									fichiers.push(carte.verso.audio)
+								}
+							}.bind(this))
+							if (fichiers.length === 0) {
+								new Promise(function (resolve) {
+									const xhr = new XMLHttpRequest()
+									xhr.onload = function () {
+										resolve('dossier_vide')
+									}.bind(this)
+									xhr.onerror = function () {
+										resolve('erreur_televersement')
+									}
+									xhr.open('POST', this.$parent.$parent.hote + 'inc/vider_dossier_serie.php', true)
+									xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+									xhr.send('serie=' + this.id)
+								}.bind(this))
+							}
 							for (const item of fichiers) {
 								const donneesFichier = new Promise(function (resolve) {
 									archive.files['fichiers/' + item].async('blob').then(function (blob) {
@@ -1135,6 +1783,9 @@ export default {
 												resolve('erreur_televersement')
 											}
 										}.bind(this)
+										xhr.onerror = function () {
+											resolve('erreur_televersement')
+										}
 										xhr.open('POST', this.$parent.$parent.hote + 'inc/televerser_fichier_import.php', true)
 										xhr.send(formData)
 									}.bind(this))
@@ -1220,238 +1871,54 @@ export default {
 			xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
 			xhr.send('serie=' + this.id)
 		},
-		definirExercicesQuiz () {
-			const cartes = []
-			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
-			copieCartes.forEach(function (item) {
-				if ((item.recto.texte !== '' || item.recto.image !== '') && (item.verso.texte !== '' || item.verso.image !== '')) {
-					cartes.push(item)
-				}
-			})
-			const cartesExercice = this.melangerEntrees(cartes)
-			const donnees = []
-			cartesExercice.forEach(function (item) {
-				let indexItem = ''
-				let cartesSansItem = []
-				const copieCartesSansItem = JSON.parse(JSON.stringify(this.cartes))
-				copieCartesSansItem.forEach(function (item) {
-					if ((item.recto.texte !== '' || item.recto.image !== '') && (item.verso.texte !== '' || item.verso.image !== '')) {
-						cartesSansItem.push(item)
+		importerCSV (event) {
+			const fichier = event.target.files[0]
+			if (fichier === null || fichier.length === 0) {
+				document.querySelector('#televerser_csv').value = ''
+				return false
+			} else {
+				const that = this
+				let cartes = JSON.parse(JSON.stringify(this.cartes))
+				this.$parent.$parent.chargement = true
+				Papa.parse(fichier, {
+					header: true,
+					transformHeader: true,
+					skipEmptyLines: true,
+					complete: function (results) {
+						const donnees = results.data
+						donnees.forEach(function (item) {
+							if ((item.recto_texte !== '' || item.recto_image !== '' || item.recto_audio !== '') && (item.verso_texte !== '' || item.verso_image !== '' || item.verso_audio !== '')) {
+								cartes.push({ recto: { texte: item.recto_texte, image: item.recto_image, audio: item.recto_audio }, verso: { texte: item.verso_texte, image: item.verso_image, audio: item.verso_audio } })
+							}
+						})
+						cartes = cartes.filter(function (carte) {
+							return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '')
+						})
+						const xhr = new XMLHttpRequest()
+						xhr.onload = function () {
+							if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+								that.$parent.$parent.chargement = false
+								if (xhr.responseText === 'erreur') {
+									that.$parent.$parent.message = that.$t('erreurServeur')
+								} else if (xhr.responseText === 'non_autorise') {
+									that.$parent.$parent.message = that.$t('actionNonAutorisee')
+								} else if (xhr.responseText === 'serie_modifiee') {
+									that.cartes = cartes
+									that.$parent.$parent.notification = that.$t('cartesImportees')
+								}
+							} else {
+								that.$parent.$parent.chargement = false
+								that.$parent.$parent.message = that.$t('erreurServeur')
+							}
+						}
+						xhr.open('POST', that.$parent.$parent.hote + 'inc/modifier_serie.php', true)
+						xhr.setRequestHeader('Content-type', 'application/json')
+						const json = { serie: that.id, donnees: JSON.stringify({ cartes: cartes }) }
+						xhr.send(JSON.stringify(json))
+						that.supprimerDonneesExercices()
 					}
 				})
-				cartesSansItem = this.melangerEntrees(cartesSansItem)
-				cartesSansItem.forEach(function (obj, index) {
-					if (obj.recto.texte === item.recto.texte && obj.recto.image === item.recto.image) {
-						obj.correct = true
-						indexItem = index
-					} else {
-						obj.correct = false
-					}
-					obj.reponse = false
-					obj.repondu = false
-				})
-				const liste = []
-				for (let i = 0; i <= cartes.length; i++) {
-					if (i !== indexItem) {
-						liste.push(i)
-					}
-				}
-				liste.splice(0, 3)
-				for (let j = liste.length - 1; j >= 0; j--) {
-					cartesSansItem.splice(liste[j], 1)
-				}
-				const items = this.melangerEntrees(cartesSansItem)
-				donnees.push(items)
-			}.bind(this))
-			if (cartesExercice.length > 20) {
-				this.exercicesQuiz = donnees.slice(0, -(cartesExercice.length - 20))
-				localStorage.setItem('digiflashcards_quiz', JSON.stringify(donnees.slice(0, -(cartesExercice.length - 20))))
-			} else {
-				this.exercicesQuiz = donnees
-				localStorage.setItem('digiflashcards_quiz', JSON.stringify(donnees))
 			}
-		},
-		afficherQuestionQuizPrecedente () {
-			this.$parent.$parent.chargementTransparent = true
-			if (this.navigationQuiz > 0) {
-				this.navigationQuiz--
-			} else {
-				this.navigationQuiz = this.exercicesQuiz.length - 1
-			}
-			setTimeout(function () {
-				imagesLoaded('#exercices', function () {
-					this.$parent.$parent.chargementTransparent = false
-				}.bind(this))
-			}.bind(this), 200)
-		},
-		afficherQuestionQuizSuivante () {
-			this.$parent.$parent.chargementTransparent = true
-			if (this.navigationQuiz < this.exercicesQuiz.length - 1) {
-				this.navigationQuiz++
-			} else {
-				this.navigationQuiz = 0
-			}
-			setTimeout(function () {
-				imagesLoaded('#exercices', function () {
-					this.$parent.$parent.chargementTransparent = false
-				}.bind(this))
-			}.bind(this), 200)
-		},
-		verifierQuiz () {
-			const input = document.querySelector('#reponses_' + this.navigationQuiz + ' input[type=radio]:checked')
-			if (input) {
-				const reponse = input.value
-				const index = parseInt(input.getAttribute('data-index'))
-				if (JSON.parse(reponse) === true) {
-					const validation = new Audio('./static/validation.mp3')
-					validation.play()
-				}
-				this.exercicesQuiz[this.navigationQuiz][index].reponse = true
-				this.exercicesQuiz[this.navigationQuiz].forEach(function (item) {
-					item.repondu = true
-				})
-				localStorage.setItem('digiflashcards_quiz', JSON.stringify(this.exercicesQuiz))
-				if (this.verifierReponsesQuiz() === this.exercicesQuiz.length) {
-					this.modale = 'score-quiz'
-					if (this.definirScoreQuiz() > 79) {
-						this.lancerConfettis()
-					}
-				}
-			}
-		},
-		verifierReponsesQuiz () {
-			let reponses = 0
-			this.exercicesQuiz.forEach(function (items) {
-				items.forEach(function (item) {
-					if (item.reponse) {
-						reponses++
-					}
-				})
-			})
-			return reponses
-		},
-		definirScoreQuiz () {
-			let correct = 0
-			this.exercicesQuiz.forEach(function (items) {
-				items.forEach(function (item) {
-					if (item.reponse && item.correct) {
-						correct++
-					}
-				})
-			})
-			return Math.round((correct / this.exercicesQuiz.length) * 100)
-		},
-		reinitialiserQuiz () {
-			this.$parent.$parent.chargement = true
-			if (localStorage.getItem('digiflashcards_quiz')) {
-				localStorage.removeItem('digiflashcards_quiz')
-				this.navigationQuiz = 0
-				this.definirExercicesQuiz()
-			}
-			setTimeout(function () {
-				this.$parent.$parent.chargement = false
-			}.bind(this), 200)
-		},
-		definirExercicesEcrire () {
-			const cartes = []
-			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
-			copieCartes.forEach(function (item) {
-				if ((item.recto.texte !== '' && (item.verso.texte !== '' || item.verso.image !== '')) || (item.verso.texte !== '' && (item.recto.texte !== '' || item.recto.image !== ''))) {
-					item.correct = ''
-					item.reponse = ''
-					item.valide = false
-					cartes.push(item)
-				}
-			})
-			const cartesExercice = this.melangerEntrees(cartes)
-			if (cartesExercice.length > 20) {
-				this.exercicesEcrire = cartesExercice.slice(0, -(cartesExercice.length - 20))
-				localStorage.setItem('digiflashcards_ecrire', JSON.stringify(cartesExercice.slice(0, -(cartesExercice.length - 20))))
-			} else {
-				this.exercicesEcrire = cartesExercice
-				localStorage.setItem('digiflashcards_ecrire', JSON.stringify(cartesExercice))
-			}
-		},
-		afficherQuestionEcrirePrecedente () {
-			this.$parent.$parent.chargementTransparent = true
-			if (this.navigationEcrire > 0) {
-				this.navigationEcrire--
-			} else {
-				this.navigationEcrire = this.exercicesEcrire.length - 1
-			}
-			setTimeout(function () {
-				imagesLoaded('#exercices', function () {
-					this.$parent.$parent.chargementTransparent = false
-					this.$nextTick(function () {
-						document.querySelector('#champ_' + this.navigationEcrire).focus()
-					}.bind(this))
-				}.bind(this))
-			}.bind(this), 200)
-		},
-		afficherQuestionEcrireSuivante () {
-			this.$parent.$parent.chargementTransparent = true
-			if (this.navigationEcrire < this.exercicesEcrire.length - 1) {
-				this.navigationEcrire++
-			} else {
-				this.navigationEcrire = 0
-			}
-			setTimeout(function () {
-				imagesLoaded('#exercices', function () {
-					this.$parent.$parent.chargementTransparent = false
-					this.$nextTick(function () {
-						document.querySelector('#champ_' + this.navigationEcrire).focus()
-					}.bind(this))
-				}.bind(this))
-			}.bind(this), 200)
-		},
-		verifierEcrire () {
-			const reponse = document.querySelector('#champ_' + this.navigationEcrire).value
-			if (reponse.trim() !== '') {
-				if ((this.exercicesEcrire[this.navigationEcrire].recto.image !== '' && this.exercicesEcrire[this.navigationEcrire].recto.texte === '' && this.exercicesEcrire[this.navigationEcrire].verso.texte !== '' && reponse.trim().toLowerCase() === this.exercicesEcrire[this.navigationEcrire].verso.texte.toLowerCase()) || ((this.exercicesEcrire[this.navigationEcrire].verso.image !== '' || this.exercicesEcrire[this.navigationEcrire].verso.texte !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte !== '' && reponse.trim().toLowerCase() === this.exercicesEcrire[this.navigationEcrire].recto.texte.toLowerCase())) {
-					this.exercicesEcrire[this.navigationEcrire].correct = true
-					const validation = new Audio('./static/validation.mp3')
-					validation.play()
-				} else {
-					this.exercicesEcrire[this.navigationEcrire].correct = false
-				}
-				this.exercicesEcrire[this.navigationEcrire].reponse = reponse
-				localStorage.setItem('digiflashcards_ecrire', JSON.stringify(this.exercicesEcrire))
-				if (this.verifierReponsesEcrire() === this.exercicesEcrire.length) {
-					this.modale = 'score-ecrire'
-					if (this.definirScoreEcrire() > 79) {
-						this.lancerConfettis()
-					}
-				}
-			}
-		},
-		verifierReponsesEcrire () {
-			let reponses = 0
-			this.exercicesEcrire.forEach(function (item) {
-				if (item.reponse !== '') {
-					reponses++
-				}
-			})
-			return reponses
-		},
-		definirScoreEcrire () {
-			let correct = 0
-			this.exercicesEcrire.forEach(function (item) {
-				if (item.correct) {
-					correct++
-				}
-			})
-			return Math.round((correct / this.exercicesEcrire.length) * 100)
-		},
-		reinitialiserEcrire () {
-			this.$parent.$parent.chargement = true
-			if (localStorage.getItem('digiflashcards_ecrire')) {
-				localStorage.removeItem('digiflashcards_ecrire')
-				this.navigationEcrire = 0
-				this.definirExercicesEcrire()
-			}
-			setTimeout(function () {
-				this.$parent.$parent.chargement = false
-			}.bind(this), 200)
 		},
 		gererClavier (event) {
 			if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'ArrowLeft') {
@@ -1495,6 +1962,15 @@ export default {
 			confetti({ angle: 240, spread: 55, particleCount: 150, origin: { x: 1, y: -0.2 }, zIndex: 10010 })
 			// eslint-disable-next-line
 			confetti({ angle: 270, spread: 70, particleCount: 150, origin: { x: 0.5, y: -0.2 }, zIndex: 10010 })
+		},
+		verifierLien (lien) {
+			let url
+			try {
+				url = new URL(lien)
+			} catch (_) {
+				return false
+			}
+			return url.protocol === 'http:' || url.protocol === 'https:'
 		}
 	}
 }
@@ -1721,7 +2197,7 @@ export default {
 	overflow: auto;
 }
 
-#cartes.apprenant .carte .conteneur-image + .conteneur-texte {
+#cartes.apprenant .carte .conteneur-media + .conteneur-texte {
 	justify-content: flex-start;
 	width: 70%;
 	text-align: left;
@@ -1736,18 +2212,38 @@ export default {
 	margin-top: 20px;
 }
 
-#cartes.apprenant .carte .conteneur-image {
+#cartes.apprenant .carte .conteneur-media {
 	display: block;
 	width: 100%;
 	height: 100%;
 	margin-right: 0;
 }
 
-#cartes.apprenant .carte .conteneur-image.avec-texte {
+#cartes.apprenant .carte .conteneur-media.avec-texte {
 	display: block;
 	width: calc(30% - 20px);
 	height: 100%;
 	margin-right: 20px;
+}
+
+#cartes.apprenant .carte .conteneur-audio,
+#cartes.apprenant .carte .conteneur-image {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+#cartes.apprenant .carte .conteneur-media .conteneur-audio.avec-image {
+	height: 30%;
+}
+
+#cartes.apprenant .carte .conteneur-media .conteneur-image.avec-audio {
+	height: 70%;
+}
+
+#cartes.apprenant .carte .conteneur-media.avec-texte .conteneur-audio.avec-image,
+#cartes.apprenant .carte .conteneur-media.avec-texte .conteneur-image.avec-audio {
+	height: 50%;
 }
 
 #cartes.apprenant .carte .image {
@@ -1764,8 +2260,28 @@ export default {
 	border-radius: 10px;
 }
 
-#cartes.apprenant .carte .conteneur-image.avec-texte img {
+#cartes.apprenant .carte .conteneur-media.avec-texte img {
 	cursor: zoom-in;
+}
+
+#cartes.apprenant .carte .audio {
+	display: flex;
+	width: 100%;
+	height: 100%;
+	justify-content: center;
+	align-items: center;
+	font-size: 150px;
+	text-align: center;
+	cursor: pointer;
+}
+
+#cartes.apprenant .carte .conteneur-media.avec-texte .audio {
+	font-size: 85px;
+}
+
+#cartes.apprenant .carte .audio.lecture {
+	color: #fe68b2;
+	text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.4);
 }
 
 #exercices .navigation,
@@ -1868,7 +2384,7 @@ export default {
 }
 
 #cartes.admin .carte .texte {
-	width: calc(100% - 30px);
+	width: calc(100% - 60px);
 }
 
 #cartes.admin .carte textarea {
@@ -1900,9 +2416,22 @@ export default {
 	cursor: pointer;
 }
 
+#cartes.admin .carte .audio {
+	text-align: center;
+	font-size: 24px;
+	width: 30px;
+	user-select: none;
+	cursor: pointer;
+}
+
+#cartes.admin .carte .audio.televerse {
+	color: #00b894;
+}
+
 #cartes.admin .carte span.conteneur-chargement {
 	width: 30px;
 	text-align: center;
+	font-size: 0;
 }
 
 #cartes.admin .carte span.conteneur-chargement .chargement {
@@ -1950,15 +2479,11 @@ export default {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	flex-wrap: wrap;
 }
 
 #exercices .question .image {
 	font-size: 0;
-}
-
-#exercices .question .image.avec-texte {
-	max-width: calc(30% - 20px);
-	margin-right: 20px;
 }
 
 #exercices .question .image img {
@@ -1970,8 +2495,53 @@ export default {
 	font-size: 24px;
 }
 
+#exercices .question .image.avec-texte {
+	max-width: calc(30% - 20px);
+	margin-right: 20px;
+}
+
 #exercices .question .image.avec-texte + .texte {
 	max-width: 70%;
+}
+
+#exercices .question .audio {
+	font-size: 96px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+#exercices .question .audio.lecture {
+	color: #fe68b2;
+	text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.4);
+}
+
+#exercices .question .audio.avec-image {
+	margin-left: 20px;
+}
+
+#exercices .question .audio.avec-texte {
+	width: 96px;
+	margin-right: 20px;
+}
+
+#exercices .question .audio.avec-texte + .texte {
+	max-width: calc(100% - 116px);
+}
+
+#exercices .question .image.avec-texte.avec-audio {
+	max-width: calc(35% - 112px);
+	margin-right: 20px;
+}
+
+#exercices .question .audio.avec-texte.avec-image {
+	font-size: 72px;
+	max-width: 72px;
+	margin-right: 20px;
+	margin-left: 0;
+}
+
+#exercices .question .audio.avec-texte.avec-image + .texte {
+	max-width: 65%;
 }
 
 #exercices .reponses {
@@ -2052,6 +2622,18 @@ export default {
 	max-height: 45px;
 }
 
+#exercices .conteneur-coche .audio {
+	font-size: 36px;
+	margin-right: 10px;
+}
+
+#exercices .conteneur-coche .audio.lecture {
+	font-size: 36px;
+	margin-right: 10px;
+	color: #fe68b2;
+	text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+}
+
 #exercices .conteneur-coche .texte {
 	max-width: calc(100% - 35px);
 }
@@ -2060,7 +2642,17 @@ export default {
 	max-width: calc(100% - 90px);
 }
 
-#visualiser {
+#exercices .conteneur-coche .audio.avec-texte.avec-image + .texte {
+	max-width: calc(100% - 136px);
+}
+
+#exercices .conteneur-coche .audio.avec-texte + .texte {
+	max-width: calc(100% - 81px);
+}
+
+#actions {
+	display: flex;
+	justify-content: space-between;
 	width: 100%;
 	max-width: 75em;
 	margin: 30px auto 0;
@@ -2069,7 +2661,8 @@ export default {
 }
 
 #exercices .valider span,
-#visualiser a,
+#actions > a,
+#actions label,
 #ajouter-carte span {
 	display: inline-block;
 	width: 100%;
@@ -2092,15 +2685,22 @@ export default {
 }
 
 #exercices .valider span,
-#visualiser a {
+#actions label,
+#actions > a {
 	width: auto;
 }
 
 #exercices .valider span:hover,
-#visualiser a:hover,
+#actions > a:hover,
+#actions label:hover,
 #ajouter-carte span:hover {
 	background: #001d1d;
 	color: #fff;
+}
+
+#actions #importer-csv a {
+	font-size: 14px;
+	margin-left: 15px;
 }
 
 #exercices .valider {
@@ -2140,7 +2740,8 @@ export default {
 	background-color: #777!important;
 }
 
-#visualiser a i {
+#actions label i,
+#actions > a i {
 	font-size: 24px;
 	margin-right: 0.5em;
 }
@@ -2299,18 +2900,81 @@ export default {
 	max-height: calc(90vh - 145px);
 }
 
+#modale-ajouter-audio .actions,
+#modale-audio .actions,
 #modale-image .actions {
 	margin-top: 20px;
 }
 
+#modale-ajouter-audio label,
 #modale-image .actions label {
 	width: auto;
 	margin-bottom: 0;
 }
 
+#modale-ajouter-audio .contenu {
+	text-align: center;
+}
+
+#modale-audio audio,
+#modale-ajouter-audio audio {
+	width: 100%;
+}
+
 .conteneur-modale.score,
 #zoom-image {
 	cursor: pointer;
+}
+
+#enregistrer i {
+	font-size: 24px;
+	margin-right: 0.5em;
+	color: #ff1f1f;
+}
+
+#enregistrement {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#enregistrement .duree {
+	font-size: 30px;
+	font-weight: 500;
+	margin-left: 25px;
+}
+
+#enregistrement .bouton {
+	background-color: #fff;
+	border-color: #001d1d;
+	border-width: 1px;
+	border-radius: 0;
+	line-height: 1;
+	height: auto;
+	padding: 10px;
+}
+
+#enregistrement .bouton i {
+	font-size: 48px;
+	line-height: 1;
+	margin: 0;
+}
+
+#enregistrement .bouton.stopper {
+	color: #001d1d;
+    animation: couleur ease-in 2s infinite;
+}
+
+@keyframes couleur {
+    0% {
+		background: #fff;
+	}
+    50% {
+		background: #ff1f1f;
+	}
+    100% {
+		background: #fff;
+	}
 }
 
 .conteneur-modale.score .conteneur {
@@ -2366,15 +3030,72 @@ export default {
 	100% { transform: rotate(360deg); }
 }
 
+.modale .separateur {
+    position: relative;
+    margin: 20px 25%;
+    text-align: center;
+    width: 50%;
+}
+
+.modale .separateur:before {
+    position: absolute;
+    top: 50%;
+    display: block;
+    content: '';
+    width: 100%;
+    height: 1px;
+    background-color: #ddd;
+}
+
+.modale .separateur span {
+    position: relative;
+    margin: 0;
+    font-size: 14px;
+    z-index: 2;
+    display: inline-block;
+    padding-left: 15px;
+    padding-right: 15px;
+    vertical-align: middle;
+    background-color: #fff;
+}
+
 #codeqr.modale .contenu {
 	text-align: center;
 	font-size: 0;
 }
 
 @media screen and (max-width: 399px) {
+	#actions > a span {
+		display: none;
+	}
+
+	#actions > a i {
+		margin-right: 0;
+	}
+
 	#exercices .reponses .reponse {
 		width: 100%;
 		margin-right: 0;
+	}
+
+	#exercices .conteneur-coche .audio.avec-texte.avec-image + .texte {
+		font-size: 16px!important;
+	}
+
+	#exercices .question .audio {
+		font-size: 60px!important;
+	}
+
+	#exercices .question .image.avec-audio {
+		max-width: calc(100% - 80px)!important;
+	}
+
+	#exercices .question .audio.avec-texte {
+		width: 60px!important;
+	}
+
+	#exercices .question .audio.avec-texte + .texte {
+		max-width: calc(100% - 80px)!important;
 	}
 }
 
@@ -2384,18 +3105,41 @@ export default {
 		flex-wrap: wrap;
 	}
 
-	#cartes.apprenant .carte .conteneur-image.avec-texte {
+	#cartes.apprenant .carte .conteneur-media {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+	}
+
+	#cartes.apprenant .carte .conteneur-media.avec-texte {
+		display: flex;
+		justify-content: center;
+		align-items: center;
 		width: 100%;
 		height: calc(30% - 20px);
 		margin-bottom: 20px;
 		margin-right: 0;
 	}
 
-	#cartes.apprenant .carte .conteneur-image + .conteneur-texte {
+	#cartes.apprenant .carte .conteneur-media.avec-texte + .conteneur-texte {
 		width: 100%;
 		height: 70%;
 		justify-content: center;
 		text-align: center;
+	}
+
+	#cartes.apprenant .carte .conteneur-media.avec-texte .conteneur-audio.avec-image,
+	#cartes.apprenant .carte .conteneur-media.avec-texte .conteneur-image.avec-audio {
+		height: 100%;
+		width: 50%;
+	}
+
+	#cartes.apprenant .carte .audio {
+		font-size: 100px;
+	}
+
+	#cartes.apprenant .carte .conteneur-media.avec-texte .audio {
+		font-size: 60px;
 	}
 
 	#cartes.admin .carte .recto,
@@ -2413,11 +3157,18 @@ export default {
 
 	#exercices .champ,
 	#exercices .valider,
-	#visualiser,
+	#actions,
 	#exercices .navigation,
 	#cartes.apprenant .navigation,
 	#credits {
 		margin-top: 20px;
+	}
+
+	#actions #importer-csv a {
+		display: block;
+		text-align: left;
+		margin-left: 0;
+		margin-top: 10px;
 	}
 
 	#exercices .reponses {
@@ -2434,6 +3185,13 @@ export default {
 		font-size: 18px!important;
 	}
 
+	#exercices .question .audio.avec-texte.avec-image + .texte {
+		width: 100%!important;
+		max-width: 100%!important;
+		text-align: center!important;
+		margin-top: 20px;
+	}
+
 	#ajouter-carte {
 		margin-top: 0;
 	}
@@ -2443,11 +3201,54 @@ export default {
 	}
 }
 
+@media screen and (orientation: landscape) and (max-width: 599px) and (max-height: 479px) {
+	#cartes.apprenant .carte .conteneur-media.avec-texte {
+		height: calc(50% - 20px);
+	}
+
+	#cartes.apprenant .carte .conteneur-media.avec-texte + .conteneur-texte {
+		height: 50%;
+	}
+}
+
 @media screen and (max-width: 767px) {
 	#exercices .champ input[type="text"],
 	#exercices .conteneur-coche .texte,
 	#exercices .question .texte {
-		font-size: 20px!important;
+		font-size: 20px;
+	}
+
+	#exercices .question .audio {
+		font-size: 72px;
+	}
+
+	#exercices .question .image.avec-texte.avec-audio {
+		width: 120px;
+		max-width: 120px;
+		margin-right: 20px;
+	}
+
+	#exercices .question .image.avec-audio {
+		max-width: calc(100% - 92px);
+	}
+
+	#exercices .question .audio.avec-texte.avec-image {
+		font-size: 60px;
+		width: 60px;
+		max-width: 60px;
+		margin-left: 0;
+	}
+
+	#exercices .question .audio.avec-texte {
+		width: 72px;
+	}
+
+	#exercices .question .audio.avec-texte + .texte {
+		max-width: calc(100% - 92px);
+	}
+
+	#exercices .question .audio.avec-texte.avec-image + .texte {
+		max-width: calc(100% - 220px);
 	}
 
 	.modale .langue span {

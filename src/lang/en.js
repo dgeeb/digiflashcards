@@ -79,5 +79,18 @@ export default {
 	tailleMax: 'The maximum size allowed is {taille} Mb.',
 	apercuApprenant: 'Learner view',
 	fermer: 'Close',
-	ecrivezTerme: 'Write the corresponding term.'
+	ecrivezTerme: 'Write the corresponding term.',
+	ajouterAudio: 'Add audio',
+	afficherAudio: 'Show audio',
+	enregistrerAudio: 'Record audio',
+	selectionnerFichierMP3: 'Select a .mp3 file',
+	ou: 'or',
+	annuler: 'Cancel',
+	enregistrementAudio: 'Audio recording',
+	erreurMicro: 'Your microphone does not have the necessary permissions to start recording.',
+	aucuneEntreeAudio: 'No audio input has been detected on your device.',
+	erreurFormat: 'This file format is not valid.',
+	importerCSV: 'Import .csv',
+	telechargerModele: 'Download template',
+	cartesImportees: 'Flashcards imported.'
 }

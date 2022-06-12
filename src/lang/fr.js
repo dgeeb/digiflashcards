@@ -79,5 +79,18 @@ export default {
 	tailleMax: 'La taille maximale autorisée est {taille} Mo.',
 	apercuApprenant: 'Vue apprenant',
 	fermer: 'Fermer',
-	ecrivezTerme: 'Écrivez le terme correspondant.'
+	ecrivezTerme: 'Écrivez le terme correspondant.',
+	ajouterAudio: 'Ajouter de l\'audio',
+	afficherAudio: 'Afficher l\'audio',
+	enregistrerAudio: 'Enregistrer audio',
+	selectionnerFichierMP3: 'Sélectionner un fichier .mp3',
+	ou: 'ou',
+	annuler: 'Annuler',
+	enregistrementAudio: 'Enregistrement audio',
+	erreurMicro: 'Votre microphone ne dispose pas des autorisations nécessaires pour lancer l\'enregistrement.',
+	aucuneEntreeAudio: 'Aucune entrée audio n\'a été détectée sur votre appareil.',
+	erreurFormat: 'Le format de ce fichier n\'est pas valide.',
+	importerCSV: 'Importer .csv',
+	telechargerModele: 'Télécharger le modèle',
+	cartesImportees: 'Cartes importées.'
 }
