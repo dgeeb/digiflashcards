@@ -31,6 +31,9 @@ Le dossier dist peut être déployé directement sur un serveur PHP avec l'exten
 ### Démo
 https://ladigitale.dev/digiflashcards/
 
+### Remerciements et crédits
+Traduction en italien par Paolo Mauri (https://gitlab.com/maupao) et @nilocram (Roberto Marcolin)
+
 ### Soutien
 https://opencollective.com/ladigitale
 

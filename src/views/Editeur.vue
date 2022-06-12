@@ -234,6 +234,7 @@
 					<div class="contenu">
 						<div class="langue">
 							<span :class="{'selectionne': $parent.$parent.langue === 'fr'}" @click="modifierLangue('fr')">FR</span>
+							<span :class="{'selectionne': $parent.$parent.langue === 'it'}" @click="modifierLangue('it')">IT</span>
 							<span :class="{'selectionne': $parent.$parent.langue === 'en'}" @click="modifierLangue('en')">EN</span>
 						</div>
 						<label>{{ $t('questionSecrete') }}</label>
@@ -260,6 +261,7 @@
 					<div class="contenu">
 						<div class="langue">
 							<span :class="{'selectionne': $parent.$parent.langue === 'fr'}" @click="modifierLangue('fr')">FR</span>
+							<span :class="{'selectionne': $parent.$parent.langue === 'it'}" @click="modifierLangue('it')">IT</span>
 							<span :class="{'selectionne': $parent.$parent.langue === 'en'}" @click="modifierLangue('en')">EN</span>
 						</div>
 						<span class="bouton large" role="button" tabindex="0" @click="ouvrirModaleNomSerie">{{ $t('modifierNomSerie') }}</span>
@@ -3071,6 +3073,10 @@ export default {
 
 	#actions > a i {
 		margin-right: 0;
+	}
+
+	#actions #importer-csv i {
+		display: none;
 	}
 
 	#exercices .reponses .reponse {

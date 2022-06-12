@@ -31,7 +31,7 @@ export default {
 			chargementTransparent: false,
 			message: '',
 			notification: '',
-			langues: ['fr', 'en'],
+			langues: ['fr', 'en', 'it'],
 			langue: 'fr'
 		}
 	},
