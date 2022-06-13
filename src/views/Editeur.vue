@@ -1,5 +1,5 @@
 <template>
-	<div id="page">
+	<div id="page" :class="{'plein-ecran': pleinEcran}">
 		<div id="serie">
 			<header id="header">
 				<div id="conteneur-header">
@@ -128,7 +128,7 @@
 
 					<div class="navigation">
 						<span class="precedent" @click="afficherCartePrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="total"><span>{{ navigationCartes + 1 }} / {{ cartes.length }}</span></span>
+						<span class="total"><span>{{ navigationCartes + 1 }} / {{ cartes.length }}</span><span class="ecran" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
 						<span class="suivant" @click="afficherCarteSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
@@ -162,7 +162,7 @@
 
 					<div class="navigation">
 						<span class="precedent" @click="afficherQuestionQuizPrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="total"><span>{{ navigationQuiz + 1 }} / {{ exercicesQuiz.length }}</span><span class="reinitialiser" @click="reinitialiserQuiz"><i class="material-icons">autorenew</i></span><span class="score" @click="modale = 'score-quiz'" v-if="verifierReponsesQuiz() === exercicesQuiz.length"><i class="material-icons">emoji_events</i></span></span>
+						<span class="total"><span>{{ navigationQuiz + 1 }} / {{ exercicesQuiz.length }}</span><span class="reinitialiser" @click="reinitialiserQuiz"><i class="material-icons">autorenew</i></span><span class="score" @click="modale = 'score-quiz'" v-if="verifierReponsesQuiz() === exercicesQuiz.length"><i class="material-icons">emoji_events</i></span><span class="ecran" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
 						<span class="suivant" @click="afficherQuestionQuizSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
@@ -192,7 +192,7 @@
 
 					<div class="navigation">
 						<span class="precedent" @click="afficherQuestionEcrirePrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="total">{{ navigationEcrire + 1 }} / {{ exercicesEcrire.length }}<span class="reinitialiser" @click="reinitialiserEcrire"><i class="material-icons">autorenew</i></span><span class="score" @click="modale = 'score-ecrire'" v-if="verifierReponsesEcrire() === exercicesEcrire.length"><i class="material-icons">emoji_events</i></span></span>
+						<span class="total">{{ navigationEcrire + 1 }} / {{ exercicesEcrire.length }}<span class="reinitialiser" @click="reinitialiserEcrire"><i class="material-icons">autorenew</i></span><span class="score" @click="modale = 'score-ecrire'" v-if="verifierReponsesEcrire() === exercicesEcrire.length"><i class="material-icons">emoji_events</i></span><span class="ecran" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
 						<span class="suivant" @click="afficherQuestionEcrireSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
@@ -478,6 +478,7 @@ import JSZip from 'jszip'
 import imagesLoaded from 'imagesloaded'
 import fitty from 'fitty'
 import Papa from 'papaparse'
+import fscreen from 'fscreen'
 import { VueDraggableNext } from 'vue-draggable-next'
 
 export default {
@@ -529,7 +530,8 @@ export default {
 			intervalle: '',
 			enregistrement: false,
 			dureeEnregistrement: '00 : 00',
-			titreAjouterAudio: ''
+			titreAjouterAudio: '',
+			pleinEcran: false
 		}
 	},
 	watch: {
@@ -590,13 +592,13 @@ export default {
 							multiLine: true
 						})
 					}.bind(this))
-					if (localStorage.getItem('digiflashcards_quiz')) {
-						this.exercicesQuiz = JSON.parse(localStorage.getItem('digiflashcards_quiz'))
+					if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
+						this.exercicesQuiz = JSON.parse(localStorage.getItem('digiflashcards_quiz_' + this.id))
 					} else if (this.cartes.length > 4) {
 						this.definirExercicesQuiz()
 					}
-					if (localStorage.getItem('digiflashcards_ecrire')) {
-						this.exercicesEcrire = JSON.parse(localStorage.getItem('digiflashcards_ecrire'))
+					if (localStorage.getItem('digiflashcards_ecrire_' + this.id)) {
+						this.exercicesEcrire = JSON.parse(localStorage.getItem('digiflashcards_ecrire_' + this.id))
 					} else if (this.cartes.length > 4) {
 						this.definirExercicesEcrire()
 					}
@@ -658,6 +660,20 @@ export default {
 			// eslint-disable-next-line
 			correctLevel : QRCode.CorrectLevel.H
 		})
+
+		if (fscreen.fullscreenEnabled) {
+			fscreen.addEventListener('fullscreenchange', function () {
+				this.$nextTick(function () {
+					if (fscreen.fullscreenElement !== null) {
+						this.pleinEcran = true
+					} else {
+						this.pleinEcran = false
+					}
+				}.bind(this))
+			}.bind(this))
+		} else {
+			document.querySelector('#page').classList.add('sans-plein-ecran')
+		}
 
 		document.addEventListener('click', function (event) {
 			const partager = document.querySelector('#conteneur-partage')
@@ -774,11 +790,11 @@ export default {
 			}.bind(this))
 		},
 		supprimerDonneesExercices () {
-			if (localStorage.getItem('digiflashcards_quiz')) {
-				localStorage.removeItem('digiflashcards_quiz')
+			if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
+				localStorage.removeItem('digiflashcards_quiz_' + this.id)
 			}
-			if (localStorage.getItem('digiflashcards_ecrire')) {
-				localStorage.removeItem('digiflashcards_ecrire')
+			if (localStorage.getItem('digiflashcards_ecrire_' + this.id)) {
+				localStorage.removeItem('digiflashcards_ecrire_' + this.id)
 			}
 		},
 		afficherCartePrecedente () {
@@ -1300,10 +1316,10 @@ export default {
 			}.bind(this))
 			if (cartesExercice.length > 20) {
 				this.exercicesQuiz = donnees.slice(0, -(cartesExercice.length - 20))
-				localStorage.setItem('digiflashcards_quiz', JSON.stringify(donnees.slice(0, -(cartesExercice.length - 20))))
+				localStorage.setItem('digiflashcards_quiz_' + this.id, JSON.stringify(donnees.slice(0, -(cartesExercice.length - 20))))
 			} else {
 				this.exercicesQuiz = donnees
-				localStorage.setItem('digiflashcards_quiz', JSON.stringify(donnees))
+				localStorage.setItem('digiflashcards_quiz_' + this.id, JSON.stringify(donnees))
 			}
 		},
 		afficherQuestionQuizPrecedente () {
@@ -1376,7 +1392,7 @@ export default {
 				this.exercicesQuiz[this.navigationQuiz].forEach(function (item) {
 					item.repondu = true
 				})
-				localStorage.setItem('digiflashcards_quiz', JSON.stringify(this.exercicesQuiz))
+				localStorage.setItem('digiflashcards_quiz_' + this.id, JSON.stringify(this.exercicesQuiz))
 				if (this.verifierReponsesQuiz() === this.exercicesQuiz.length) {
 					this.modale = 'score-quiz'
 					if (this.definirScoreQuiz() > 79) {
@@ -1409,8 +1425,8 @@ export default {
 		},
 		reinitialiserQuiz () {
 			this.$parent.$parent.chargement = true
-			if (localStorage.getItem('digiflashcards_quiz')) {
-				localStorage.removeItem('digiflashcards_quiz')
+			if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
+				localStorage.removeItem('digiflashcards_quiz_' + this.id)
 				this.navigationQuiz = 0
 				this.definirExercicesQuiz()
 			}
@@ -1432,10 +1448,10 @@ export default {
 			const cartesExercice = this.melangerEntrees(cartes)
 			if (cartesExercice.length > 20) {
 				this.exercicesEcrire = cartesExercice.slice(0, -(cartesExercice.length - 20))
-				localStorage.setItem('digiflashcards_ecrire', JSON.stringify(cartesExercice.slice(0, -(cartesExercice.length - 20))))
+				localStorage.setItem('digiflashcards_ecrire_' + this.id, JSON.stringify(cartesExercice.slice(0, -(cartesExercice.length - 20))))
 			} else {
 				this.exercicesEcrire = cartesExercice
-				localStorage.setItem('digiflashcards_ecrire', JSON.stringify(cartesExercice))
+				localStorage.setItem('digiflashcards_ecrire_' + this.id, JSON.stringify(cartesExercice))
 			}
 		},
 		afficherQuestionEcrirePrecedente () {
@@ -1491,7 +1507,7 @@ export default {
 					this.exercicesEcrire[this.navigationEcrire].correct = false
 				}
 				this.exercicesEcrire[this.navigationEcrire].reponse = reponse
-				localStorage.setItem('digiflashcards_ecrire', JSON.stringify(this.exercicesEcrire))
+				localStorage.setItem('digiflashcards_ecrire_' + this.id, JSON.stringify(this.exercicesEcrire))
 				if (this.verifierReponsesEcrire() === this.exercicesEcrire.length) {
 					this.modale = 'score-ecrire'
 					if (this.definirScoreEcrire() > 79) {
@@ -1520,8 +1536,8 @@ export default {
 		},
 		reinitialiserEcrire () {
 			this.$parent.$parent.chargement = true
-			if (localStorage.getItem('digiflashcards_ecrire')) {
-				localStorage.removeItem('digiflashcards_ecrire')
+			if (localStorage.getItem('digiflashcards_ecrire_' + this.id)) {
+				localStorage.removeItem('digiflashcards_ecrire_' + this.id)
 				this.navigationEcrire = 0
 				this.definirExercicesEcrire()
 			}
@@ -1648,6 +1664,10 @@ export default {
 							this.admin = true
 							this.vue = 'editeur'
 							this.$parent.$parent.notification = this.$t('serieDebloquee')
+							if (this.pleinEcran) {
+								fscreen.exitFullscreen()
+								this.pleinEcran = false
+							}
 						}
 					} else {
 						this.$parent.$parent.chargement = false
@@ -1948,6 +1968,15 @@ export default {
 				this.definirOnglet('cartes')
 			}
 		},
+		gererPleinEcran () {
+			if (!this.pleinEcran) {
+				fscreen.requestFullscreen(document.querySelector('#page'))
+				this.pleinEcran = true
+			} else {
+				fscreen.exitFullscreen()
+				this.pleinEcran = false
+			}
+		},
 		melangerEntrees (array) {
 			for (let i = array.length - 1; i > 0; i--) {
 				const j = Math.floor(Math.random() * (i + 1))
@@ -1979,6 +2008,10 @@ export default {
 </script>
 
 <style scoped>
+#page {
+	background: #fff;
+}
+
 #page,
 #serie {
 	position: relative;
@@ -2108,6 +2141,11 @@ export default {
 
 #conteneur {
 	position: relative;
+	width: 100%;
+}
+
+#page.plein-ecran #conteneur {
+	height: calc(100% - 80px);
 }
 
 #cartes {
@@ -2162,6 +2200,12 @@ export default {
     transition-property: transform, opacity;
 }
 
+#page.plein-ecran #cartes.apprenant .carte > .recto,
+#page.plein-ecran #cartes.apprenant .carte > .verso,
+#page.plein-ecran #cartes.apprenant .carte {
+	height: 100%;
+}
+
 #cartes.apprenant .carte > .recto {
     transform: rotateY(0deg);
 	background-color: #eee;
@@ -2196,7 +2240,8 @@ export default {
 	width: 100%;
 	height: 100%;
 	text-align: center;
-	overflow: auto;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 #cartes.apprenant .carte .conteneur-media + .conteneur-texte {
@@ -2297,8 +2342,22 @@ export default {
 }
 
 #exercices .navigation {
+	background: #fff;
 	padding-top: 30px;
 	border-top: 1px solid #ddd;
+}
+
+#page.plein-ecran #cartes .navigation,
+#page.plein-ecran #exercices .navigation {
+	position: fixed;
+	height: 80px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 0 20px;
+	width: 100%;
+	max-width: 75em;
+	margin: 0 auto;
 }
 
 #exercices .navigation i,
@@ -2307,12 +2366,20 @@ export default {
 	cursor: pointer;
 }
 
+#cartes .navigation .ecran,
+#exercices .navigation .ecran,
 #exercices .navigation .score,
 #exercices .navigation .reinitialiser {
 	font-size: 24px;
 	margin-left: 15px;
 }
 
+#page.sans-plein-ecran #cartes .navigation .ecran,
+#page.sans-plein-ecran #exercices .navigation .ecran {
+	display: none!important;
+}
+
+#cartes .navigation span,
 #exercices .navigation span {
 	vertical-align: middle;
 }
@@ -2471,6 +2538,17 @@ export default {
 	max-width: 75em;
 	margin: 0 auto;
 	padding: 30px 20px 0;
+}
+
+#page.plein-ecran #cartes,
+#page.plein-ecran #exercices {
+	height: calc(100% - 80px);
+	overflow: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+#page.plein-ecran #exercices .exercice {
+	margin-bottom: 60px;
 }
 
 #exercices .exercice {
@@ -2823,6 +2901,10 @@ export default {
 
 #menu-partager .copier span i:active {
 	opacity: 0.8;
+}
+
+#page.plein-ecran #credits {
+	display: none;
 }
 
 #credits {
@@ -3204,6 +3286,16 @@ export default {
 
 	#credits p {
 		font-size: 0.75em;
+	}
+
+	#page.plein-ecran #cartes,
+	#page.plein-ecran #exercices {
+		height: calc(100% - 50px);
+	}
+
+	#page.plein-ecran #cartes .navigation,
+	#page.plein-ecran #exercices .navigation {
+		height: 50px;
 	}
 }
 
