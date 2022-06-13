@@ -1,6 +1,6 @@
 {
   "name": "digiflashcards",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "homepage": "https://ladigitale.dev/digiflashcards/",
   "repository": {
     "type": "git",
@@ -23,6 +23,7 @@
     "destyle.css": "^2.0.0",
     "file-saver": "^2.0.5",
     "fitty": "^2.3.6",
+    "fscreen": "^1.2.0",
     "imagesloaded": "^5.0.0",
     "jszip": "^3.10.0",
     "papaparse": "^5.3.2",
