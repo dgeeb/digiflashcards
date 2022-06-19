@@ -2322,6 +2322,7 @@ export default {
 	cursor: pointer;
 }
 
+#cartes.apprenant .carte .conteneur-media .conteneur-audio.avec-image .audio,
 #cartes.apprenant .carte .conteneur-media.avec-texte .audio {
 	font-size: 85px;
 }
@@ -3226,6 +3227,7 @@ export default {
 		font-size: 100px;
 	}
 
+	#cartes.apprenant .carte .conteneur-media .conteneur-audio.avec-image .audio,
 	#cartes.apprenant .carte .conteneur-media.avec-texte .audio {
 		font-size: 60px;
 	}
