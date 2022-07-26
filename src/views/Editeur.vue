@@ -128,7 +128,7 @@
 
 					<div class="navigation">
 						<span class="precedent" @click="afficherCartePrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="total"><span>{{ navigationCartes + 1 }} / {{ cartes.length }}</span><span class="ecran" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
+						<span class="total"><span>{{ navigationCartes + 1 }} / {{ cartes.length }}</span><span class="aleatoire" @click="melangerCartes"><i class="material-icons">shuffle</i></span><span class="ecran" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
 						<span class="suivant" @click="afficherCarteSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
@@ -1977,6 +1977,21 @@ export default {
 				this.pleinEcran = false
 			}
 		},
+		melangerCartes () {
+			this.$parent.$parent.chargement = true
+			setTimeout(function () {
+				const cartes = JSON.parse(JSON.stringify(this.cartes))
+				for (let i = cartes.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1))
+					const temp = cartes[i]
+					cartes[i] = cartes[j]
+					cartes[j] = temp
+				}
+				this.cartes = cartes
+				this.$parent.$parent.notification = this.$t('cartesMelangees')
+				this.$parent.$parent.chargement = false
+			}.bind(this), 200)
+		},
 		melangerEntrees (array) {
 			for (let i = array.length - 1; i > 0; i--) {
 				const j = Math.floor(Math.random() * (i + 1))
@@ -2367,6 +2382,7 @@ export default {
 	cursor: pointer;
 }
 
+#cartes .navigation .aleatoire,
 #cartes .navigation .ecran,
 #exercices .navigation .ecran,
 #exercices .navigation .score,

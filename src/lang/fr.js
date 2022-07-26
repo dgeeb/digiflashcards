@@ -92,5 +92,6 @@ export default {
 	erreurFormat: 'Le format de ce fichier n\'est pas valide.',
 	importerCSV: 'Importer .csv',
 	telechargerModele: 'Télécharger le modèle',
-	cartesImportees: 'Cartes importées.'
+	cartesImportees: 'Cartes importées.',
+	cartesMelangees: 'Cartes mélangées.'
 }

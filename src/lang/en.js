@@ -92,5 +92,6 @@ export default {
 	erreurFormat: 'This file format is not valid.',
 	importerCSV: 'Import .csv',
 	telechargerModele: 'Download template',
-	cartesImportees: 'Flashcards imported.'
+	cartesImportees: 'Flashcards imported.',
+	cartesMelangees: 'Flashcards shuffled.'
 }
