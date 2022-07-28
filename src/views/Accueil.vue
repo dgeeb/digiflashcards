@@ -1,12 +1,11 @@
 <template>
 	<div id="page">
-		<div id="accueil" :style="{'background-image': 'url(./static/img/digiflashcards.jpg)'}">
+		<div id="accueil" :style="{'background-image': 'url(./static/img/fond.png)'}">
 			<div id="langues">
 				<span class="bouton" role="button" tabindex="0" :class="{'selectionne': $parent.$parent.langue === 'fr'}" @click="modifierLangue('fr')">FR</span>
 				<span class="bouton" role="button" tabindex="0" :class="{'selectionne': $parent.$parent.langue === 'it'}" @click="modifierLangue('it')">IT</span>
 				<span class="bouton" role="button" tabindex="0" :class="{'selectionne': $parent.$parent.langue === 'en'}" @click="modifierLangue('en')">EN</span>
 			</div>
-			<div id="masque" />
 			<div id="conteneur">
 				<div id="contenu">
 					<h1>
@@ -184,17 +183,6 @@ export default {
     color: #fff;
     border: 1px solid #222;
     cursor: default;
-}
-
-#masque {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	width: 100%;
-	height: 100%;
-	background: rgba(255, 255, 255, 0.7);
 }
 
 #conteneur {
