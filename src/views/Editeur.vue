@@ -1790,27 +1790,31 @@ export default {
 							}
 							for (const item of fichiers) {
 								const donneesFichier = new Promise(function (resolve) {
-									archive.files['fichiers/' + item].async('blob').then(function (blob) {
-										indexFichier++
-										const formData = new FormData()
-										formData.append('index', indexFichier)
-										formData.append('fichier', item)
-										formData.append('serie', this.id)
-										formData.append('blob', blob)
-										const xhr = new XMLHttpRequest()
-										xhr.onload = function () {
-											if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-												resolve('fichier_televerse')
-											} else {
+									if (archive.files['fichiers/' + item]) {
+										archive.files['fichiers/' + item].async('blob').then(function (blob) {
+											indexFichier++
+											const formData = new FormData()
+											formData.append('index', indexFichier)
+											formData.append('fichier', item)
+											formData.append('serie', this.id)
+											formData.append('blob', blob)
+											const xhr = new XMLHttpRequest()
+											xhr.onload = function () {
+												if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+													resolve('fichier_televerse')
+												} else {
+													resolve('erreur_televersement')
+												}
+											}.bind(this)
+											xhr.onerror = function () {
 												resolve('erreur_televersement')
 											}
-										}.bind(this)
-										xhr.onerror = function () {
-											resolve('erreur_televersement')
-										}
-										xhr.open('POST', this.$parent.$parent.hote + 'inc/televerser_fichier_import.php', true)
-										xhr.send(formData)
-									}.bind(this))
+											xhr.open('POST', this.$parent.$parent.hote + 'inc/televerser_fichier_import.php', true)
+											xhr.send(formData)
+										}.bind(this))
+									} else {
+										resolve('erreur_televersement')
+									}
 								}.bind(this))
 								donneesFichiers.push(donneesFichier)
 							}
