@@ -22,6 +22,11 @@ module.exports = defineConfig({
 	chainWebpack: config => {
 		config.plugin('copy').tap(args => {
 			args[0].patterns = [{
+				from: path.resolve(__dirname, 'public/static'),
+				to: path.resolve(__dirname, 'dist/static'),
+				toType: 'dir'
+			},
+			{
 				from: path.resolve(__dirname, 'inc'),
 				to: path.resolve(__dirname, 'dist/inc'),
 				toType: 'dir',
