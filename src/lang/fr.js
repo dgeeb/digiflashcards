@@ -93,5 +93,6 @@ export default {
 	importerCSV: 'Importer .csv',
 	telechargerModele: 'Télécharger le modèle',
 	cartesImportees: 'Cartes importées.',
-	cartesMelangees: 'Cartes mélangées.'
+	cartesMelangees: 'Cartes mélangées.',
+	transcodage: 'Transcodage en mp3, veuillez patienter...'
 }

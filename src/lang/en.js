@@ -93,5 +93,6 @@ export default {
 	importerCSV: 'Import .csv',
 	telechargerModele: 'Download template',
 	cartesImportees: 'Flashcards imported.',
-	cartesMelangees: 'Flashcards shuffled.'
+	cartesMelangees: 'Flashcards shuffled.',
+	transcodage: 'Transcoding in mp3, please wait...'
 }

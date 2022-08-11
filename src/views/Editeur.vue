@@ -392,13 +392,13 @@
 		</div>
 
 		<div class="conteneur-modale" v-else-if="modale === 'ajouter-audio'">
-			<div id="modale-ajouter-audio" class="modale">
+			<div id="modale-ajouter-audio" class="modale" :class="{'transcodage': transcodage}">
 				<header>
 					<span class="titre">{{ titreAjouterAudio }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAjouterAudio"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
-					<div class="contenu">
+					<div class="contenu" v-if="!transcodage">
 						<template v-if="audio === '' && !enregistrement">
 							<span id="enregistrer" class="bouton" role="button" tabindex="0" @click="enregistrerAudio"><i class="material-icons">fiber_manual_record</i><span>{{ $t('enregistrerAudio') }}</span></span>
 							<div class="separateur">
@@ -418,6 +418,12 @@
 								<span class="bouton" role="button" tabindex="0" @click="ajouterAudio(carteIndex, carteType)">{{ $t('valider') }}</span>
 							</div>
 						</template>
+					</div>
+					<div class="contenu" v-else>
+						<div class="conteneur-chargement">
+							<div class="chargement" />
+						</div>
+						<span class="patienter">{{ $t('transcodage') }}</span>
 					</div>
 				</div>
 			</div>
@@ -480,9 +486,11 @@ import fitty from 'fitty'
 import Papa from 'papaparse'
 import fscreen from 'fscreen'
 import { VueDraggableNext } from 'vue-draggable-next'
+// eslint-disable-next-line
+const { createFFmpeg, fetchFile } = FFmpeg
 
 export default {
-	name: 'Editeur',
+	name: 'Editeur-Digiflashcards',
 	components: {
 		draggable: VueDraggableNext
 	},
@@ -522,6 +530,8 @@ export default {
 			image: '',
 			audio: '',
 			blob: '',
+			ffmpeg: null,
+			transcodage: false,
 			audioEnregistre: '',
 			lecture: false,
 			lectureQuiz: '',
@@ -692,7 +702,7 @@ export default {
 
 		window.addEventListener('keydown', this.gererClavier, false)
 	},
-	beforeDestroy () {
+	beforeUnmount () {
 		window.removeEventListener('keydown', this.gererClavier, false)
 	},
 	methods: {
@@ -988,7 +998,7 @@ export default {
 			xhr.send(JSON.stringify(json))
 			this.supprimerDonneesExercices()
 		},
-		ajouterAudio (index, type) {
+		async ajouterAudio (index, type) {
 			let fichier = ''
 			if (this.blob.name) {
 				const extension = this.blob.name.substring(this.blob.name.lastIndexOf('.') + 1).toLowerCase()
@@ -1002,7 +1012,21 @@ export default {
 				fichier = 'enregistrement.wav'
 			}
 			if (this.blob.size < 1024000 || fichier === 'enregistrement.wav') {
-				const blob = this.blob
+				let blob
+				if (fichier === 'enregistrement.wav') {
+					this.transcodage = true
+					this.ffmpeg = createFFmpeg({ log: false })
+					if (!this.ffmpeg.isLoaded()) {
+						await this.ffmpeg.load()
+					}
+					fichier = 'enregistrement_transcode.mp3'
+					this.ffmpeg.FS('writeFile', 'enregistrement.wav', await fetchFile(this.blob))
+					await this.ffmpeg.run('-i', 'enregistrement.wav',  '-b:a', '96k', '-ar', '44100', '-ac', '1', fichier)
+					const donnees = this.ffmpeg.FS('readFile', fichier)
+					blob = new Blob([donnees.buffer], { type: 'audio/mpeg' })
+				} else {
+					blob = this.blob
+				}
 				this.fermerModaleAjouterAudio()
 				this.chargement = 'audio_' + type + '_' + index
 				const formData = new FormData()
@@ -1162,6 +1186,15 @@ export default {
 				clearInterval(this.intervalle)
 				this.intervalle = ''
 			}
+			this.transcodage = false
+			if (this.ffmpeg !== null) {
+				try {
+					this.ffmpeg.exit()
+				} catch (e) {
+					console.log(e)
+				}
+			}
+			this.ffmpeg = null
 		},
 		supprimerAudio (index, type) {
 			this.fermerModaleAudio()
@@ -3101,7 +3134,7 @@ export default {
 	text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 }
 
-.modale div.conteneur-chargement {
+.modale:not(.transcodage) div.conteneur-chargement {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -3120,7 +3153,7 @@ export default {
 	line-height: 1;
 }
 
-.modale div.conteneur-chargement .chargement {
+.modale:not(.transcodage) div.conteneur-chargement .chargement {
 	display: inline-block;
 	border: 7px solid #ddd;
 	border-top: 7px solid #00ced1;

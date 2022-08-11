@@ -54,7 +54,7 @@
 
 <script>
 export default {
-	name: 'Accueil',
+	name: 'Accueil-Digiflashcards',
 	data () {
 		return {
 			modale: '',
