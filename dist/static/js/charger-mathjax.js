@@ -1,0 +1,1 @@
+window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["$$","$$"],["\\[","\\]"]]}},function(){var t=document.createElement("script");t.src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js",t.async=!0,t.crossOrigin=!0,document.head.appendChild(t)}();
