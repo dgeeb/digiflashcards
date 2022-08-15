@@ -601,7 +601,9 @@ export default {
 							maxSize: 100,
 							multiLine: true
 						})
+						window.MathJax.typeset()
 					}.bind(this))
+
 					if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
 						this.exercicesQuiz = JSON.parse(localStorage.getItem('digiflashcards_quiz_' + this.id))
 					} else if (this.cartes.length > 4) {
