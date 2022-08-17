@@ -392,13 +392,13 @@
 		</div>
 
 		<div class="conteneur-modale" v-else-if="modale === 'ajouter-audio'">
-			<div id="modale-ajouter-audio" class="modale" :class="{'transcodage': transcodage}">
+			<div id="modale-ajouter-audio" class="modale">
 				<header>
 					<span class="titre">{{ titreAjouterAudio }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAjouterAudio"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
-					<div class="contenu" v-if="!transcodage">
+					<div class="contenu">
 						<template v-if="audio === '' && !enregistrement">
 							<span id="enregistrer" class="bouton" role="button" tabindex="0" @click="enregistrerAudio"><i class="material-icons">fiber_manual_record</i><span>{{ $t('enregistrerAudio') }}</span></span>
 							<div class="separateur">
@@ -418,12 +418,6 @@
 								<span class="bouton" role="button" tabindex="0" @click="ajouterAudio(carteIndex, carteType)">{{ $t('valider') }}</span>
 							</div>
 						</template>
-					</div>
-					<div class="contenu" v-else>
-						<div class="conteneur-chargement">
-							<div class="chargement" />
-						</div>
-						<span class="patienter">{{ $t('transcodage') }}</span>
 					</div>
 				</div>
 			</div>
@@ -486,8 +480,6 @@ import fitty from 'fitty'
 import Papa from 'papaparse'
 import fscreen from 'fscreen'
 import { VueDraggableNext } from 'vue-draggable-next'
-// eslint-disable-next-line
-const { createFFmpeg, fetchFile } = FFmpeg
 
 export default {
 	name: 'Editeur-Digiflashcards',
@@ -530,13 +522,10 @@ export default {
 			image: '',
 			audio: '',
 			blob: '',
-			ffmpeg: null,
-			transcodage: false,
-			audioEnregistre: '',
+			mediaRecorder: '',
+			flux: [],
 			lecture: false,
 			lectureQuiz: '',
-			contexte: '',
-			captureAudio: '',
 			intervalle: '',
 			enregistrement: false,
 			dureeEnregistrement: '00 : 00',
@@ -640,9 +629,6 @@ export default {
 		document.getElementsByTagName('html')[0].setAttribute('lang', this.$parent.$parent.langue)
 
 		this.definirTailleFonte()
-
-		const AudioContext = window.AudioContext || window.webkitAudioContext
-		this.contexte = new AudioContext()
 
 		const lien = this.definirRacine() + '#/f/' + this.id
 		const clipboard = new ClipboardJS('#copier-lien .lien', {
@@ -1011,24 +997,10 @@ export default {
 				}
 				fichier = this.blob.name
 			} else {
-				fichier = 'enregistrement.wav'
+				fichier = 'enregistrement.ogg'
 			}
-			if (this.blob.size < 1024000 || fichier === 'enregistrement.wav') {
-				let blob
-				if (fichier === 'enregistrement.wav') {
-					this.transcodage = true
-					this.ffmpeg = createFFmpeg({ log: false })
-					if (!this.ffmpeg.isLoaded()) {
-						await this.ffmpeg.load()
-					}
-					fichier = 'enregistrement_transcode.mp3'
-					this.ffmpeg.FS('writeFile', 'enregistrement.wav', await fetchFile(this.blob))
-					await this.ffmpeg.run('-i', 'enregistrement.wav',  '-b:a', '96k', '-ar', '44100', '-ac', '1', fichier)
-					const donnees = this.ffmpeg.FS('readFile', fichier)
-					blob = new Blob([donnees.buffer], { type: 'audio/mpeg' })
-				} else {
-					blob = this.blob
-				}
+			if (this.blob.size < 1024000 || fichier === 'enregistrement.ogg') {
+				const blob = this.blob
 				this.fermerModaleAjouterAudio()
 				this.chargement = 'audio_' + type + '_' + index
 				const formData = new FormData()
@@ -1074,68 +1046,72 @@ export default {
 			this.audio = URL.createObjectURL(event.target.files[0])
 		},
 		enregistrerAudio () {
-			navigator.mediaDevices.enumerateDevices().then(function (devices) {
-				let entreeAudio = false
-				for (const device of devices) {
-					if (device.kind === 'audioinput') {
-						entreeAudio = true
-						break
+			if (!navigator.mediaDevices || !navigator.mediaDevices?.enumerateDevices) {
+				this.$parent.$parent.message = this.$t('enregistrementNonSupporte')
+			} else {
+				navigator.mediaDevices.enumerateDevices().then(function (devices) {
+					let entreeAudio = false
+					for (const device of devices) {
+						if (device.kind === 'audioinput') {
+							entreeAudio = true
+							break
+						}
 					}
-				}
-				if (entreeAudio === true) {
-					navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function (flux) {
-						this.titreAjouterAudio = this.$t('enregistrementAudio')
-						this.captureAudio = flux
-						this.enregistrement = true
-						// eslint-disable-next-line
-						this.audioEnregistre = new Recorder(this.contexte.createMediaStreamSource(flux), { numChannels: 1 })
-						this.audioEnregistre.record()
-						const temps = Date.now()
-						this.intervalle = setInterval(function () {
-							const delta = Date.now() - temps
-							let secondes = Math.floor((delta / 1000) % 60)
-							let minutes = Math.floor((delta / 1000 / 60) << 0)
-							if (secondes < 10) {
-								secondes = '0' + secondes
-							}
-							if (minutes < 10) {
-								minutes = '0' + minutes
-							}
-							this.dureeEnregistrement = minutes + ' : ' + secondes
-							if (this.dureeEnregistrement === '00 : 10') {
-								this.arreterEnregistrementAudio()
-							}
-						}.bind(this), 100)
-					}.bind(this)).catch(function () {
-						this.enregistrement = false
-						this.audioEnregistre = ''
-						this.captureAudio = ''
-						this.$parent.$parent.message = this.$t('erreurMicro')
-					}.bind(this))
-				} else {
-					this.captureAudio = ''
-					this.$parent.$parent.message = this.$t('aucuneEntreeAudio')
-				}
-			}.bind(this))
-		},
-		arreterEnregistrementAudio () {
-			if (this.audioEnregistre !== '') {
-				this.audioEnregistre.stop()
-				this.captureAudio.getAudioTracks()[0].stop()
-				this.audioEnregistre.exportWAV(function (blob) {
-					this.blob = blob
-					this.enregistrement = false
-					this.audio = URL.createObjectURL(blob)
-					this.captureAudio = ''
-					this.audioEnregistre = ''
-					this.titreAjouterAudio = this.$t('ajouterAudio')
-					this.dureeEnregistrement = '00 : 00'
-					if (this.intervalle !== '') {
-						clearInterval(this.intervalle)
-						this.intervalle = ''
+					if (entreeAudio === true) {
+						navigator.mediaDevices.getUserMedia({ audio: true }).then(function (flux) {
+							this.titreAjouterAudio = this.$t('enregistrementAudio')
+							this.mediaRecorder = new MediaRecorder(flux)
+							this.mediaRecorder.start()
+							this.enregistrement = true
+							const temps = Date.now()
+							this.intervalle = setInterval(function () {
+								const delta = Date.now() - temps
+								let secondes = Math.floor((delta / 1000) % 60)
+								let minutes = Math.floor((delta / 1000 / 60) << 0)
+								if (secondes < 10) {
+									secondes = '0' + secondes
+								}
+								if (minutes < 10) {
+									minutes = '0' + minutes
+								}
+								this.dureeEnregistrement = minutes + ' : ' + secondes
+								if (this.dureeEnregistrement === '00 : 10') {
+									this.arreterEnregistrementAudio()
+								}
+							}.bind(this), 100)
+							this.mediaRecorder.onstop = function () {
+								if (this.flux.length > 0) {
+									this.blob = new Blob(this.flux, { 'type': 'audio/ogg; codecs=opus' })
+									this.enregistrement = false
+									this.audio = URL.createObjectURL(this.blob)
+									this.mediaRecorder = ''
+									this.flux = []
+									this.titreAjouterAudio = this.$t('ajouterAudio')
+									this.dureeEnregistrement = '00 : 00'
+									if (this.intervalle !== '') {
+										clearInterval(this.intervalle)
+										this.intervalle = ''
+									}
+								}
+							}.bind(this)
+
+							this.mediaRecorder.ondataavailable = function (e) {
+								this.flux.push(e.data)
+							}.bind(this)
+						}.bind(this)).catch(function () {
+							this.enregistrement = false
+							this.mediaRecorder = ''
+							this.flux = []
+							this.$parent.$parent.message = this.$t('erreurMicro')
+						}.bind(this))
+					} else {
+						this.$parent.$parent.message = this.$t('aucuneEntreeAudio')
 					}
 				}.bind(this))
 			}
+		},
+		arreterEnregistrementAudio () {
+			this.mediaRecorder.stop()
 		},
 		lireAudio (event, audio) {
 			event.preventDefault()
@@ -1178,8 +1154,8 @@ export default {
 			this.audio = ''
 			this.blob = ''
 			this.enregistrement = false
-			this.captureAudio = ''
-			this.audioEnregistre = ''
+			this.mediaRecorder = ''
+			this.flux = []
 			this.titreAjouterAudio = this.$t('ajouterAudio')
 			this.dureeEnregistrement = '00 : 00'
 			this.carteIndex = ''
@@ -1188,15 +1164,6 @@ export default {
 				clearInterval(this.intervalle)
 				this.intervalle = ''
 			}
-			this.transcodage = false
-			if (this.ffmpeg !== null) {
-				try {
-					this.ffmpeg.exit()
-				} catch (e) {
-					console.log(e)
-				}
-			}
-			this.ffmpeg = null
 		},
 		supprimerAudio (index, type) {
 			this.fermerModaleAudio()
@@ -2880,6 +2847,7 @@ export default {
 #actions > a i {
 	font-size: 24px;
 	margin-right: 0.5em;
+	font-weight: 400;
 }
 
 #menu-partager {
@@ -3136,7 +3104,7 @@ export default {
 	text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 }
 
-.modale:not(.transcodage) div.conteneur-chargement {
+.modale div.conteneur-chargement {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -3155,7 +3123,7 @@ export default {
 	line-height: 1;
 }
 
-.modale:not(.transcodage) div.conteneur-chargement .chargement {
+.modale div.conteneur-chargement .chargement {
 	display: inline-block;
 	border: 7px solid #ddd;
 	border-top: 7px solid #00ced1;
@@ -3240,6 +3208,16 @@ export default {
 
 	#exercices .question .audio.avec-texte + .texte {
 		max-width: calc(100% - 80px)!important;
+	}
+}
+
+@media screen and (min-width: 400px) and (max-width: 499px) {
+	#actions > a i {
+		display: none;
+	}
+
+	#actions #importer-csv i {
+		display: none;
 	}
 }
 

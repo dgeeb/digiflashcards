@@ -94,5 +94,5 @@ export default {
 	telechargerModele: 'Télécharger le modèle',
 	cartesImportees: 'Cartes importées.',
 	cartesMelangees: 'Cartes mélangées.',
-	transcodage: 'Transcodage en mp3, veuillez patienter...'
+	enregistrementNonSupporte: 'Ce navigateur n\'est pas pris en charge.'
 }
