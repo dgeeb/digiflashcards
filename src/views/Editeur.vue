@@ -408,8 +408,11 @@
 							<input :id="'televerser_audio_' + carteIndex" type="file" @change="selectionnerAudio" style="display: none" accept=".mp3">
 						</template>
 						<div id="enregistrement" v-else-if="audio === '' && enregistrement">
-							<span class="bouton stopper" role="button" tabindex="0" @click="arreterEnregistrementAudio"><i class="material-icons">stop</i></span>
-							<span class="duree">{{ dureeEnregistrement }}</span>
+							<canvas id="visualisation" width="360" height="60" />
+							<div class="enregistrement">
+								<span class="bouton stopper" role="button" tabindex="0" @click="arreterEnregistrementAudio"><i class="material-icons">stop</i></span>
+								<span class="duree">{{ dureeEnregistrement }}</span>
+							</div>
 						</div>
 						<template v-else>
 							<audio controls><source :src="audio"></audio>
@@ -525,6 +528,7 @@ export default {
 			mediaRecorder: '',
 			flux: [],
 			type: '',
+			contexte: '',
 			lecture: false,
 			lectureQuiz: '',
 			intervalle: '',
@@ -687,6 +691,13 @@ export default {
 				this.menu = ''
 			}
 			this.definirTailleFonte()
+			if (this.enregistrement === true) {
+				this.$nextTick(function () {
+					const largeur = document.querySelector('#enregistrement').offsetWidth
+					const canvas = document.querySelector('#visualisation')
+					canvas.width = largeur
+				})
+			}
 		}.bind(this))
 
 		window.addEventListener('keydown', this.gererClavier, false)
@@ -1072,6 +1083,7 @@ export default {
 								this.titreAjouterAudio = this.$t('enregistrementAudio')
 								this.mediaRecorder = new MediaRecorder(flux)
 								this.mediaRecorder.start()
+								this.visualiser(flux)
 								this.enregistrement = true
 								const temps = Date.now()
 								this.intervalle = setInterval(function () {
@@ -1096,6 +1108,8 @@ export default {
 										this.audio = URL.createObjectURL(this.blob)
 										this.mediaRecorder = ''
 										this.flux = []
+										this.type = ''
+										this.contexte = ''
 										this.titreAjouterAudio = this.$t('ajouterAudio')
 										this.dureeEnregistrement = '00 : 00'
 										if (this.intervalle !== '') {
@@ -1112,6 +1126,7 @@ export default {
 								this.mediaRecorder = ''
 								this.flux = []
 								this.type = ''
+								this.contexte = ''
 								this.$parent.$parent.message = this.$t('erreurMicro')
 							}.bind(this))
 						}
@@ -1123,6 +1138,54 @@ export default {
 		},
 		arreterEnregistrementAudio () {
 			this.mediaRecorder.stop()
+		},
+		visualiser (flux) {
+			if (!this.contexte) {
+				this.contexte = new AudioContext()
+			}
+			const source = this.contexte.createMediaStreamSource(flux)
+			const analyser = this.contexte.createAnalyser()
+			analyser.fftSize = 2048
+			const bufferLength = analyser.frequencyBinCount
+			const dataArray = new Uint8Array(bufferLength)
+			source.connect(analyser)
+
+			this.$nextTick(function () {
+				draw()
+			})
+
+			function draw () {
+				if (document.querySelector('#visualisation')) {
+					const canvas = document.querySelector('#visualisation')
+					const canvasCtx = canvas.getContext('2d')
+					const largeur = canvas.width
+					const hauteur = canvas.height
+					requestAnimationFrame(draw)
+					analyser.getByteTimeDomainData(dataArray)
+
+					canvasCtx.fillStyle = '#eeeeee'
+					canvasCtx.fillRect(0, 0, largeur, hauteur)
+					canvasCtx.lineWidth = 2
+					canvasCtx.strokeStyle = '#000000'
+					canvasCtx.beginPath()
+
+					let sliceWidth = largeur * 1.0 / bufferLength
+					let x = 0
+
+					for (let i = 0; i < bufferLength; i++) {
+						let v = dataArray[i] / 128.0
+						let y = v * hauteur / 2
+						if (i === 0) {
+							canvasCtx.moveTo(x, y)
+						} else {
+							canvasCtx.lineTo(x, y)
+						}
+						x += sliceWidth
+					}
+					canvasCtx.lineTo(canvas.width, canvas.height / 2)
+					canvasCtx.stroke()
+				}
+			}
 		},
 		lireAudio (event, audio) {
 			event.preventDefault()
@@ -1168,6 +1231,7 @@ export default {
 			this.mediaRecorder = ''
 			this.flux = []
 			this.type = ''
+			this.contexte = ''
 			this.titreAjouterAudio = this.$t('ajouterAudio')
 			this.dureeEnregistrement = '00 : 00'
 			this.carteIndex = ''
@@ -3052,19 +3116,19 @@ export default {
 	color: #ff1f1f;
 }
 
-#enregistrement {
+#enregistrement .enregistrement {
 	display: flex;
 	justify-content: center;
 	align-items: center;
 }
 
-#enregistrement .duree {
+#enregistrement .enregistrement .duree {
 	font-size: 30px;
 	font-weight: 500;
 	margin-left: 25px;
 }
 
-#enregistrement .bouton {
+#enregistrement .enregistrement .bouton {
 	background-color: #fff;
 	border-color: #001d1d;
 	border-width: 1px;
@@ -3074,15 +3138,19 @@ export default {
 	padding: 10px;
 }
 
-#enregistrement .bouton i {
+#enregistrement .enregistrement .bouton i {
 	font-size: 48px;
 	line-height: 1;
 	margin: 0;
 }
 
-#enregistrement .bouton.stopper {
+#enregistrement .enregistrement .bouton.stopper {
 	color: #001d1d;
     animation: couleur ease-in 2s infinite;
+}
+
+#visualisation {
+	margin-bottom: 20px;
 }
 
 @keyframes couleur {
