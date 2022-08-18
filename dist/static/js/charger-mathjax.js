@@ -1,1 +1,1 @@
-window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["$$","$$"],["\\[","\\]"]]}},function(){var n=document.createElement("script");n.src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js",n.async=!0,n.crossorigin="anonymous",document.head.appendChild(n)}();
+window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["$$","$$"],["\\[","\\]"]]}},function(){var t=document.createElement("script");t.src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js",t.async=!0,document.head.appendChild(t)}();
