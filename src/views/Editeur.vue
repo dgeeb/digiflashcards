@@ -524,6 +524,7 @@ export default {
 			blob: '',
 			mediaRecorder: '',
 			flux: [],
+			type: '',
 			lecture: false,
 			lectureQuiz: '',
 			intervalle: '',
@@ -996,10 +997,12 @@ export default {
 					return false
 				}
 				fichier = this.blob.name
-			} else {
-				fichier = 'enregistrement.ogg'
+			} else if (this.type === 'audio/ogg') {
+				fichier = 'enregistrement.oga'
+			} else if (this.type === 'audio/wav') {
+				fichier = 'enregistrement.wav'
 			}
-			if (this.blob.size < 1024000 || fichier === 'enregistrement.ogg') {
+			if (this.blob.size < 1024000 || fichier === 'enregistrement.oga' || fichier === 'enregistrement.wav') {
 				const blob = this.blob
 				this.fermerModaleAjouterAudio()
 				this.chargement = 'audio_' + type + '_' + index
@@ -1058,52 +1061,60 @@ export default {
 						}
 					}
 					if (entreeAudio === true) {
-						navigator.mediaDevices.getUserMedia({ audio: true }).then(function (flux) {
-							this.titreAjouterAudio = this.$t('enregistrementAudio')
-							this.mediaRecorder = new MediaRecorder(flux)
-							this.mediaRecorder.start()
-							this.enregistrement = true
-							const temps = Date.now()
-							this.intervalle = setInterval(function () {
-								const delta = Date.now() - temps
-								let secondes = Math.floor((delta / 1000) % 60)
-								let minutes = Math.floor((delta / 1000 / 60) << 0)
-								if (secondes < 10) {
-									secondes = '0' + secondes
-								}
-								if (minutes < 10) {
-									minutes = '0' + minutes
-								}
-								this.dureeEnregistrement = minutes + ' : ' + secondes
-								if (this.dureeEnregistrement === '00 : 10') {
-									this.arreterEnregistrementAudio()
-								}
-							}.bind(this), 100)
-							this.mediaRecorder.onstop = function () {
-								if (this.flux.length > 0) {
-									this.blob = new Blob(this.flux, { 'type': 'audio/ogg; codecs=opus' })
-									this.enregistrement = false
-									this.audio = URL.createObjectURL(this.blob)
-									this.mediaRecorder = ''
-									this.flux = []
-									this.titreAjouterAudio = this.$t('ajouterAudio')
-									this.dureeEnregistrement = '00 : 00'
-									if (this.intervalle !== '') {
-										clearInterval(this.intervalle)
-										this.intervalle = ''
+						if (!navigator.mediaDevices?.getUserMedia) {
+							this.$parent.$parent.message = this.$t('enregistrementNonSupporte')
+						} else {
+							this.type = 'audio/ogg'
+							if (MediaRecorder.isTypeSupported('audio/ogg') === false) {
+								this.type = 'audio/wav'
+							}
+							navigator.mediaDevices.getUserMedia({ audio: true }).then(function (flux) {
+								this.titreAjouterAudio = this.$t('enregistrementAudio')
+								this.mediaRecorder = new MediaRecorder(flux)
+								this.mediaRecorder.start()
+								this.enregistrement = true
+								const temps = Date.now()
+								this.intervalle = setInterval(function () {
+									const delta = Date.now() - temps
+									let secondes = Math.floor((delta / 1000) % 60)
+									let minutes = Math.floor((delta / 1000 / 60) << 0)
+									if (secondes < 10) {
+										secondes = '0' + secondes
 									}
-								}
-							}.bind(this)
-
-							this.mediaRecorder.ondataavailable = function (e) {
-								this.flux.push(e.data)
-							}.bind(this)
-						}.bind(this)).catch(function () {
-							this.enregistrement = false
-							this.mediaRecorder = ''
-							this.flux = []
-							this.$parent.$parent.message = this.$t('erreurMicro')
-						}.bind(this))
+									if (minutes < 10) {
+										minutes = '0' + minutes
+									}
+									this.dureeEnregistrement = minutes + ' : ' + secondes
+									if (this.dureeEnregistrement === '00 : 10') {
+										this.arreterEnregistrementAudio()
+									}
+								}.bind(this), 100)
+								this.mediaRecorder.onstop = function () {
+									if (this.flux.length > 0) {
+										this.blob = new Blob(this.flux, { 'type': this.type })
+										this.enregistrement = false
+										this.audio = URL.createObjectURL(this.blob)
+										this.mediaRecorder = ''
+										this.flux = []
+										this.titreAjouterAudio = this.$t('ajouterAudio')
+										this.dureeEnregistrement = '00 : 00'
+										if (this.intervalle !== '') {
+											clearInterval(this.intervalle)
+											this.intervalle = ''
+										}
+									}
+								}.bind(this)
+								this.mediaRecorder.ondataavailable = function (e) {
+									this.flux.push(e.data)
+								}.bind(this)
+							}.bind(this)).catch(function () {
+								this.enregistrement = false
+								this.mediaRecorder = ''
+								this.flux = []
+								this.type = ''
+								this.$parent.$parent.message = this.$t('erreurMicro')
+							}.bind(this))
+						}
 					} else {
 						this.$parent.$parent.message = this.$t('aucuneEntreeAudio')
 					}
@@ -1156,6 +1167,7 @@ export default {
 			this.enregistrement = false
 			this.mediaRecorder = ''
 			this.flux = []
+			this.type = ''
 			this.titreAjouterAudio = this.$t('ajouterAudio')
 			this.dureeEnregistrement = '00 : 00'
 			this.carteIndex = ''
