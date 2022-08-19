@@ -1158,8 +1158,9 @@ export default {
 				if (document.querySelector('#visualisation')) {
 					const canvas = document.querySelector('#visualisation')
 					const canvasCtx = canvas.getContext('2d')
-					const largeur = canvas.width
+					const largeur = document.querySelector('#enregistrement').offsetWidth
 					const hauteur = canvas.height
+					canvas.width = largeur
 					requestAnimationFrame(draw)
 					analyser.getByteTimeDomainData(dataArray)
 
