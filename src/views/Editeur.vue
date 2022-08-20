@@ -527,7 +527,6 @@ export default {
 			blob: '',
 			mediaRecorder: '',
 			flux: [],
-			type: '',
 			contexte: '',
 			lecture: false,
 			lectureQuiz: '',
@@ -1008,12 +1007,10 @@ export default {
 					return false
 				}
 				fichier = this.blob.name
-			} else if (this.type === 'audio/ogg') {
-				fichier = 'enregistrement.oga'
-			} else if (this.type === 'audio/wav') {
+			} else {
 				fichier = 'enregistrement.wav'
 			}
-			if (this.blob.size < 1024000 || fichier === 'enregistrement.oga' || fichier === 'enregistrement.wav') {
+			if (this.blob.size < 1024000 || fichier === 'enregistrement.wav') {
 				const blob = this.blob
 				this.fermerModaleAjouterAudio()
 				this.chargement = 'audio_' + type + '_' + index
@@ -1075,10 +1072,6 @@ export default {
 						if (!navigator.mediaDevices?.getUserMedia) {
 							this.$parent.$parent.message = this.$t('enregistrementNonSupporte')
 						} else {
-							this.type = 'audio/ogg'
-							if (MediaRecorder.isTypeSupported('audio/ogg') === false) {
-								this.type = 'audio/wav'
-							}
 							navigator.mediaDevices.getUserMedia({ audio: true }).then(function (flux) {
 								this.titreAjouterAudio = this.$t('enregistrementAudio')
 								this.mediaRecorder = new MediaRecorder(flux)
@@ -1103,12 +1096,11 @@ export default {
 								}.bind(this), 100)
 								this.mediaRecorder.onstop = function () {
 									if (this.flux.length > 0) {
-										this.blob = new Blob(this.flux, { 'type': this.type })
+										this.blob = new Blob(this.flux, { 'type': 'audio/wav' })
 										this.enregistrement = false
 										this.audio = URL.createObjectURL(this.blob)
 										this.mediaRecorder = ''
 										this.flux = []
-										this.type = ''
 										this.contexte = ''
 										this.titreAjouterAudio = this.$t('ajouterAudio')
 										this.dureeEnregistrement = '00 : 00'
@@ -1125,7 +1117,6 @@ export default {
 								this.enregistrement = false
 								this.mediaRecorder = ''
 								this.flux = []
-								this.type = ''
 								this.contexte = ''
 								this.$parent.$parent.message = this.$t('erreurMicro')
 							}.bind(this))
@@ -1231,7 +1222,6 @@ export default {
 			this.enregistrement = false
 			this.mediaRecorder = ''
 			this.flux = []
-			this.type = ''
 			this.contexte = ''
 			this.titreAjouterAudio = this.$t('ajouterAudio')
 			this.dureeEnregistrement = '00 : 00'
