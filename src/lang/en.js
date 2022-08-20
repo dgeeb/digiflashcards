@@ -94,5 +94,6 @@ export default {
 	telechargerModele: 'Download template',
 	cartesImportees: 'Flashcards imported.',
 	cartesMelangees: 'Flashcards shuffled.',
+	transcodage: 'Transcoding in mp3, please wait...',
 	enregistrementNonSupporte: 'This browser is not supported.'
 }

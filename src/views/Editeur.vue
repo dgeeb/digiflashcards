@@ -239,6 +239,7 @@
 						</div>
 						<label>{{ $t('questionSecrete') }}</label>
 						<select :value="question" @change="question = $event.target.value">
+							<option value="" selected>-</option>
 							<option v-for="(item, index) in questions" :value="item" :key="'option_' + index">{{ $t(item) }}</option>
 						</select>
 						<label>{{ $t('reponseSecrete') }}</label>
@@ -303,6 +304,7 @@
 					<div class="contenu">
 						<label>{{ $t('questionSecreteActuelle') }}</label>
 						<select :value="question" @change="question = $event.target.value">
+							<option value="" selected>-</option>
 							<option v-for="(item, index) in questions" :value="item" :key="'option_' + index">{{ $t(item) }}</option>
 						</select>
 						<label>{{ $t('reponseSecreteActuelle') }}</label>
@@ -392,13 +394,13 @@
 		</div>
 
 		<div class="conteneur-modale" v-else-if="modale === 'ajouter-audio'">
-			<div id="modale-ajouter-audio" class="modale">
-				<header>
+			<div id="modale-ajouter-audio" class="modale" :class="{'transcodage': transcodage}">
+				<header v-if="!transcodage">
 					<span class="titre">{{ titreAjouterAudio }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAjouterAudio"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
-					<div class="contenu">
+					<div class="contenu" v-if="!transcodage">
 						<template v-if="audio === '' && !enregistrement">
 							<span id="enregistrer" class="bouton" role="button" tabindex="0" @click="enregistrerAudio"><i class="material-icons">fiber_manual_record</i><span>{{ $t('enregistrerAudio') }}</span></span>
 							<div class="separateur">
@@ -421,6 +423,12 @@
 								<span class="bouton" role="button" tabindex="0" @click="ajouterAudio(carteIndex, carteType)">{{ $t('valider') }}</span>
 							</div>
 						</template>
+					</div>
+					<div class="contenu" v-else>
+						<div class="conteneur-chargement">
+							<div class="chargement" />
+						</div>
+						<span class="patienter">{{ $t('transcodage') }}</span>
 					</div>
 				</div>
 			</div>
@@ -482,6 +490,7 @@ import imagesLoaded from 'imagesloaded'
 import fitty from 'fitty'
 import Papa from 'papaparse'
 import fscreen from 'fscreen'
+import lamejs from 'lamejstmp'
 import { VueDraggableNext } from 'vue-draggable-next'
 
 export default {
@@ -525,6 +534,7 @@ export default {
 			image: '',
 			audio: '',
 			blob: '',
+			transcodage: false,
 			mediaRecorder: '',
 			flux: [],
 			contexte: '',
@@ -582,20 +592,23 @@ export default {
 				if (reponse.donnees !== '' && this.verifierJSON(reponse.donnees) === true) {
 					const donnees = JSON.parse(reponse.donnees)
 					this.cartes = donnees.cartes
+					this.verifierCartes()
 				}
 				if (this.vue === 'apprenant') {
 					this.cartes = this.cartes.filter(function (carte) {
 						return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '')
 					}.bind(this))
-					const tailleFonte = this.tailleFonte
-					this.$nextTick(function () {
-						this.fitty = fitty('#carte_0 .texte', {
-							minSize: tailleFonte,
-							maxSize: 100,
-							multiLine: true
-						})
-						window.MathJax.typeset()
-					}.bind(this))
+					if (this.cartes.length > 0) {
+						const tailleFonte = this.tailleFonte
+						this.$nextTick(function () {
+							this.fitty = fitty('#carte_0 .texte', {
+								minSize: tailleFonte,
+								maxSize: 100,
+								multiLine: true
+							})
+							window.MathJax.typeset()
+						}.bind(this))
+					}
 
 					if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
 						this.exercicesQuiz = JSON.parse(localStorage.getItem('digiflashcards_quiz_' + this.id))
@@ -1008,10 +1021,16 @@ export default {
 				}
 				fichier = this.blob.name
 			} else {
-				fichier = 'enregistrement.wav'
+				fichier = 'enregistrement.mp3'
 			}
-			if (this.blob.size < 1024000 || fichier === 'enregistrement.wav') {
-				const blob = this.blob
+			if (this.blob.size < 1024000 || fichier === 'enregistrement.mp3') {
+				let blob
+				if (fichier === 'enregistrement.mp3') {
+					this.transcodage = true
+					blob = await this.blobEnMp3()
+				} else {
+					blob = this.blob
+				}
 				this.fermerModaleAjouterAudio()
 				this.chargement = 'audio_' + type + '_' + index
 				const formData = new FormData()
@@ -1051,6 +1070,19 @@ export default {
 			} else {
 				this.$parent.$parent.message = this.$t('tailleMax', { taille: 1 })
 			}
+		},
+		blobEnMp3 () {
+			return new Promise(function (resolve) {
+				const audioContext = new AudioContext()
+				const fileReader = new FileReader()
+				fileReader.onloadend = function () {
+					const arrayBuffer = fileReader.result
+					audioContext.decodeAudioData(arrayBuffer, function (audioBuffer) {
+						resolve(this.transcoder(audioBuffer))
+					}.bind(this))
+				}.bind(this)
+				fileReader.readAsArrayBuffer(this.blob)
+			}.bind(this))
 		},
 		selectionnerAudio (event) {
 			this.blob = event.target.files[0]
@@ -1231,6 +1263,7 @@ export default {
 				clearInterval(this.intervalle)
 				this.intervalle = ''
 			}
+			this.transcodage = false
 		},
 		supprimerAudio (index, type) {
 			this.fermerModaleAudio()
@@ -1737,6 +1770,7 @@ export default {
 								fscreen.exitFullscreen()
 								this.pleinEcran = false
 							}
+							this.verifierCartes()
 						}
 					} else {
 						this.$parent.$parent.chargement = false
@@ -1916,6 +1950,15 @@ export default {
 				}.bind(this))
 			}
 		},
+		verifierCartes () {
+			if (this.cartes.length === 0) {
+				this.cartes = [{ recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }]
+			} else if (this.cartes.length === 1) {
+				this.cartes.push({ recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } })
+			} else if (this.cartes.length === 2) {
+				this.cartes.push({ recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } })
+			}
+		},
 		terminerSession () {
 			this.$parent.$parent.chargement = true
 			const xhr = new XMLHttpRequest()
@@ -1926,6 +1969,17 @@ export default {
 						this.fermerModaleSerie()
 						this.admin = false
 						this.vue = 'apprenant'
+						if (this.cartes.length > 0) {
+							const tailleFonte = this.tailleFonte
+							this.$nextTick(function () {
+								this.fitty = fitty('#carte_0 .texte', {
+									minSize: tailleFonte,
+									maxSize: 100,
+									multiLine: true
+								})
+								window.MathJax.typeset()
+							}.bind(this))
+						}
 						this.$parent.$parent.notification = this.$t('sessionTerminee')
 					}
 				} else {
@@ -2090,6 +2144,88 @@ export default {
 				return false
 			}
 			return url.protocol === 'http:' || url.protocol === 'https:'
+		},
+		transcoder (aBuffer) {
+			let numOfChan = aBuffer.numberOfChannels, btwLength = aBuffer.length * numOfChan * 2 + 44, btwArrBuff = new ArrayBuffer(btwLength), btwView = new DataView(btwArrBuff), btwChnls = [], btwIndex, btwSample, btwOffset = 0, btwPos = 0
+			setUint32(0x46464952)
+			setUint32(btwLength - 8)
+			setUint32(0x45564157)
+			setUint32(0x20746d66)
+			setUint32(16)
+			setUint16(1)
+			setUint16(numOfChan)
+			setUint32(aBuffer.sampleRate)
+			setUint32(aBuffer.sampleRate * 2 * numOfChan)
+			setUint16(numOfChan * 2)
+			setUint16(16)
+			setUint32(0x61746164)
+			setUint32(btwLength - btwPos - 4)
+			for (btwIndex = 0; btwIndex < aBuffer.numberOfChannels; btwIndex++) {
+				btwChnls.push(aBuffer.getChannelData(btwIndex))
+			}
+			while (btwPos < btwLength) {
+				for (btwIndex = 0; btwIndex < numOfChan; btwIndex++) {
+					btwSample = Math.max(-1, Math.min(1, btwChnls[btwIndex][btwOffset]))
+					btwSample = (0.5 + btwSample < 0 ? btwSample * 32768 : btwSample * 32767) | 0
+					btwView.setInt16(btwPos, btwSample, true)
+					btwPos += 2
+				}
+				btwOffset++
+			}
+			let wavHdr = lamejs.WavHeader.readHeader(new DataView(btwArrBuff))
+			let data = new Int16Array(btwArrBuff, wavHdr.dataOffset, wavHdr.dataLen / 2)
+			let leftData = []
+			let rightData = []
+			for (let i = 0; i < data.length; i += 2) {
+				leftData.push(data[i])
+				rightData.push(data[i + 1])
+			}
+			const left = new Int16Array(leftData)
+			const right = new Int16Array(rightData)
+			let blob
+			if (wavHdr.channels === 2) {
+				blob = wavToMp3(wavHdr.channels, wavHdr.sampleRate, left, right)
+			} else if (wavHdr.channels === 1) {
+				blob = wavToMp3(wavHdr.channels, wavHdr.sampleRate, data)
+			}
+			return blob
+
+			function setUint16 (data) {
+				btwView.setUint16(btwPos, data, true)
+				btwPos += 2
+			}
+
+			function setUint32 (data) {
+				btwView.setUint32(btwPos, data, true)
+				btwPos += 4
+			}
+
+			function wavToMp3 (channels, sampleRate, left, right = null) {
+				const buffer = []
+				const mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, 96)
+				let remaining = left.length
+				const samplesPerFrame = 1152
+				for (var i = 0; remaining >= samplesPerFrame; i += samplesPerFrame) {
+					let mp3buf
+					if (!right) {
+						const mono = left.subarray(i, i + samplesPerFrame)
+						mp3buf = mp3enc.encodeBuffer(mono);
+					} else {
+						const leftChunk = left.subarray(i, i + samplesPerFrame)
+						const rightChunk = right.subarray(i, i + samplesPerFrame)
+						mp3buf = mp3enc.encodeBuffer(leftChunk, rightChunk)
+					}
+					if (mp3buf.length > 0) {
+						buffer.push(new Int8Array(mp3buf))
+					}
+					remaining -= samplesPerFrame
+				}
+				var d = mp3enc.flush()
+				if (d.length > 0) {
+					buffer.push(new Int8Array(d))
+				}
+				return new Blob(buffer, { type: 'audio/mpeg' })
+			}
 		}
 	}
 }
@@ -2552,7 +2688,6 @@ export default {
 }
 
 #cartes.admin .carte textarea.avec-image {
-	border-right: 0;
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 }
@@ -2570,8 +2705,11 @@ export default {
 	background-size: cover;
 	background-position: 50%;
 	background-repeat: no-repeat;
+	background-color: #ccc;
 	border-top-right-radius: 4px;
 	border-bottom-right-radius: 4px;
+	border: 1px solid #ddd;
+	border-left: 0;
 	cursor: pointer;
 }
 
@@ -3175,7 +3313,7 @@ export default {
 	text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 }
 
-.modale div.conteneur-chargement {
+.modale:not(.transcodage) div.conteneur-chargement {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -3194,7 +3332,7 @@ export default {
 	line-height: 1;
 }
 
-.modale div.conteneur-chargement .chargement {
+.modale:not(.transcodage) div.conteneur-chargement .chargement {
 	display: inline-block;
 	border: 7px solid #ddd;
 	border-top: 7px solid #00ced1;

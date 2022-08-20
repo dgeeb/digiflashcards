@@ -160,6 +160,10 @@ main {
 	border-radius: 10px;
 }
 
+.modale.transcodage {
+	max-width: 300px;
+}
+
 .modale header {
 	display: flex;
 	width: 100%;
