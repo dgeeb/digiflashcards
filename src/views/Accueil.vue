@@ -34,6 +34,7 @@
 						<input type="text" :value="nom" @input="nom = $event.target.value">
 						<label>{{ $t('questionSecrete') }}</label>
 						<select :value="question" @change="question = $event.target.value">
+							<option value="" selected>-</option>
 							<option v-for="(item, index) in questions" :value="item" :key="'option_' + index">{{ $t(item) }}</option>
 						</select>
 						<label>{{ $t('reponseSecreteEdition') }}</label>
