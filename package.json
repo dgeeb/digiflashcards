@@ -4,7 +4,7 @@
   "homepage": "https://ladigitale.dev/digiflashcards/",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/ladigitale/digiflashcards.git"
+    "url": "https://codeberg.org/ladigitale/digiflashcards.git"
   },
   "author": {
     "name": "Emmanuel ZIMMERT",
