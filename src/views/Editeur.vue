@@ -2218,7 +2218,7 @@ export default {
 				const cartes = JSON.parse(JSON.stringify(this.cartes))
 				if (this.cartesInversees === false) {
 					this.cartesInversees = true
-					this.copieCartes = cartes
+					this.copieCartes = JSON.parse(JSON.stringify(this.cartes))
 				} else {
 					this.cartesInversees = false
 					this.copieCartes = []
