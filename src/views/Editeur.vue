@@ -570,7 +570,9 @@ export default {
 			enregistrement: false,
 			dureeEnregistrement: '00 : 00',
 			titreAjouterAudio: '',
-			pleinEcran: false
+			pleinEcran: false,
+			cartesInversees: false,
+			copieCartes: []
 		}
 	},
 	watch: {
@@ -1822,6 +1824,11 @@ export default {
 								fscreen.exitFullscreen()
 								this.pleinEcran = false
 							}
+							if (this.cartesInversees === true) {
+								this.cartesInversees = false
+								this.cartes = this.copieCartes
+								this.copieCartes = []
+							}
 							this.verifierCartes()
 						}
 					} else {
@@ -1985,6 +1992,8 @@ export default {
 										} else if (xhr.responseText === 'serie_modifiee') {
 											this.vue = 'editeur'
 											this.cartes = donnees.cartes
+											this.cartesInversees = false
+											this.copieCartes = []
 											this.$parent.$parent.notification = this.$t('serieImportee')
 										}
 									} else {
@@ -2106,6 +2115,8 @@ export default {
 									that.$parent.$parent.message = that.$t('actionNonAutorisee')
 								} else if (xhr.responseText === 'serie_modifiee') {
 									that.cartes = cartes
+									that.cartesInversees = false
+									that.copieCartes = []
 									that.$parent.$parent.notification = that.$t('cartesImportees')
 								}
 							} else {
@@ -2205,6 +2216,13 @@ export default {
 			}
 			setTimeout(function () {
 				const cartes = JSON.parse(JSON.stringify(this.cartes))
+				if (this.cartesInversees === false) {
+					this.cartesInversees = true
+					this.copieCartes = cartes
+				} else {
+					this.cartesInversees = false
+					this.copieCartes = []
+				}
 				for (let i = 0; i < cartes.length; i++) {
 					const recto = cartes[i].recto
 					const verso = cartes[i].verso
