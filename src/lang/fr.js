@@ -94,6 +94,22 @@ export default {
 	telechargerModele: 'Télécharger le modèle',
 	cartesImportees: 'Cartes importées.',
 	cartesMelangees: 'Cartes mélangées.',
+	cartesInversees: 'Cartes inversées.',
 	transcodage: 'Transcodage en mp3, veuillez patienter...',
-	enregistrementNonSupporte: 'Ce navigateur n\'est pas pris en charge.'
+	enregistrementNonSupporte: 'Ce navigateur n\'est pas pris en charge.',
+	afficherCartePrecedente: 'Afficher la carte précédente',
+	afficherCarteSuivante: 'Afficher la carte suivante',
+	afficherQuestionPrecedente: 'Afficher la question précédente',
+	afficherQuestionSuivante: 'Afficher la question suivante',
+	melangerCartes: 'Mélanger les cartes',
+	inverserCartes: 'Inverser les cartes',
+	mettrePleinEcran: 'Mettre en plein écran',
+	sortirPleinEcran: 'Sortir du plein écran',
+	reinitialiser: 'Réinitialiser',
+	afficherScore: 'Afficher le score',
+	afficherCartes: 'Afficher Cartes',
+	afficherQuiz: 'Afficher Quiz',
+	afficherEcrire: 'Afficher Écrire',
+	optionExercices: 'Activer les exercices',
+	optionCasse: 'Prendre en compte la casse dans les réponses <i>Écrire</i>'
 }

@@ -19,10 +19,10 @@
 				</div>
 			</header>
 
-			<div id="onglets" v-if="vue === 'apprenant' && cartes.length > 4 && (exercicesQuiz.length > 4 || exercicesEcrire.length > 4)">
-				<span class="onglet" :class="{'selectionne': onglet === 'cartes'}" @click="definirOnglet('cartes')"><i class="material-icons">style</i></span>
-				<span class="onglet" :class="{'selectionne': onglet === 'quiz'}" @click="definirOnglet('quiz')" v-if="exercicesQuiz.length > 4"><i class="material-icons">help_center</i></span>
-				<span class="onglet" :class="{'selectionne': onglet === 'ecrire'}" @click="definirOnglet('ecrire')" v-if="exercicesEcrire.length > 4"><i class="material-icons">edit</i></span>
+			<div id="onglets" v-if="vue === 'apprenant' && cartes.length > 4 && options.exercices && (exercicesQuiz.length > 4 || exercicesEcrire.length > 4)">
+				<span class="onglet" :class="{'selectionne': onglet === 'cartes'}" :title="$t('afficherCartes')" @click="definirOnglet('cartes')"><i class="material-icons">style</i></span>
+				<span class="onglet" :class="{'selectionne': onglet === 'quiz'}" :title="$t('afficherQuiz')" @click="definirOnglet('quiz')" v-if="exercicesQuiz.length > 4"><i class="material-icons">help_center</i></span>
+				<span class="onglet" :class="{'selectionne': onglet === 'ecrire'}" :title="$t('afficherEcrire')" @click="definirOnglet('ecrire')" v-if="exercicesEcrire.length > 4"><i class="material-icons">edit</i></span>
 			</div>
 
 			<div id="conteneur">
@@ -33,6 +33,31 @@
 						<a href="./static/digiflashcards_template.csv" target="_blank">{{ $t('telechargerModele') }}</a>
 					</div>
 					<a :href="definirRacine() + '#/f/' + id + '?vue=apprenant'" target="_blank"><i class="material-icons">preview</i><span>{{ $t('apercuApprenant') }}</span></a>
+				</div>
+
+				<div id="options" v-if="vue === 'editeur' && cartes.length > 4">
+					<div class="option">
+						<h3 v-html="$t('optionExercices')" />
+						<label class="bouton-radio">{{ $t('oui') }}
+							<input type="radio" name="exercices" :checked="options.exercices === true" @change="modifierOptions('exercices', true)">
+							<span class="coche" />
+						</label>
+						<label class="bouton-radio">{{ $t('non') }}
+							<input type="radio" name="exercices" :checked="options.exercices === false" @change="modifierOptions('exercices', false)">
+							<span class="coche" />
+						</label>
+					</div>
+					<div class="option" v-if="options.exercices === true">
+						<h3 v-html="$t('optionCasse')" />
+						<label class="bouton-radio">{{ $t('oui') }}
+							<input type="radio" name="casse" :checked="options.casse === true" @change="modifierOptions('casse', true)">
+							<span class="coche" />
+						</label>
+						<label class="bouton-radio">{{ $t('non') }}
+							<input type="radio" name="casse" :checked="options.casse === false" @change="modifierOptions('casse', false)">
+							<span class="coche" />
+						</label>
+					</div>
 				</div>
 
 				<draggable id="cartes" class="admin" v-model="cartes" :animation="250" :sort="true" :swap-threshold="0.5" :force-fallback="true" :fallback-tolerance="10" handle=".statique" filter=".supprimer" :preventOnFilter="true" draggable=".carte" v-if="cartes.length > 0 && vue === 'editeur'" @end="modifierPositionCarte">
@@ -127,9 +152,9 @@
 					</article>
 
 					<div class="navigation">
-						<span class="precedent" @click="afficherCartePrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="total"><span>{{ navigationCartes + 1 }} / {{ cartes.length }}</span><span class="aleatoire" @click="melangerCartes"><i class="material-icons">shuffle</i></span><span class="ecran" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
-						<span class="suivant" @click="afficherCarteSuivante"><i class="material-icons">arrow_forward</i></span>
+						<span class="precedent" :title="$t('afficherCartePrecedente')" @click="afficherCartePrecedente"><i class="material-icons">arrow_back</i></span>
+						<span class="actions"><span class="total">{{ navigationCartes + 1 }} / {{ cartes.length }}</span><span class="aleatoire" :title="$t('melangerCartes')" @click="melangerCartes"><i class="material-icons">shuffle</i></span><span class="aleatoire" :title="$t('inverserCartes')" @click="inverserCartes"><i class="material-icons">flip</i></span><span class="ecran" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
+						<span class="suivant" :title="$t('afficherCarteSuivante')" @click="afficherCarteSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
 
@@ -161,9 +186,9 @@
 					</article>
 
 					<div class="navigation">
-						<span class="precedent" @click="afficherQuestionQuizPrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="total"><span>{{ navigationQuiz + 1 }} / {{ exercicesQuiz.length }}</span><span class="reinitialiser" @click="reinitialiserQuiz"><i class="material-icons">autorenew</i></span><span class="score" @click="modale = 'score-quiz'" v-if="verifierReponsesQuiz() === exercicesQuiz.length"><i class="material-icons">emoji_events</i></span><span class="ecran" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
-						<span class="suivant" @click="afficherQuestionQuizSuivante"><i class="material-icons">arrow_forward</i></span>
+						<span class="precedent" :title="$t('afficherQuestionPrecedente')" @click="afficherQuestionQuizPrecedente"><i class="material-icons">arrow_back</i></span>
+						<span class="actions"><span class="total">{{ navigationQuiz + 1 }} / {{ exercicesQuiz.length }}</span><span class="reinitialiser" :title="$t('reinitialiser')" @click="reinitialiserQuiz"><i class="material-icons">autorenew</i></span><span class="score" :title="$t('afficherScore')" @click="modale = 'score-quiz'" v-if="verifierReponsesQuiz() === exercicesQuiz.length"><i class="material-icons">emoji_events</i></span><span class="ecran" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
+						<span class="suivant" :title="$t('afficherQuestionSuivante')" @click="afficherQuestionQuizSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
 
@@ -191,9 +216,9 @@
 					</article>
 
 					<div class="navigation">
-						<span class="precedent" @click="afficherQuestionEcrirePrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="total">{{ navigationEcrire + 1 }} / {{ exercicesEcrire.length }}<span class="reinitialiser" @click="reinitialiserEcrire"><i class="material-icons">autorenew</i></span><span class="score" @click="modale = 'score-ecrire'" v-if="verifierReponsesEcrire() === exercicesEcrire.length"><i class="material-icons">emoji_events</i></span><span class="ecran" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
-						<span class="suivant" @click="afficherQuestionEcrireSuivante"><i class="material-icons">arrow_forward</i></span>
+						<span class="precedent" :title="$t('afficherQuestionPrecedente')" @click="afficherQuestionEcrirePrecedente"><i class="material-icons">arrow_back</i></span>
+						<span class="actions"><span class="total">{{ navigationEcrire + 1 }} / {{ exercicesEcrire.length }}</span><span class="reinitialiser" :title="$t('reinitialiser')" @click="reinitialiserEcrire"><i class="material-icons">autorenew</i></span><span class="score" :title="$t('afficherScore')" @click="modale = 'score-ecrire'" v-if="verifierReponsesEcrire() === exercicesEcrire.length"><i class="material-icons">emoji_events</i></span><span class="ecran" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
+						<span class="suivant" :title="$t('afficherQuestionSuivante')" @click="afficherQuestionEcrireSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
 
@@ -508,6 +533,7 @@ export default {
 			questions: ['motPrefere', 'filmPrefere', 'chansonPreferee', 'prenomMere', 'prenomPere', 'nomRue', 'nomEmployeur', 'nomAnimal'],
 			reponse: '',
 			nom: '',
+			options: { exercices: true, casse: false },
 			cartes: [{ recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }],
 			carteIndex: '',
 			carteType: '',
@@ -592,6 +618,9 @@ export default {
 				if (reponse.donnees !== '' && this.verifierJSON(reponse.donnees) === true) {
 					const donnees = JSON.parse(reponse.donnees)
 					this.cartes = donnees.cartes
+					if (donnees.hasOwnProperty('options')) {
+						this.options = donnees.options
+					}
 					this.verifierCartes()
 				}
 				if (this.vue === 'apprenant') {
@@ -612,12 +641,12 @@ export default {
 
 					if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
 						this.exercicesQuiz = JSON.parse(localStorage.getItem('digiflashcards_quiz_' + this.id))
-					} else if (this.cartes.length > 4) {
+					} else if (this.cartes.length > 4 && this.options.exercices === true) {
 						this.definirExercicesQuiz()
 					}
 					if (localStorage.getItem('digiflashcards_ecrire_' + this.id)) {
 						this.exercicesEcrire = JSON.parse(localStorage.getItem('digiflashcards_ecrire_' + this.id))
-					} else if (this.cartes.length > 4) {
+					} else if (this.cartes.length > 4 && this.options.exercices === true) {
 						this.definirExercicesEcrire()
 					}
 				}
@@ -749,13 +778,26 @@ export default {
 						maxSize: 100,
 						multiLine: true
 					})
+					window.MathJax.typeset()
 				}.bind(this))
-			}
-			if (onglet === 'ecrire') {
+			} else if (onglet === 'ecrire') {
 				this.$nextTick(function () {
 					document.querySelector('#champ_' + this.navigationEcrire).focus()
+					window.MathJax.typeset()
+				}.bind(this))
+			} else {
+				this.$nextTick(function () {
+					window.MathJax.typeset()
 				}.bind(this))
 			}
+		},
+		modifierOptions (type, valeur) {
+			this.options[type] = valeur
+			const xhr = new XMLHttpRequest()
+			xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
+			xhr.setRequestHeader('Content-type', 'application/json')
+			const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
+			xhr.send(JSON.stringify(json))
 		},
 		definirTailleFonte () {
 			if (this.vue === 'apprenant') {
@@ -897,7 +939,7 @@ export default {
 				}.bind(this)
 				xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 				xhr.setRequestHeader('Content-type', 'application/json')
-				const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes }) }
+				const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
 				xhr.send(JSON.stringify(json))
 				this.supprimerDonneesExercices()
 			}.bind(this), 1000)
@@ -922,7 +964,7 @@ export default {
 							xhr = new XMLHttpRequest()
 							xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 							xhr.setRequestHeader('Content-type', 'application/json')
-							const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes }) }
+							const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
 							xhr.send(JSON.stringify(json))
 							this.supprimerDonneesExercices()
 						}
@@ -1006,7 +1048,7 @@ export default {
 			}.bind(this)
 			xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 			xhr.setRequestHeader('Content-type', 'application/json')
-			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes }), image: image }
+			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes, options: this.options }), image: image }
 			xhr.send(JSON.stringify(json))
 			this.supprimerDonneesExercices()
 		},
@@ -1049,7 +1091,7 @@ export default {
 							xhr = new XMLHttpRequest()
 							xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 							xhr.setRequestHeader('Content-type', 'application/json')
-							const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes }) }
+							const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
 							xhr.send(JSON.stringify(json))
 							this.supprimerDonneesExercices()
 						}
@@ -1292,7 +1334,7 @@ export default {
 			}.bind(this)
 			xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 			xhr.setRequestHeader('Content-type', 'application/json')
-			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes }), audio: audio }
+			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes, options: this.options }), audio: audio }
 			xhr.send(JSON.stringify(json))
 			this.supprimerDonneesExercices()
 		},
@@ -1313,7 +1355,7 @@ export default {
 				}.bind(this)
 				xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 				xhr.setRequestHeader('Content-type', 'application/json')
-				const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes }) }
+				const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
 				xhr.send(JSON.stringify(json))
 			}
 		},
@@ -1369,7 +1411,7 @@ export default {
 			}.bind(this)
 			xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 			xhr.setRequestHeader('Content-type', 'application/json')
-			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes }), fichiers: JSON.stringify(fichiers) }
+			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes, options: this.options }), fichiers: JSON.stringify(fichiers) }
 			xhr.send(JSON.stringify(json))
 			this.supprimerDonneesExercices()
 		},
@@ -1419,7 +1461,7 @@ export default {
 			if (cartesExercice.length > 20) {
 				this.exercicesQuiz = donnees.slice(0, -(cartesExercice.length - 20))
 				localStorage.setItem('digiflashcards_quiz_' + this.id, JSON.stringify(donnees.slice(0, -(cartesExercice.length - 20))))
-			} else {
+			} else if (cartesExercice.length > 4) {
 				this.exercicesQuiz = donnees
 				localStorage.setItem('digiflashcards_quiz_' + this.id, JSON.stringify(donnees))
 			}
@@ -1540,7 +1582,7 @@ export default {
 			const cartes = []
 			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
 			copieCartes.forEach(function (item) {
-				if ((item.recto.texte !== '' && (item.verso.texte !== '' || item.verso.image !== '' || item.verso.audio !== '')) || (item.verso.texte !== '' && (item.recto.texte !== '' || item.recto.image !== '' || item.recto.audio !== ''))) {
+				if ((item.recto.texte !== '' && (item.verso.texte !== '' || item.verso.image !== '' || item.verso.audio !== '')) || (item.verso.texte !== '' && !item.verso.texte.includes('$$') && (item.recto.texte !== '' || item.recto.image !== '' || item.recto.audio !== ''))) {
 					item.correct = ''
 					item.reponse = ''
 					item.valide = false
@@ -1551,7 +1593,7 @@ export default {
 			if (cartesExercice.length > 20) {
 				this.exercicesEcrire = cartesExercice.slice(0, -(cartesExercice.length - 20))
 				localStorage.setItem('digiflashcards_ecrire_' + this.id, JSON.stringify(cartesExercice.slice(0, -(cartesExercice.length - 20))))
-			} else {
+			} else if (cartesExercice.length > 4) {
 				this.exercicesEcrire = cartesExercice
 				localStorage.setItem('digiflashcards_ecrire_' + this.id, JSON.stringify(cartesExercice))
 			}
@@ -1599,9 +1641,19 @@ export default {
 			}.bind(this), 200)
 		},
 		verifierEcrire () {
-			const reponse = document.querySelector('#champ_' + this.navigationEcrire).value
+			let reponse = document.querySelector('#champ_' + this.navigationEcrire).value
+			let texteRecto, texteVerso
 			if (reponse.trim() !== '') {
-				if (((this.exercicesEcrire[this.navigationEcrire].recto.image !== '' || this.exercicesEcrire[this.navigationEcrire].recto.audio !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte === '' && this.exercicesEcrire[this.navigationEcrire].verso.texte !== '' && reponse.trim().toLowerCase() === this.exercicesEcrire[this.navigationEcrire].verso.texte.toLowerCase()) || ((this.exercicesEcrire[this.navigationEcrire].verso.image !== '' || this.exercicesEcrire[this.navigationEcrire].verso.audio !== '' || this.exercicesEcrire[this.navigationEcrire].verso.texte !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte !== '' && reponse.trim().toLowerCase() === this.exercicesEcrire[this.navigationEcrire].recto.texte.toLowerCase())) {
+				if (this.options.casse === false) {
+					reponse = reponse.trim().toLowerCase()
+					texteRecto = this.exercicesEcrire[this.navigationEcrire].recto.texte.toLowerCase()
+					texteVerso = this.exercicesEcrire[this.navigationEcrire].verso.texte.toLowerCase()
+				} else {
+					reponse = reponse.trim()
+					texteRecto = this.exercicesEcrire[this.navigationEcrire].recto.texte
+					texteVerso = this.exercicesEcrire[this.navigationEcrire].verso.texte
+				}
+				if (((this.exercicesEcrire[this.navigationEcrire].recto.image !== '' || this.exercicesEcrire[this.navigationEcrire].recto.audio !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte === '' && this.exercicesEcrire[this.navigationEcrire].verso.texte !== '' && reponse === texteVerso) || ((this.exercicesEcrire[this.navigationEcrire].verso.image !== '' || this.exercicesEcrire[this.navigationEcrire].verso.audio !== '' || this.exercicesEcrire[this.navigationEcrire].verso.texte !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte !== '' && reponse === texteRecto)) {
 					this.exercicesEcrire[this.navigationEcrire].correct = true
 					const validation = new Audio('./static/validation.mp3')
 					validation.play()
@@ -1931,6 +1983,7 @@ export default {
 										} else if (xhr.responseText === 'non_autorise') {
 											this.$parent.$parent.message = this.$t('actionNonAutorisee')
 										} else if (xhr.responseText === 'serie_modifiee') {
+											this.vue = 'editeur'
 											this.cartes = donnees.cartes
 											this.$parent.$parent.notification = this.$t('serieImportee')
 										}
@@ -1941,7 +1994,7 @@ export default {
 								}.bind(this)
 								xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 								xhr.setRequestHeader('Content-type', 'application/json')
-								const json = { serie: this.id, donnees: JSON.stringify({ cartes: donnees.cartes }) }
+								const json = { serie: this.id, donnees: JSON.stringify({ cartes: donnees.cartes, options: this.options }) }
 								xhr.send(JSON.stringify(json))
 								this.supprimerDonneesExercices()
 							}.bind(this))
@@ -2062,7 +2115,7 @@ export default {
 						}
 						xhr.open('POST', that.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 						xhr.setRequestHeader('Content-type', 'application/json')
-						const json = { serie: that.id, donnees: JSON.stringify({ cartes: cartes }) }
+						const json = { serie: that.id, donnees: JSON.stringify({ cartes: cartes, options: this.options }) }
 						xhr.send(JSON.stringify(json))
 						that.supprimerDonneesExercices()
 					}
@@ -2106,6 +2159,11 @@ export default {
 		},
 		melangerCartes () {
 			this.$parent.$parent.chargement = true
+			if (this.audio !== '') {
+				this.audio.pause()
+				this.audio = ''
+				this.lecture = false
+			}
 			setTimeout(function () {
 				const cartes = JSON.parse(JSON.stringify(this.cartes))
 				for (let i = cartes.length - 1; i > 0; i--) {
@@ -2114,7 +2172,17 @@ export default {
 					cartes[i] = cartes[j]
 					cartes[j] = temp
 				}
+				this.recto = true
 				this.cartes = cartes
+				const tailleFonte = this.tailleFonte
+				this.$nextTick(function () {
+					this.fitty = fitty('#carte_' + this.navigationCartes + ' .texte', {
+						minSize: tailleFonte,
+						maxSize: 100,
+						multiLine: true
+					})
+					window.MathJax.typeset()
+				}.bind(this))
 				this.$parent.$parent.notification = this.$t('cartesMelangees')
 				this.$parent.$parent.chargement = false
 			}.bind(this), 200)
@@ -2127,6 +2195,36 @@ export default {
 				array[j] = temp
 			}
 			return array
+		},
+		inverserCartes () {
+			this.$parent.$parent.chargement = true
+			if (this.audio !== '') {
+				this.audio.pause()
+				this.audio = ''
+				this.lecture = false
+			}
+			setTimeout(function () {
+				const cartes = JSON.parse(JSON.stringify(this.cartes))
+				for (let i = 0; i < cartes.length; i++) {
+					const recto = cartes[i].recto
+					const verso = cartes[i].verso
+					cartes[i].recto = verso
+					cartes[i].verso = recto
+				}
+				this.recto = true
+				this.cartes = cartes
+				const tailleFonte = this.tailleFonte
+				this.$nextTick(function () {
+					this.fitty = fitty('#carte_' + this.navigationCartes + ' .texte', {
+						minSize: tailleFonte,
+						maxSize: 100,
+						multiLine: true
+					})
+					window.MathJax.typeset()
+				}.bind(this))
+				this.$parent.$parent.notification = this.$t('cartesInversees')
+				this.$parent.$parent.chargement = false
+			}.bind(this), 200)
 		},
 		lancerConfettis () {
 			// eslint-disable-next-line
@@ -2363,6 +2461,92 @@ export default {
 	cursor: default;
 }
 
+#options {
+	display: flex;
+	justify-content: flex-start;
+	flex-wrap: wrap;
+	width: 100%;
+	max-width: 75em;
+	margin: 30px auto 0;
+	padding: 0 20px;
+}
+
+#options .option {
+	margin-right: 40px;
+	margin-bottom: 20px;
+}
+
+#options .option:last-child {
+	margin-right: 0;
+}
+
+#options h3 {
+	font-size: 16px;
+	font-weight: 700;
+	line-height: 1.25;
+	margin-bottom: 10px;
+}
+
+#options .bouton-radio {
+	display: inline-block;
+	position: relative;
+	padding-left: 30px;
+	cursor: pointer;
+	font-size: 16px;
+	user-select: none;
+	margin-right: 15px;
+	line-height: 22px;
+}
+
+#options .bouton-radio:last-child {
+	margin-right: 0;
+}
+
+#options .bouton-radio input {
+	position: absolute;
+	opacity: 0;
+	cursor: pointer;
+	height: 0;
+	width: 0;
+}
+
+#options .coche {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 22px;
+	width: 22px;
+	background-color: #eee;
+	border-radius: 50%;
+}
+
+#options .bouton-radio:hover input ~ .coche {
+	background-color: #ccc;
+}
+
+#options .bouton-radio input:checked ~ .coche {
+	background-color: #00ced1;
+}
+
+#options .coche:after {
+	content: '';
+	position: absolute;
+	display: none;
+}
+
+#options .bouton-radio input:checked ~ .coche:after {
+	display: block;
+}
+
+#options .bouton-radio .coche:after {
+	top: 6px;
+	left: 6px;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: #fff;
+}
+
 #conteneur {
 	position: relative;
 	width: 100%;
@@ -2383,6 +2567,10 @@ export default {
 	max-width: 75em;
 	margin: 0 auto;
 	padding: 30px 20px 0;
+}
+
+#options + #cartes {
+	padding: 10px 20px 0;
 }
 
 #cartes.admin .carte {
@@ -2589,6 +2777,14 @@ export default {
 #cartes.apprenant .navigation i {
 	font-size: 24px;
 	cursor: pointer;
+}
+
+#cartes .navigation .total,
+#exercices .navigation .total {
+	font-weight: 700;
+	padding: 4px 10px;
+	background: #00ced1;
+	border-radius: 5px;
 }
 
 #cartes .navigation .aleatoire,

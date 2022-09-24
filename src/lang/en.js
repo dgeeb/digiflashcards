@@ -94,6 +94,22 @@ export default {
 	telechargerModele: 'Download template',
 	cartesImportees: 'Flashcards imported.',
 	cartesMelangees: 'Flashcards shuffled.',
+	cartesInversees: 'Flashcards reversed.',
 	transcodage: 'Transcoding in mp3, please wait...',
-	enregistrementNonSupporte: 'This browser is not supported.'
+	enregistrementNonSupporte: 'This browser is not supported.',
+	afficherCartePrecedente: 'Show next flashcard',
+	afficherCarteSuivante: 'Show previous flashcard',
+	afficherQuestionPrecedente: 'Show next question',
+	afficherQuestionSuivante: 'Show previous question',
+	melangerCartes: 'Shuffle flashcards',
+	inverserCartes: 'Reserve flashcards',
+	mettrePleinEcran: 'Enter fullscreen',
+	sortirPleinEcran: 'Exit fulscreen',
+	reinitialiser: 'Reset',
+	afficherScore: 'Show score',
+	afficherCartes: 'Show Flashcards',
+	afficherQuiz: 'Show Quiz',
+	afficherEcrire: 'Show Write',
+	optionExercices: 'Activate exercises',
+	optionCasse: 'Case sensitive in <i>Write</i> answers.'
 }

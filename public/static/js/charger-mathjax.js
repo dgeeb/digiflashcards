@@ -1,4 +1,7 @@
 window.MathJax = {
+	options: {
+		enableMenu: false
+	},
     tex: {
         inlineMath: [
             ['\\(', '\\)']
@@ -16,3 +19,4 @@ window.MathJax = {
     script.async = true;
     document.head.appendChild(script);
 })();
+

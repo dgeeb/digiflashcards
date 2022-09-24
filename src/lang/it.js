@@ -94,6 +94,22 @@ export default {
 	telechargerModele: 'Scaricare il modello',
 	cartesImportees: 'Flashcards importate.',
 	cartesMelangees: 'Flashcards mescolate.',
+	cartesInversees: 'Flashcards invertite.',
 	transcodage: 'Transcodifica in mp3, attendere prego...',
-	enregistrementNonSupporte: 'Il browser non è supportato.'
+	enregistrementNonSupporte: 'Il browser non è supportato.',
+	afficherCartePrecedente: 'Mostra la flashcard precedente',
+	afficherCarteSuivante: 'Mostra la seguente flashcard',
+	afficherQuestionPrecedente: 'Mostra la domanda precedente',
+	afficherQuestionSuivante: 'Mostra la seguente domanda',
+	melangerCartes: 'Mescolare le flashcards',
+	inverserCartes: 'Invertire le flashcards',
+	mettrePleinEcran: 'Imposta a schermo intero',
+	sortirPleinEcran: 'Uscire a schermo intero',
+	reinitialiser: 'Reset',
+	afficherScore: 'Mostra il punteggio',
+	afficherCartes: 'Mostra Flashcards',
+	afficherQuiz: 'Mostra Quiz',
+	afficherEcrire: 'Mostra Scrivere',
+	optionExercices: 'Attivare gli esercizi',
+	optionCasse: 'Siate sensibili alle maiuscole e minuscole nelle risposte di <i>Scrivere</i>.'
 }
