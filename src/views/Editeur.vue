@@ -106,7 +106,7 @@
 								<label class="image" role="button" tabindex="0" :for="'televerser_image_verso_' + index" :title="$t('ajouterImage')"><i class="material-icons">add_photo_alternate</i></label>
 								<input :id="'televerser_image_verso_' + index" type="file" accept=".jpg, .jpeg, .png, .gif" @change="televerserImage($event, index, 'verso')" style="display: none;">
 							</template>
-							<span class="image" @click="afficherImage(index, 'verso', definirLienMedia(item.verso.image))" :title="$t('afficherImage')" v-else-if="chargement !== 'image_verso_' + index && item.verso.image !== ''" :style="{'background-image': 'url(' + definirLienMedia(item.verso.image, 'vignette_') + ')'}" />
+							<span class="image" @click="afficherImage(index, 'verso', definirLienMedia(item.verso.image, ''))" :title="$t('afficherImage')" v-else-if="chargement !== 'image_verso_' + index && item.verso.image !== ''" :style="{'background-image': 'url(' + definirLienMedia(item.verso.image, 'vignette_') + ')'}" />
 
 							<span class="conteneur-chargement audio" v-if="chargement === 'audio_verso_' + index">
 								<span class="chargement" />
@@ -949,6 +949,7 @@ export default {
 		televerserImage (event, index, type) {
 			const blob = event.target.files[0]
 			if (blob.size < 1024000) {
+				this.modale = ''
 				this.chargement = 'image_' + type + '_' + index
 				const formData = new FormData()
 				formData.append('ancienfichier', this.cartes[index][type].image)
