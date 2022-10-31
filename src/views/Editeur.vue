@@ -61,7 +61,7 @@
 				</div>
 
 				<draggable id="cartes" class="admin" v-model="cartes" :animation="250" :sort="true" :swap-threshold="0.5" :force-fallback="true" :fallback-tolerance="10" handle=".statique" filter=".supprimer" :preventOnFilter="true" draggable=".carte" v-if="cartes.length > 0 && vue === 'editeur'" @end="modifierPositionCarte">
-					<article class="carte" v-for="(item, index) in cartes" :key="'carte_' + index">
+					<article :id="'carte' + index" class="carte" v-for="(item, index) in cartes" :key="'carte_' + index">
 						<div class="actions statique">
 							<div class="gauche">
 								{{ index + 1 }}
@@ -82,7 +82,7 @@
 							</span>
 							<template v-else-if="chargement !== 'image_recto_' + index && item.recto.image === ''">
 								<label class="image" role="button" tabindex="0" :for="'televerser_image_recto_' + index" :title="$t('ajouterImage')"><i class="material-icons">add_photo_alternate</i></label>
-								<input :id="'televerser_image_recto_' + index" type="file" accept=".jpg, .jpeg, .png, .gif" @change="televerserImage($event, index, 'recto')" style="display: none;">
+								<input :id="'televerser_image_recto_' + index" type="file" accept=".jpg, .jpeg, .png, .gif" @change="televerserImage($event.target.files[0], index, 'recto')" style="display: none;">
 							</template>
 							<span class="image" @click="afficherImage(index, 'recto', definirLienMedia(item.recto.image, ''))" :title="$t('afficherImage')" v-else-if="chargement !== 'image_recto_' + index && item.recto.image !== ''" :style="{'background-image': 'url(' + definirLienMedia(item.recto.image, 'vignette_') + ')'}" />
 
@@ -104,7 +104,7 @@
 							</span>
 							<template v-else-if="chargement !== 'image_verso_' + index && item.verso.image === ''">
 								<label class="image" role="button" tabindex="0" :for="'televerser_image_verso_' + index" :title="$t('ajouterImage')"><i class="material-icons">add_photo_alternate</i></label>
-								<input :id="'televerser_image_verso_' + index" type="file" accept=".jpg, .jpeg, .png, .gif" @change="televerserImage($event, index, 'verso')" style="display: none;">
+								<input :id="'televerser_image_verso_' + index" type="file" accept=".jpg, .jpeg, .png, .gif" @change="televerserImage($event.target.files[0], index, 'verso')" style="display: none;">
 							</template>
 							<span class="image" @click="afficherImage(index, 'verso', definirLienMedia(item.verso.image, ''))" :title="$t('afficherImage')" v-else-if="chargement !== 'image_verso_' + index && item.verso.image !== ''" :style="{'background-image': 'url(' + definirLienMedia(item.verso.image, 'vignette_') + ')'}" />
 
@@ -406,7 +406,7 @@
 						<img :src="image">
 						<div class="actions">
 							<label :for="'televerser_image_' + carteIndex" class="bouton" role="button" tabindex="0">{{ $t('modifier') }}</label>
-							<input :id="'televerser_image_' + carteIndex" type="file" @change="televerserImage($event, carteIndex, carteType)" style="display: none" accept=".jpg, .jpeg, .png, .gif">
+							<input :id="'televerser_image_' + carteIndex" type="file" @change="televerserImage($event.target.files[0], carteIndex, carteType)" style="display: none" accept=".jpg, .jpeg, .png, .gif">
 							<span class="bouton" role="button" tabindex="0" @click="supprimerImage(carteIndex, carteType)">{{ $t('supprimer') }}</span>
 						</div>
 					</div>
@@ -651,6 +651,54 @@ export default {
 					} else if (this.cartes.length > 4 && this.options.exercices === true) {
 						this.definirExercicesEcrire()
 					}
+				} else {
+					this.$nextTick(function () {
+						document.querySelector('#page').addEventListener('dragover', function (event) {
+							event.preventDefault()
+							event.stopPropagation()
+						}, false)
+
+						document.querySelector('#page').addEventListener('dragcenter', function (event) {
+							event.preventDefault()
+							event.stopPropagation()
+						}, false)
+
+						document.querySelector('#page').addEventListener('drop', function (event) {
+							event.preventDefault()
+							event.stopPropagation()
+						}, false)
+
+						document.querySelector('#cartes').addEventListener('dragover', function (event) {
+							event.preventDefault()
+							event.stopPropagation()
+						}, false)
+
+						document.querySelector('#cartes').addEventListener('dragcenter', function (event) {
+							event.preventDefault()
+							event.stopPropagation()
+						}, false)
+
+						document.querySelector('#cartes').addEventListener('drop', function (event) {
+							event.preventDefault()
+							event.stopPropagation()
+							if (event.dataTransfer.files && event.dataTransfer.files[0] && (event.dataTransfer.files[0].type.substring(0, 5) === 'image' || event.dataTransfer.files[0].type.substring(0, 5) === 'audio')) {
+								if (event.target.closest('.conteneur') !== null && (event.target.closest('.conteneur').classList.contains('recto') || event.target.closest('.conteneur').classList.contains('verso'))) {
+									let type
+									if (event.target.closest('.conteneur').classList.contains('recto')) {
+										type = 'recto'
+									} else if (event.target.closest('.conteneur').classList.contains('verso')) {
+										type = 'verso'
+									}
+									const index = event.target.closest('.carte').id.substring(5)
+									if (event.dataTransfer.files[0].type.substring(0, 5) === 'image' && index !== null && type !== null) {
+										this.televerserImage(event.dataTransfer.files[0], index, type)
+									} else if (event.dataTransfer.files[0].type.substring(0, 5) === 'audio' && index !== null && type !== null) {
+										this.televerserAudio(event.dataTransfer.files[0], index, type)
+									}
+								}
+							}
+						}.bind(this), false)
+					}.bind(this))
 				}
 				setTimeout(function () {
 					document.title = this.nom + ' - Digiflashcards by La Digitale'
@@ -946,8 +994,12 @@ export default {
 				this.supprimerDonneesExercices()
 			}.bind(this), 1000)
 		},
-		televerserImage (event, index, type) {
-			const blob = event.target.files[0]
+		televerserImage (blob, index, type) {
+			const extension = blob.name.substring(blob.name.lastIndexOf('.') + 1).toLowerCase()
+			if (['jpg', 'jpeg', 'png', 'gif'].includes(extension) === false) {
+				this.$parent.$parent.message = this.$t('erreurFormat')
+				return false
+			}
 			if (blob.size < 1024000) {
 				this.modale = ''
 				this.chargement = 'image_' + type + '_' + index
@@ -1054,6 +1106,53 @@ export default {
 			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes, options: this.options }), image: image }
 			xhr.send(JSON.stringify(json))
 			this.supprimerDonneesExercices()
+		},
+		televerserAudio (blob, index, type) {
+			const fichier = blob.name
+			const extension = blob.name.substring(blob.name.lastIndexOf('.') + 1).toLowerCase()
+			if (extension !== 'mp3') {
+				this.$parent.$parent.message = this.$t('erreurFormat')
+				return false
+			}
+			if (blob.size < 1024000) {
+				this.chargement = 'audio_' + type + '_' + index
+				const formData = new FormData()
+				formData.append('ancienfichier', this.cartes[index][type].audio)
+				formData.append('serie', this.id)
+				formData.append('blob', blob, fichier)
+				let xhr = new XMLHttpRequest()
+				xhr.onload = function () {
+					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+						this.chargement = ''
+						this.progression = 0
+						if (xhr.responseText === 'erreur') {
+							this.$parent.$parent.message = this.$t('erreurTeleversement')
+						} else {
+							this.cartes[index][type].audio = xhr.responseText
+							xhr = new XMLHttpRequest()
+							xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
+							xhr.setRequestHeader('Content-type', 'application/json')
+							const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
+							xhr.send(JSON.stringify(json))
+							this.supprimerDonneesExercices()
+						}
+					} else {
+						this.chargement = ''
+						this.progression = 0
+						this.$parent.$parent.message = this.$t('erreurTeleversement')
+					}
+				}.bind(this)
+				xhr.upload.onprogress = function (e) {
+					if (e.lengthComputable) {
+						const pourcentage = (e.loaded / e.total) * 100
+						this.progression = Math.round(pourcentage)
+					}
+				}.bind(this)
+				xhr.open('POST', this.$parent.$parent.hote + 'inc/televerser_audio.php', true)
+				xhr.send(formData)
+			} else {
+				this.$parent.$parent.message = this.$t('tailleMax', { taille: 1 })
+			}
 		},
 		async ajouterAudio (index, type) {
 			let fichier = ''
