@@ -68,7 +68,6 @@ export default {
 	serieImportee: 'Set imported.',
 	serieExportee: 'Set exported.',
 	selectionnerFichier: 'Select a .zip file',
-	alerteImporter: 'Please note that all the content of the current set will be replaced by the imported content.',
 	ajouterImage: 'Add a picture',
 	terme: 'Term',
 	definition: 'Definition',
@@ -111,5 +110,8 @@ export default {
 	afficherQuiz: 'Show Quiz',
 	afficherEcrire: 'Show Write',
 	optionExercices: 'Activate exercises',
-	optionCasse: 'Case sensitive in <i>Write</i> answers.'
+	optionCasse: 'Case sensitive in <i>Write</i> answers.',
+	parametreImport: 'Import setting',
+	ajouterContenuImporte: 'Add imported content to current content',
+	remplacerContenuImporte: 'Replace the current content with the imported content',
 }

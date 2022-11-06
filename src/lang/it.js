@@ -68,7 +68,6 @@ export default {
 	serieImportee: 'Set importato.',
 	serieExportee: 'Set esportato.',
 	selectionnerFichier: 'Selezione il file .zip',
-	alerteImporter: 'Tutti i contenuti del set saranno sostituiti dai contenuti importati.',
 	ajouterImage: 'Aggiungi un\'immagine',
 	terme: 'Termini',
 	definition: 'Definizione',
@@ -111,5 +110,8 @@ export default {
 	afficherQuiz: 'Mostra Quiz',
 	afficherEcrire: 'Mostra Scrivere',
 	optionExercices: 'Attivare gli esercizi',
-	optionCasse: 'Siate sensibili alle maiuscole e minuscole nelle risposte di <i>Scrivere</i>.'
+	optionCasse: 'Siate sensibili alle maiuscole e minuscole nelle risposte di <i>Scrivere</i>.',
+	parametreImport: 'Parametro di importazione',
+	ajouterContenuImporte: 'Aggiungere il contenuto importato al contenuto corrente',
+	remplacerContenuImporte: 'Sostituire il contenuto attuale con quello importato'
 }

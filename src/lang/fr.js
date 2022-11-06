@@ -68,7 +68,6 @@ export default {
 	serieImportee: 'Série importée.',
 	serieExportee: 'Série exportée.',
 	selectionnerFichier: 'Sélectionner un fichier .zip',
-	alerteImporter: 'Attention, tout le contenu de la série actuelle sera remplacé par le contenu importé.',
 	ajouterImage: 'Ajouter une image',
 	terme: 'Terme',
 	definition: 'Définition',
@@ -111,5 +110,8 @@ export default {
 	afficherQuiz: 'Afficher Quiz',
 	afficherEcrire: 'Afficher Écrire',
 	optionExercices: 'Activer les exercices',
-	optionCasse: 'Prendre en compte la casse dans les réponses <i>Écrire</i>'
+	optionCasse: 'Prendre en compte la casse dans les réponses <i>Écrire</i>',
+	parametreImport: 'Paramètre d\'import',
+	ajouterContenuImporte: 'Ajouter le contenu importé au contenu actuel',
+	remplacerContenuImporte: 'Remplacer le contenu actuel par le contenu importé'
 }
