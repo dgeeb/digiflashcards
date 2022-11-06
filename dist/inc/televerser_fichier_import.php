@@ -7,10 +7,11 @@ header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
 
 if (!empty($_FILES['blob']) && !empty($_POST['serie'])) {
 	$index = $_POST['index'];
+	$parametre = $_POST['parametre'];
 	$fichier = $_POST['fichier'];
 	$serie = $_POST['serie'];
 	$extension = pathinfo($fichier, PATHINFO_EXTENSION);
-	if (file_exists('../fichiers/' . $serie) && intval($index) === 1) {
+	if (file_exists('../fichiers/' . $serie) && intval($index) === 1 && $parametre === 'remplacer') {
 		$fichiers = glob('../fichiers/' . $serie . '/' . '*.*');
 		foreach ($fichiers as $f) {
 			unlink($f);
