@@ -2008,6 +2008,18 @@ export default {
 					}
 				})
 				zip.file('donnees.json', JSON.stringify(donnees))
+				const csv = []
+				this.cartes.forEach(function (item) {
+					csv.push({ 'recto_texte' : item.recto.texte, 'recto_image': item.recto.image, 'recto_audio' : item.recto.audio, 'verso_texte' : item.verso.texte, 'verso_image' : item.verso.image, 'verso_audio' : item.verso.audio })
+				})
+				zip.file('donnees.csv', Papa.unparse(csv, {
+					header: true,
+					transformHeader: true,
+					skipEmptyLines: true,
+					quoteChar: '"',
+					escapeChar: '"',
+					delimiter: ",",
+				}))
 				zip.generateAsync({ type: 'blob' }).then(function (archive) {
 					this.$parent.$parent.chargement = false
 					saveAs(archive, nom + '_' + new Date().getTime() + '.zip')
@@ -2099,6 +2111,12 @@ export default {
 									})
 									cartes = cartes.filter(function (carte) {
 										return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '')
+									})
+									cartes = cartes.filter((valeur, index) => {
+										const _valeur = JSON.stringify(valeur)
+										return index === cartes.findIndex(obj => {
+											return JSON.stringify(obj) === _valeur
+										})
 									})
 									json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes, options: this.options }) }
 								} else {
