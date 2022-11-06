@@ -356,7 +356,15 @@
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
-						<p>{{ $t('alerteImporter') }}</p>
+						<div class="parametre-import">
+							<label>{{ $t('parametreImport') }}</label>
+							<label class="bouton-radio">{{ $t('ajouterContenuImporte') }}
+								<input type="radio" name="import" :checked="parametreImport === 'ajouter'" @change="parametreImport = 'ajouter'">
+							</label>
+							<label class="bouton-radio">{{ $t('remplacerContenuImporte') }}
+								<input type="radio" name="import" :checked="parametreImport === 'remplacer'" @change="parametreImport = 'remplacer'">
+							</label>
+						</div>
 						<input type="file" id="importer" name="importer" style="display: none;" accept=".zip" @change="importerSerie">
 						<label for="importer" class="bouton large">{{ $t('selectionnerFichier') }}</label>
 					</div>
@@ -572,7 +580,8 @@ export default {
 			titreAjouterAudio: '',
 			pleinEcran: false,
 			cartesInversees: false,
-			copieCartes: []
+			copieCartes: [],
+			parametreImport: 'ajouter'
 		}
 	},
 	watch: {
@@ -2036,7 +2045,7 @@ export default {
 									fichiers.push(carte.verso.audio)
 								}
 							}.bind(this))
-							if (fichiers.length === 0) {
+							if (fichiers.length === 0 && this.parametreImport === 'remplacer') {
 								new Promise(function (resolve) {
 									const xhr = new XMLHttpRequest()
 									xhr.onload = function () {
@@ -2057,6 +2066,7 @@ export default {
 											indexFichier++
 											const formData = new FormData()
 											formData.append('index', indexFichier)
+											formData.append('parametre', this.parametreImport)
 											formData.append('fichier', item)
 											formData.append('serie', this.id)
 											formData.append('blob', blob)
@@ -2081,6 +2091,19 @@ export default {
 								donneesFichiers.push(donneesFichier)
 							}
 							Promise.all(donneesFichiers).then(function () {
+								let json
+								let cartes = JSON.parse(JSON.stringify(this.cartes))
+								if (this.parametreImport === 'ajouter') {
+									donnees.cartes.forEach(function (carte) {
+										cartes.push(carte)
+									})
+									cartes = cartes.filter(function (carte) {
+										return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '')
+									})
+									json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes, options: this.options }) }
+								} else {
+									json = { serie: this.id, donnees: JSON.stringify({ cartes: donnees.cartes, options: this.options }) }
+								}
 								const xhr = new XMLHttpRequest()
 								xhr.onload = function () {
 									if (xhr.readyState === xhr.DONE && xhr.status === 200) {
@@ -2091,9 +2114,14 @@ export default {
 											this.$parent.$parent.message = this.$t('actionNonAutorisee')
 										} else if (xhr.responseText === 'serie_modifiee') {
 											this.vue = 'editeur'
-											this.cartes = donnees.cartes
+											if (this.parametreImport === 'ajouter') {
+												this.cartes = cartes
+											} else {
+												this.cartes = donnees.cartes
+											}
 											this.cartesInversees = false
 											this.copieCartes = []
+											this.verifierCartes()
 											this.$parent.$parent.notification = this.$t('serieImportee')
 										}
 									} else {
@@ -2103,7 +2131,6 @@ export default {
 								}.bind(this)
 								xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 								xhr.setRequestHeader('Content-type', 'application/json')
-								const json = { serie: this.id, donnees: JSON.stringify({ cartes: donnees.cartes, options: this.options }) }
 								xhr.send(JSON.stringify(json))
 								this.supprimerDonneesExercices()
 							}.bind(this))
@@ -3688,6 +3715,14 @@ export default {
     padding-right: 15px;
     vertical-align: middle;
     background-color: #fff;
+}
+
+.modale .parametre-import {
+	margin-bottom: 20px;
+}
+
+.modale .parametre-import label.bouton-radio {
+	font-weight: 400;
 }
 
 #codeqr.modale .contenu {
