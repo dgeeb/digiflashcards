@@ -2011,7 +2011,7 @@ export default {
 				zip.generateAsync({ type: 'blob' }).then(function (archive) {
 					this.$parent.$parent.chargement = false
 					saveAs(archive, nom + '_' + new Date().getTime() + '.zip')
-					this.$parent.$parent.notification = this.$t('parcoursExporte')
+					this.$parent.$parent.notification = this.$t('serieExportee')
 				}.bind(this))
 			}.bind(this))
 		},
