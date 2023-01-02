@@ -1281,7 +1281,7 @@ export default {
 								}.bind(this), 100)
 								this.mediaRecorder.onstop = function () {
 									if (this.flux.length > 0) {
-										this.blob = new Blob(this.flux, { 'type': 'audio/wav' })
+										this.blob = new Blob(this.flux, { type: 'audio/wav' })
 										this.enregistrement = false
 										this.audio = URL.createObjectURL(this.blob)
 										this.mediaRecorder = ''
@@ -1346,12 +1346,12 @@ export default {
 					canvasCtx.strokeStyle = '#000000'
 					canvasCtx.beginPath()
 
-					let sliceWidth = largeur * 1.0 / bufferLength
+					const sliceWidth = largeur * 1.0 / bufferLength
 					let x = 0
 
 					for (let i = 0; i < bufferLength; i++) {
-						let v = dataArray[i] / 128.0
-						let y = v * hauteur / 2
+						const v = dataArray[i] / 128.0
+						const y = v * hauteur / 2
 						if (i === 0) {
 							canvasCtx.moveTo(x, y)
 						} else {
@@ -2407,7 +2407,15 @@ export default {
 			return url.protocol === 'http:' || url.protocol === 'https:'
 		},
 		transcoder (aBuffer) {
-			let numOfChan = aBuffer.numberOfChannels, btwLength = aBuffer.length * numOfChan * 2 + 44, btwArrBuff = new ArrayBuffer(btwLength), btwView = new DataView(btwArrBuff), btwChnls = [], btwIndex, btwSample, btwOffset = 0, btwPos = 0
+			const numOfChan = aBuffer.numberOfChannels
+			const btwLength = aBuffer.length * numOfChan * 2 + 44
+			const btwArrBuff = new ArrayBuffer(btwLength)
+			const btwView = new DataView(btwArrBuff)
+			const btwChnls = []
+			let btwIndex
+			let btwSample
+			let btwOffset = 0
+			let btwPos = 0
 			setUint32(0x46464952)
 			setUint32(btwLength - 8)
 			setUint32(0x45564157)
@@ -2433,10 +2441,10 @@ export default {
 				}
 				btwOffset++
 			}
-			let wavHdr = lamejs.WavHeader.readHeader(new DataView(btwArrBuff))
-			let data = new Int16Array(btwArrBuff, wavHdr.dataOffset, wavHdr.dataLen / 2)
-			let leftData = []
-			let rightData = []
+			const wavHdr = lamejs.WavHeader.readHeader(new DataView(btwArrBuff))
+			const data = new Int16Array(btwArrBuff, wavHdr.dataOffset, wavHdr.dataLen / 2)
+			const leftData = []
+			const rightData = []
 			for (let i = 0; i < data.length; i += 2) {
 				leftData.push(data[i])
 				rightData.push(data[i + 1])
@@ -2466,11 +2474,11 @@ export default {
 				const mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, 96)
 				let remaining = left.length
 				const samplesPerFrame = 1152
-				for (var i = 0; remaining >= samplesPerFrame; i += samplesPerFrame) {
+				for (let i = 0; remaining >= samplesPerFrame; i += samplesPerFrame) {
 					let mp3buf
 					if (!right) {
 						const mono = left.subarray(i, i + samplesPerFrame)
-						mp3buf = mp3enc.encodeBuffer(mono);
+						mp3buf = mp3enc.encodeBuffer(mono)
 					} else {
 						const leftChunk = left.subarray(i, i + samplesPerFrame)
 						const rightChunk = right.subarray(i, i + samplesPerFrame)
@@ -2481,7 +2489,7 @@ export default {
 					}
 					remaining -= samplesPerFrame
 				}
-				var d = mp3enc.flush()
+				const d = mp3enc.flush()
 				if (d.length > 0) {
 					buffer.push(new Int8Array(d))
 				}
