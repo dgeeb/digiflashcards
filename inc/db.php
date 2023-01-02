@@ -1,6 +1,6 @@
 <?php
 
-if (!file_exists('../inc/digiflashcards.db')) {
+if (!file_exists(dirname(__FILE__) . '/digiflashcards.db')) {
     $db = new PDO('sqlite:'. dirname(__FILE__) . '/digiflashcards.db');
     $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
