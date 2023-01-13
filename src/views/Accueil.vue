@@ -97,6 +97,9 @@ export default {
 		},
 		ouvrirModale () {
 			this.modale = 'serie'
+			this.$nextTick(function () {
+				document.querySelector('.modale input').focus()
+			})
 		},
 		fermerModale () {
 			this.modale = ''
@@ -177,6 +180,7 @@ export default {
     border: 1px solid #ddd;
     margin-right: 10px;
 	cursor: pointer;
+	user-select: none;
 }
 
 #langues span.selectionne {
