@@ -609,6 +609,21 @@ export default {
 		if (vue && vue === 'apprenant') {
 			this.vue = 'apprenant'
 		}
+		const question = this.$route.query.q
+		const reponse = this.$route.query.r
+		if (question && question !== '' && reponse && reponse !== '') {
+			const xhreq = new XMLHttpRequest()
+			xhreq.onload = function () {
+				if (xhreq.readyState === xhreq.DONE && xhreq.status === 200 && xhreq.responseText === 'serie_debloquee') {
+					this.admin = true
+					this.vue = 'editeur'
+					window.location.href = window.location.href.split('?')[0]
+				}
+			}.bind(this)
+			xhreq.open('POST', this.$parent.$parent.hote + 'inc/ouvrir_serie.php', true)
+			xhreq.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+			xhreq.send('serie=' + this.id + '&question=' + question + '&reponse=' + reponse)
+		}
 		const xhr = new XMLHttpRequest()
 		xhr.onload = function () {
 			if (xhr.readyState === xhr.DONE && xhr.status === 200) {
