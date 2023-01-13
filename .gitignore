@@ -3,6 +3,7 @@ node_modules
 package-lock.json
 _resources
 *.db
+api.php
 
 # fonts
 src/assets/fonts/HKGroteskWide-ExtraBold.woff

@@ -12,7 +12,7 @@ npm install
 
 ### Lancement du serveur de développement
 ```
-npm run serve
+npm run dev
 ```
 
 ### Compilation et minification des fichiers
