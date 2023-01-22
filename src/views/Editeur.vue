@@ -1655,8 +1655,11 @@ export default {
 				const reponse = input.value
 				const index = parseInt(input.getAttribute('data-index'))
 				if (JSON.parse(reponse) === true) {
-					const validation = new Audio('./static/validation.mp3')
-					validation.play()
+					const correct = new Audio('./static/fx/correct.mp3')
+					correct.play()
+				} else {
+					const incorrect = new Audio('./static/fx/incorrect.mp3')
+					incorrect.play()
 				}
 				this.exercicesQuiz[this.navigationQuiz][index].reponse = true
 				this.exercicesQuiz[this.navigationQuiz].forEach(function (item) {
@@ -1781,10 +1784,12 @@ export default {
 				}
 				if (((this.exercicesEcrire[this.navigationEcrire].recto.image !== '' || this.exercicesEcrire[this.navigationEcrire].recto.audio !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte === '' && this.exercicesEcrire[this.navigationEcrire].verso.texte !== '' && reponse === texteVerso) || ((this.exercicesEcrire[this.navigationEcrire].verso.image !== '' || this.exercicesEcrire[this.navigationEcrire].verso.audio !== '' || this.exercicesEcrire[this.navigationEcrire].verso.texte !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte !== '' && reponse === texteRecto)) {
 					this.exercicesEcrire[this.navigationEcrire].correct = true
-					const validation = new Audio('./static/validation.mp3')
-					validation.play()
+					const correct = new Audio('./static/fx/correct.mp3')
+					correct.play()
 				} else {
 					this.exercicesEcrire[this.navigationEcrire].correct = false
+					const incorrect = new Audio('./static/fx/incorrect.mp3')
+					incorrect.play()
 				}
 				this.exercicesEcrire[this.navigationEcrire].reponse = reponse
 				localStorage.setItem('digiflashcards_ecrire_' + this.id, JSON.stringify(this.exercicesEcrire))
