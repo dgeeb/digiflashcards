@@ -1,9 +1,32 @@
 <?php
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Max-Age: 1000');
-header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
+session_start();
+
+$listeDomaines = '../../../domaines-autorises.txt';
+if (isset($_SESSION['domainesAutorises']) || file_exists($listeDomaines)) {
+	if (isset($_SESSION['domainesAutorises']) && $_SESSION['domainesAutorises'] !== '') {
+		$domainesAutorises = $_SESSION['domainesAutorises'];
+	} else if (file_exists($listeDomaines)) {
+		$domainesAutorises = file_get_contents($listeDomaines);
+		$_SESSION['domainesAutorises'] = $domainesAutorises;
+	}
+	$domainesAutorises = explode(',', $domainesAutorises);
+	$origine = $_SERVER['SERVER_NAME'];
+	if (in_array($origine, $domainesAutorises, true)) {
+		header('Access-Control-Allow-Origin: $origine');
+		header('Access-Control-Allow-Methods: POST');
+		header('Access-Control-Max-Age: 1000');
+		header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
+	} else {
+		header('Location: ../');
+		exit();
+	}
+} else {
+	header('Access-Control-Allow-Origin: *');
+	header('Access-Control-Allow-Methods: POST');
+	header('Access-Control-Max-Age: 1000');
+	header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
+}
 
 if (!empty($_FILES['blob']) && !empty($_POST['serie'])) {
 	$ancienfichier = $_POST['ancienfichier'];
@@ -33,7 +56,8 @@ if (!empty($_FILES['blob']) && !empty($_POST['serie'])) {
 	}
 	exit();
 } else {
-	header('Location: /');
+	header('Location: ../');
+	exit();
 }
 
 function creer_vignette($src, $dest, $h) {
