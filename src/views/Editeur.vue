@@ -627,7 +627,7 @@ export default {
 		const xhr = new XMLHttpRequest()
 		xhr.onload = function () {
 			if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-				if (this.verifierJSON(xhr.responseText) === false) {
+				if (xhr.responseText === 'contenu_inexistant' || this.verifierJSON(xhr.responseText) === false) {
 					this.$router.push('/')
 					return false
 				}
