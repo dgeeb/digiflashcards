@@ -46,7 +46,11 @@ if (!empty($_POST['id'])) {
 			if ($donnees !== '') {
 				$donnees = json_decode($donnees);
 			}
-			echo json_encode(array('nom' => $serie[0]['nom'], 'donnees' => $donnees, 'admin' =>  $admin));
+			$digidrive = 0;
+			if (isset($_SESSION['digiflashcards'][$id]['digidrive'])) {
+				$digidrive = $_SESSION['digiflashcards'][$id]['digidrive'];
+			}
+			echo json_encode(array('nom' => $serie[0]['nom'], 'donnees' => $donnees, 'admin' =>  $admin, 'digidrive' => $digidrive));
 		} else {
 			echo 'contenu_inexistant';
 		}
