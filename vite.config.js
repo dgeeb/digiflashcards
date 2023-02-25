@@ -19,7 +19,7 @@ export default defineConfig({
 					dest: './',
 				},
 				{
-					src: path.resolve(__dirname, 'inc') + '/!(*.db||api.php)',
+					src: path.resolve(__dirname, 'inc') + '/!(*.db)',
 					dest: './inc',
 				},
 				{
