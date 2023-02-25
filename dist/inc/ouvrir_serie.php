@@ -68,6 +68,10 @@ if (!empty($_POST['serie']) && !empty($_POST['question']) && !empty($_POST['repo
 		$reponseSecrete = $resultat[0]['reponse'];
 		if ($question === $questionSecrete && password_verify($reponse, $reponseSecrete)) {
 			$_SESSION['digiflashcards'][$serie]['reponse'] = $reponseSecrete;
+			$type = $_POST['type'];
+			if ($type === 'api' && !isset($_SESSION['digiflashcards'][$serie]['digidrive'])) {
+				$_SESSION['digiflashcards'][$serie]['digidrive'] = 1;
+			}
 			echo 'serie_debloquee';
 		} else {
 			echo 'non_autorise';
