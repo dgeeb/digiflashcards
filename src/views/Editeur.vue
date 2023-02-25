@@ -290,11 +290,11 @@
 							<span :class="{'selectionne': $parent.$parent.langue === 'it'}" @click="modifierLangue('it')">IT</span>
 							<span :class="{'selectionne': $parent.$parent.langue === 'en'}" @click="modifierLangue('en')">EN</span>
 						</div>
-						<span class="bouton large" role="button" tabindex="0" @click="ouvrirModaleNomSerie">{{ $t('modifierNomSerie') }}</span>
-						<span class="bouton large" role="button" tabindex="0" @click="ouvrirModaleAccesSerie">{{ $t('modifierAccesSerie') }}</span>
+						<span class="bouton large" role="button" tabindex="0" @click="ouvrirModaleNomSerie" v-if="!digidrive">{{ $t('modifierNomSerie') }}</span>
+						<span class="bouton large" role="button" tabindex="0" @click="ouvrirModaleAccesSerie" v-if="!digidrive">{{ $t('modifierAccesSerie') }}</span>
 						<span class="bouton large" role="button" tabindex="0" @click="exporterSerie">{{ $t('exporterSerie') }}</span>
 						<span class="bouton large" role="button" tabindex="0" @click="modale = 'importer'">{{ $t('importerSerie') }}</span>
-						<span class="bouton large rouge" role="button" tabindex="0" @click="afficherSupprimerSerie">{{ $t('supprimerSerie') }}</span>
+						<span class="bouton large rouge" role="button" tabindex="0" @click="afficherSupprimerSerie" v-if="!digidrive">{{ $t('supprimerSerie') }}</span>
 						<span class="bouton large" role="button" tabindex="0" @click="terminerSession">{{ $t('terminerSession') }}</span>
 					</div>
 				</div>
@@ -581,7 +581,8 @@ export default {
 			pleinEcran: false,
 			cartesInversees: false,
 			copieCartes: [],
-			parametreImport: 'ajouter'
+			parametreImport: 'ajouter',
+			digidrive: false
 		}
 	},
 	watch: {
@@ -617,12 +618,13 @@ export default {
 				if (xhreq.readyState === xhreq.DONE && xhreq.status === 200 && xhreq.responseText === 'serie_debloquee') {
 					this.admin = true
 					this.vue = 'editeur'
+					this.digidrive = true
 				}
 				window.history.replaceState({}, document.title, window.location.href.split('?')[0])
 			}.bind(this)
 			xhreq.open('POST', this.$parent.$parent.hote + 'inc/ouvrir_serie.php', true)
 			xhreq.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
-			xhreq.send('serie=' + this.id + '&question=' + question + '&reponse=' + reponse)
+			xhreq.send('serie=' + this.id + '&question=' + window.atob(question) + '&reponse=' + window.atob(reponse) + '&type=api')
 		}
 		const xhr = new XMLHttpRequest()
 		xhr.onload = function () {
@@ -649,6 +651,7 @@ export default {
 					}
 					this.verifierCartes()
 				}
+				this.digidrive = Boolean(reponse.digidrive)
 				if (this.vue === 'apprenant') {
 					this.cartes = this.cartes.filter(function (carte) {
 						return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '')
@@ -664,7 +667,6 @@ export default {
 							window.MathJax.typeset()
 						}.bind(this))
 					}
-
 					if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
 						this.exercicesQuiz = JSON.parse(localStorage.getItem('digiflashcards_quiz_' + this.id))
 					} else if (this.cartes.length > 4 && this.options.exercices === true) {
@@ -1968,7 +1970,7 @@ export default {
 				}.bind(this)
 				xhr.open('POST', this.$parent.$parent.hote + 'inc/ouvrir_serie.php', true)
 				xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
-				xhr.send('serie=' + this.id + '&question=' + this.question + '&reponse=' + this.reponse)
+				xhr.send('serie=' + this.id + '&question=' + this.question + '&reponse=' + this.reponse + '&type=utilisateur')
 			} else if (this.question === '') {
 				this.$parent.$parent.message = this.$t('selectionnerQuestionSecrete')
 			} else if (this.reponse === '') {
