@@ -48,6 +48,28 @@
 						</label>
 					</div>
 					<div class="option" v-if="options.exercices === true">
+						<h3 v-html="$t('reponsesQuiz')" />
+						<label class="bouton-radio">{{ $t('terme') }}
+							<input type="radio" name="quiz" :checked="options.quiz === 'terme'" @change="modifierOptions('quiz', 'terme')">
+							<span class="coche" />
+						</label>
+						<label class="bouton-radio">{{ $t('definition') }}
+							<input type="radio" name="quiz" :checked="options.quiz === 'definition'" @change="modifierOptions('quiz', 'definition')">
+							<span class="coche" />
+						</label>
+					</div>
+					<div class="option" v-if="options.exercices === true">
+						<h3 v-html="$t('reponseEcrire')" />
+						<label class="bouton-radio">{{ $t('terme') }}
+							<input type="radio" name="ecrire" :checked="options.ecrire === 'terme'" @change="modifierOptions('ecrire', 'terme')">
+							<span class="coche" />
+						</label>
+						<label class="bouton-radio">{{ $t('definition') }}
+							<input type="radio" name="ecrire" :checked="options.ecrire === 'definition'" @change="modifierOptions('ecrire', 'definition')">
+							<span class="coche" />
+						</label>
+					</div>
+					<div class="option" v-if="options.exercices === true">
 						<h3 v-html="$t('optionCasse')" />
 						<label class="bouton-radio">{{ $t('oui') }}
 							<input type="radio" name="casse" :checked="options.casse === true" @change="modifierOptions('casse', true)">
@@ -161,21 +183,33 @@
 				<div id="exercices" v-else-if="exercicesQuiz.length > 0 && vue === 'apprenant' && onglet === 'quiz'">
 					<article class="exercice" v-show="navigationQuiz === indexQuiz" v-for="(itemQuiz, indexQuiz) in exercicesQuiz" :key="'exercice_quiz_' + indexQuiz">
 						<template v-for="(itemQuestion, indexQuestion) in itemQuiz">
-							<div class="question" v-if="itemQuestion.correct === true" :key="'question_quiz_' + indexQuiz + '_' + indexQuestion">
+							<div class="question" v-if="options.quiz === 'definition' && itemQuestion.correct === true" :key="'question_quiz_' + indexQuiz + '_' + indexQuestion">
 								<span class="image" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-audio': itemQuestion.recto.audio !== ''}" v-if="itemQuestion.recto.image !== ''"><img :src="definirLienMedia(itemQuestion.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.recto.image, ''))"></span>
 								<span class="audio" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-image': itemQuestion.recto.image !== '', 'lecture': lecture}" v-if="itemQuestion.recto.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemQuestion.recto.audio, ''))">volume_up</i></span>
 								<span class="texte" v-if="itemQuestion.recto.texte !== ''" v-html="itemQuestion.recto.texte" />
+							</div>
+							<div class="question" v-else-if="options.quiz === 'terme' && itemQuestion.correct === true" :key="'question_quiz_' + indexQuiz + '_' + indexQuestion">
+								<span class="image" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-audio': itemQuestion.verso.audio !== ''}" v-if="itemQuestion.verso.image !== ''"><img :src="definirLienMedia(itemQuestion.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.verso.image, ''))"></span>
+								<span class="audio" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-image': itemQuestion.verso.image !== '', 'lecture': lecture}" v-if="itemQuestion.verso.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemQuestion.verso.audio, ''))">volume_up</i></span>
+								<span class="texte" v-if="itemQuestion.verso.texte !== ''" v-html="itemQuestion.verso.texte" />
 							</div>
 						</template>
 
 						<div :id="'reponses_' + indexQuiz" class="reponses">
 							<div class="reponse" v-for="(itemReponse, indexReponse) in itemQuiz" :key="'reponse_quiz_' + indexQuiz + '_' + indexReponse">
-								<label class="conteneur-coche" :class="{'correct': itemReponse.reponse && itemReponse.correct, 'incorrect': itemReponse.reponse && !itemReponse.correct}">
+								<label class="conteneur-coche" :class="{'correct': itemReponse.reponse && itemReponse.correct, 'incorrect': itemReponse.reponse && !itemReponse.correct}" v-if="options.quiz === 'definition'">
 									<input type="radio" :checked="itemReponse.reponse" :disabled="itemReponse.repondu" :value="itemReponse.correct" :name="'reponse_quiz_' + indexQuiz" :data-index="indexReponse">
 									<span class="radio" />
 									<span class="image" :class="{'avec-texte': itemReponse.verso.texte !== ''}" v-if="itemReponse.verso.image !== ''"><img :src="definirLienMedia(itemReponse.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemReponse.verso.image, ''))"></span>
 									<span class="audio" :class="{'avec-texte': itemReponse.verso.texte !== '', 'avec-image': itemReponse.verso.image !== '', 'lecture': lectureQuiz === indexReponse}" v-if="itemReponse.verso.audio !== ''"><i class="material-icons" @click="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.verso.audio, ''))">volume_up</i></span>
 									<span class="texte" v-if="itemReponse.verso.texte !== ''" v-html="itemReponse.verso.texte" />
+								</label>
+								<label class="conteneur-coche" :class="{'correct': itemReponse.reponse && itemReponse.correct, 'incorrect': itemReponse.reponse && !itemReponse.correct}" v-else>
+									<input type="radio" :checked="itemReponse.reponse" :disabled="itemReponse.repondu" :value="itemReponse.correct" :name="'reponse_quiz_' + indexQuiz" :data-index="indexReponse">
+									<span class="radio" />
+									<span class="image" :class="{'avec-texte': itemReponse.recto.texte !== ''}" v-if="itemReponse.recto.image !== ''"><img :src="definirLienMedia(itemReponse.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemReponse.recto.image, ''))"></span>
+									<span class="audio" :class="{'avec-texte': itemReponse.recto.texte !== '', 'avec-image': itemReponse.recto.image !== '', 'lecture': lectureQuiz === indexReponse}" v-if="itemReponse.recto.audio !== ''"><i class="material-icons" @click="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.recto.audio, ''))">volume_up</i></span>
+									<span class="texte" v-if="itemReponse.recto.texte !== ''" v-html="itemReponse.recto.texte" />
 								</label>
 							</div>
 						</div>
@@ -195,11 +229,12 @@
 				<div id="exercices" v-else-if="exercicesEcrire.length > 0 && vue === 'apprenant' && onglet === 'ecrire'">
 					<article class="exercice" v-show="navigationEcrire === indexEcrire" v-for="(itemEcrire, indexEcrire) in exercicesEcrire" :key="'exercice_ecrire_' + indexEcrire">
 						<div class="question">
-							<template v-if="(itemEcrire.recto.image !== '' || itemEcrire.recto.audio !== '') && itemEcrire.recto.texte === '' && itemEcrire.verso.texte !== ''">
-								<span class="image" v-if="itemEcrire.recto.image !== ''"><img :src="definirLienMedia(itemEcrire.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.recto.image, ''))"></span>
-								<span class="audio" :class="{'avec-image': itemEcrire.recto.image !== '', 'lecture': lecture}" v-if="itemEcrire.recto.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemEcrire.recto.audio, ''))">volume_up</i></span>
+							<template v-if="options.ecrire === 'definition' && (itemEcrire.recto.image !== '' || itemEcrire.recto.audio !== '' || itemEcrire.recto.texte !== '') && itemEcrire.verso.texte !== ''">
+								<span class="image" :class="{'avec-texte': itemEcrire.recto.texte !== '', 'avec-audio': itemEcrire.recto.audio !== ''}" v-if="itemEcrire.recto.image !== ''"><img :src="definirLienMedia(itemEcrire.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.recto.image, ''))"></span>
+								<span class="audio" :class="{'avec-texte': itemEcrire.recto.texte !== '', 'avec-image': itemEcrire.recto.image !== '', 'lecture': lecture}" v-if="itemEcrire.recto.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemEcrire.recto.audio, ''))">volume_up</i></span>
+								<span class="texte" v-if="itemEcrire.recto.texte !== ''" v-html="itemEcrire.recto.texte" />
 							</template>
-							<template v-else-if="(itemEcrire.verso.image !== '' || itemEcrire.verso.audio !== '' || itemEcrire.verso.texte !== '') && itemEcrire.recto.texte !== ''">
+							<template v-else-if="options.ecrire === 'terme' && (itemEcrire.verso.image !== '' || itemEcrire.verso.audio !== '' || itemEcrire.verso.texte !== '') && itemEcrire.recto.texte !== ''">
 								<span class="image" :class="{'avec-texte': itemEcrire.verso.texte !== '', 'avec-audio': itemEcrire.verso.audio !== ''}" v-if="itemEcrire.verso.image !== ''"><img :src="definirLienMedia(itemEcrire.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.verso.image, ''))"></span>
 								<span class="audio" :class="{'avec-texte': itemEcrire.verso.texte !== '', 'avec-image': itemEcrire.verso.image !== '', 'lecture': lecture}" v-if="itemEcrire.verso.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemEcrire.verso.audio, ''))">volume_up</i></span>
 								<span class="texte" v-if="itemEcrire.verso.texte !== ''" v-html="itemEcrire.verso.texte" />
@@ -541,7 +576,7 @@ export default {
 			questions: ['motPrefere', 'filmPrefere', 'chansonPreferee', 'prenomMere', 'prenomPere', 'nomRue', 'nomEmployeur', 'nomAnimal'],
 			reponse: '',
 			nom: '',
-			options: { exercices: true, casse: false },
+			options: { exercices: true, quiz: 'definition', ecrire: 'definition', casse: false },
 			cartes: [{ recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }],
 			carteIndex: '',
 			carteType: '',
@@ -648,6 +683,12 @@ export default {
 					this.cartes = donnees.cartes
 					if (donnees.hasOwnProperty('options')) {
 						this.options = donnees.options
+					}
+					if (!this.options.hasOwnProperty('quiz')) {
+						this.options.quiz = 'definition'
+					}
+					if (!this.options.hasOwnProperty('ecrire')) {
+						this.options.ecrire = 'definition'
 					}
 					this.verifierCartes()
 				}
@@ -874,6 +915,14 @@ export default {
 			xhr.setRequestHeader('Content-type', 'application/json')
 			const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
 			xhr.send(JSON.stringify(json))
+			if (type === 'ecrire') {
+				if (localStorage.getItem('digiflashcards_ecrire_' + this.id)) {
+					localStorage.removeItem('digiflashcards_ecrire_' + this.id)
+				}
+				if (this.cartes.length > 4) {
+					this.definirExercicesEcrire()
+				}
+			}
 		},
 		definirTailleFonte () {
 			if (this.vue === 'apprenant') {
@@ -1713,13 +1762,18 @@ export default {
 			const cartes = []
 			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
 			copieCartes.forEach(function (item) {
-				if ((item.recto.texte !== '' && (item.verso.texte !== '' || item.verso.image !== '' || item.verso.audio !== '')) || (item.verso.texte !== '' && !item.verso.texte.includes('$$') && (item.recto.texte !== '' || item.recto.image !== '' || item.recto.audio !== ''))) {
+				if (this.options.ecrire === 'definition' && (item.verso.texte !== '' && !item.verso.texte.includes('$$') && (item.recto.texte !== '' || item.recto.image !== '' || item.recto.audio !== ''))) {
+					item.correct = ''
+					item.reponse = ''
+					item.valide = false
+					cartes.push(item)
+				} else if (this.options.ecrire === 'terme' && (item.recto.texte !== '' && !item.recto.texte.includes('$$') && (item.verso.texte !== '' || item.verso.image !== '' || item.verso.audio !== ''))) {
 					item.correct = ''
 					item.reponse = ''
 					item.valide = false
 					cartes.push(item)
 				}
-			})
+			}.bind(this))
 			const cartesExercice = this.melangerEntrees(cartes)
 			if (cartesExercice.length > 20) {
 				this.exercicesEcrire = cartesExercice.slice(0, -(cartesExercice.length - 20))
@@ -2328,7 +2382,7 @@ export default {
 		},
 		gererPleinEcran () {
 			if (!this.pleinEcran) {
-				fscreen.requestFullscreen(document.querySelector('#page'))
+				fscreen.requestFullscreen(document.querySelector('#app'))
 				this.pleinEcran = true
 			} else {
 				fscreen.exitFullscreen()
@@ -3309,12 +3363,23 @@ export default {
 }
 
 #exercices .conteneur-coche .image {
-	width: 45px;
+	width: 120px;
 	margin-right: 10px;
 	text-align: center;
 }
 
 #exercices .conteneur-coche .image img {
+	max-width: 120px;
+	max-height: 120px;
+}
+
+#exercices .conteneur-coche .image.avec-texte {
+	width: 45px;
+	margin-right: 10px;
+	text-align: center;
+}
+
+#exercices .conteneur-coche .image.avec-texte img {
 	max-width: 45px;
 	max-height: 45px;
 }
@@ -3814,6 +3879,17 @@ export default {
 
 	#exercices .question .audio.avec-texte + .texte {
 		max-width: calc(100% - 80px)!important;
+	}
+}
+
+@media screen and (max-width: 499px) {
+	#exercices .conteneur-coche .image {
+		width: 90px;
+	}
+
+	#exercices .conteneur-coche .image img {
+		max-width: 90px;
+		max-height: 90px;
 	}
 }
 
