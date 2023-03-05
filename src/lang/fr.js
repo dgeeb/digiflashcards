@@ -113,5 +113,7 @@ export default {
 	optionCasse: 'Prendre en compte la casse dans les réponses <i>Écrire</i>',
 	parametreImport: 'Paramètre d\'import',
 	ajouterContenuImporte: 'Ajouter le contenu importé au contenu actuel',
-	remplacerContenuImporte: 'Remplacer le contenu actuel par le contenu importé'
+	remplacerContenuImporte: 'Remplacer le contenu actuel par le contenu importé',
+	reponsesQuiz: 'Réponses pour <i>Quiz</i>',
+	reponseEcrire: 'Réponse pour <i>Écrire</i>'
 }

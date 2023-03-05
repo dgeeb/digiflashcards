@@ -114,4 +114,6 @@ export default {
 	parametreImport: 'Import setting',
 	ajouterContenuImporte: 'Add imported content to current content',
 	remplacerContenuImporte: 'Replace the current content with the imported content',
+	reponsesQuiz: 'Answers for <i>Quiz</i>',
+	reponseEcrire: 'Answer for <i>Write</i>'
 }

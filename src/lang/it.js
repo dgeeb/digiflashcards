@@ -113,5 +113,7 @@ export default {
 	optionCasse: 'Siate sensibili alle maiuscole e minuscole nelle risposte di <i>Scrivere</i>.',
 	parametreImport: 'Parametro di importazione',
 	ajouterContenuImporte: 'Aggiungere il contenuto importato al contenuto corrente',
-	remplacerContenuImporte: 'Sostituire il contenuto attuale con quello importato'
+	remplacerContenuImporte: 'Sostituire il contenuto attuale con quello importato',
+	reponsesQuiz: 'Risposte al <i>Quiz</i>',
+	reponseEcrire: 'Risposta al <i>Scrivere</i>'
 }
