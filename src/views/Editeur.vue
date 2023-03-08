@@ -1838,7 +1838,7 @@ export default {
 					texteRecto = this.exercicesEcrire[this.navigationEcrire].recto.texte
 					texteVerso = this.exercicesEcrire[this.navigationEcrire].verso.texte
 				}
-				if (((this.exercicesEcrire[this.navigationEcrire].recto.image !== '' || this.exercicesEcrire[this.navigationEcrire].recto.audio !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte === '' && this.exercicesEcrire[this.navigationEcrire].verso.texte !== '' && reponse === texteVerso) || ((this.exercicesEcrire[this.navigationEcrire].verso.image !== '' || this.exercicesEcrire[this.navigationEcrire].verso.audio !== '' || this.exercicesEcrire[this.navigationEcrire].verso.texte !== '') && this.exercicesEcrire[this.navigationEcrire].recto.texte !== '' && reponse === texteRecto)) {
+				if ((this.options.ecrire === 'definition' && reponse === texteVerso) || (this.options.ecrire === 'terme' && reponse === texteRecto)) {
 					this.exercicesEcrire[this.navigationEcrire].correct = true
 					const correct = new Audio('./static/fx/correct.mp3')
 					correct.play()
