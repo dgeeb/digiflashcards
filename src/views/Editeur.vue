@@ -273,7 +273,7 @@
 					<div id="copier-lien" class="copier">
 						<input type="text" disabled :value="definirRacine() + '#/f/' + id">
 						<span class="icone lien" role="button" tabindex="0" :title="$t('copierLien')"><i class="material-icons">content_copy</i></span>
-						<span class="icone codeqr" role="button" tabindex="0" :title="$t('afficherCodeQR')" @click="modale = 'code-qr'"><i class="material-icons">qr_code</i></span>
+						<span class="icone codeqr" role="button" tabindex="0" :title="$t('afficherCodeQR')" @click="afficherCodeQR"><i class="material-icons">qr_code</i></span>
 					</div>
 					<label>{{ $t('codeIntegration') }}</label>
 					<div id="copier-iframe" class="copier">
@@ -533,7 +533,7 @@
 			</div>
 		</div>
 
-		<div class="conteneur-modale" v-show="modale === 'code-qr'">
+		<div class="conteneur-modale" v-else-if="modale === 'code-qr'">
 			<div id="codeqr" class="modale">
 				<header>
 					<span class="titre">{{ $t('codeQR') }}</span>
@@ -811,16 +811,6 @@ export default {
 		clipboardIframe.on('success', function () {
 			this.$parent.$parent.notification = this.$t('codeCopie')
 		}.bind(this))
-		// eslint-disable-next-line
-		this.codeqr = new QRCode('qr', {
-			text: lien,
-			width: 360,
-			height: 360,
-			colorDark: '#000000',
-			colorLight: '#ffffff',
-			// eslint-disable-next-line
-			correctLevel : QRCode.CorrectLevel.H
-		})
 
 		if (fscreen.fullscreenEnabled) {
 			fscreen.addEventListener('fullscreenchange', function () {
@@ -976,6 +966,22 @@ export default {
 				const largeurBouton = rect.width
 				const largeurMenu = document.querySelector('#menu-partager').getBoundingClientRect().width
 				this.position = rect.left - ((largeurMenu * 90) / 100 - largeurBouton / 2)
+			}.bind(this))
+		},
+		afficherCodeQR () {
+			this.modale = 'code-qr'
+			this.$nextTick(function () {
+				const lien = this.definirRacine() + '#/f/' + this.id
+				// eslint-disable-next-line
+				this.codeqr = new QRCode('qr', {
+					text: lien,
+					width: 360,
+					height: 360,
+					colorDark: '#000000',
+					colorLight: '#ffffff',
+					// eslint-disable-next-line
+					correctLevel : QRCode.CorrectLevel.H
+				})
 			}.bind(this))
 		},
 		supprimerDonneesExercices () {
@@ -1596,7 +1602,7 @@ export default {
 			const cartes = []
 			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
 			copieCartes.forEach(function (item) {
-				if ((item.recto.texte !== '' || item.recto.image !== '' || item.recto.audio !== '') && (item.verso.texte !== '' || item.verso.image !== '' || item.verso.audio !== '')) {
+				if ((item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio')) && (item.recto.texte.trim() !== '' || item.recto.image.trim() !== '' || item.recto.audio.trim() !== '') && (item.verso.texte.trim() !== '' || item.verso.image.trim() !== '' || item.verso.audio.trim() !== '')) {
 					cartes.push(item)
 				}
 			})
@@ -1607,7 +1613,7 @@ export default {
 				let cartesSansItem = []
 				const copieCartesSansItem = JSON.parse(JSON.stringify(this.cartes))
 				copieCartesSansItem.forEach(function (item) {
-					if ((item.recto.texte !== '' || item.recto.image !== '' || item.recto.audio !== '') && (item.verso.texte !== '' || item.verso.image !== '' || item.verso.audio !== '')) {
+					if ((item.recto.texte.trim() !== '' || item.recto.image.trim() !== '' || item.recto.audio.trim() !== '') && (item.verso.texte.trim() !== '' || item.verso.image.trim() !== '' || item.verso.audio.trim() !== '')) {
 						cartesSansItem.push(item)
 					}
 				})
@@ -1762,12 +1768,12 @@ export default {
 			const cartes = []
 			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
 			copieCartes.forEach(function (item) {
-				if (this.options.ecrire === 'definition' && (item.verso.texte !== '' && !item.verso.texte.includes('$$') && (item.recto.texte !== '' || item.recto.image !== '' || item.recto.audio !== ''))) {
+				if ((item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio')) && this.options.ecrire === 'definition' && (item.verso.texte.trim() !== '' && !item.verso.texte.includes('$$') && (item.recto.texte.trim() !== '' || item.recto.image.trim() !== '' || item.recto.audio.trim() !== ''))) {
 					item.correct = ''
 					item.reponse = ''
 					item.valide = false
 					cartes.push(item)
-				} else if (this.options.ecrire === 'terme' && (item.recto.texte !== '' && !item.recto.texte.includes('$$') && (item.verso.texte !== '' || item.verso.image !== '' || item.verso.audio !== ''))) {
+				} else if ((item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio')) && this.options.ecrire === 'terme' && (item.recto.texte.trim() !== '' && !item.recto.texte.includes('$$') && (item.verso.texte.trim() !== '' || item.verso.image.trim() !== '' || item.verso.audio.trim() !== ''))) {
 					item.correct = ''
 					item.reponse = ''
 					item.valide = false
@@ -3244,6 +3250,8 @@ export default {
 
 #exercices .question .texte {
 	font-size: 24px;
+	text-align: center;
+	line-height: 1.5;
 }
 
 #exercices .question .image.avec-texte {
