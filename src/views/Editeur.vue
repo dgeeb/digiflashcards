@@ -1768,12 +1768,12 @@ export default {
 			const cartes = []
 			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
 			copieCartes.forEach(function (item) {
-				if ((item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio')) && this.options.ecrire === 'definition' && (item.verso.texte.trim() !== '' && !item.verso.texte.includes('$$') && (item.recto.texte.trim() !== '' || item.recto.image.trim() !== '' || item.recto.audio.trim() !== ''))) {
+				if (item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio') && this.options.ecrire === 'definition' && (item.verso.texte.trim() !== '' && !item.verso.texte.includes('$$') && (item.recto.texte.trim() !== '' || item.recto.image.trim() !== '' || item.recto.audio.trim() !== ''))) {
 					item.correct = ''
 					item.reponse = ''
 					item.valide = false
 					cartes.push(item)
-				} else if ((item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio')) && this.options.ecrire === 'terme' && (item.recto.texte.trim() !== '' && !item.recto.texte.includes('$$') && (item.verso.texte.trim() !== '' || item.verso.image.trim() !== '' || item.verso.audio.trim() !== ''))) {
+				} else if (item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio') && this.options.ecrire === 'terme' && (item.recto.texte.trim() !== '' && !item.recto.texte.includes('$$') && (item.verso.texte.trim() !== '' || item.verso.image.trim() !== '' || item.verso.audio.trim() !== ''))) {
 					item.correct = ''
 					item.reponse = ''
 					item.valide = false
