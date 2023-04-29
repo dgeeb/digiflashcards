@@ -82,7 +82,7 @@ if (!empty($_POST['token']) && !empty($_POST['lien'])) {
 			require 'db.php';
 			$id = $_POST['id'];
 			$question = $_POST['question'];
-			$reponse = $_POST['reponse'];
+			$reponse = strtolower($_POST['reponse']);
 			$stmt = $db->prepare('SELECT nom, question, reponse FROM digiflashcards_series WHERE url = :url');
 			if ($stmt->execute(array('url' => $id))) {
 				$resultat = $stmt->fetchAll();
@@ -100,7 +100,7 @@ if (!empty($_POST['token']) && !empty($_POST['lien'])) {
 		} else if ($action === 'supprimer' && !empty($_POST['id']) && !empty($_POST['reponse'])) {
 			require 'db.php';
 			$id = $_POST['id'];
-			$reponse = $_POST['reponse'];
+			$reponse = strtolower($_POST['reponse']);
 			$stmt = $db->prepare('SELECT reponse FROM digiflashcards_series WHERE url = :url');
 			if ($stmt->execute(array('url' => $id))) {
 				$resultat = $stmt->fetchAll();
