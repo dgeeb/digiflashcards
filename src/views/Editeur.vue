@@ -267,6 +267,11 @@
 				</div>
 			</div>
 
+			<div id="retour-haut" v-if="vue === 'editeur' && boutonRetour">
+				<a :href="definirRacine() + '#/f/' + id + '?vue=apprenant'" target="_blank" :title="$t('apercuApprenant')"><i class="material-icons">preview</i></a>
+				<span role="button" tabindex="0" :title="$t('retourHaut')" @click="retournerHaut"><i class="material-icons">arrow_circle_up</i></span>
+			</div>
+
 			<div id="menu-partager" v-show="menu === 'partager'" :style="{'left': position + 'px'}">
 				<div id="conteneur-partager">
 					<label>{{ $t('lienEtCodeQR') }}</label>
@@ -312,8 +317,8 @@
 			</div>
 		</div>
 
-		<div class="conteneur-modale" v-else-if="modale === 'serie'">
-			<div class="modale">
+		<div class="conteneur-modale" v-else-if="modale === 'serie' || modale === 'modifier-nom' || modale === 'modifier-acces' || modale === 'importer' || modale === 'suppression-serie'">
+			<div class="modale" v-if="modale === 'serie'">
 				<header>
 					<span class="titre">{{ $t('parametresSerie') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleSerie"><i class="material-icons">close</i></span>
@@ -334,10 +339,7 @@
 					</div>
 				</div>
 			</div>
-		</div>
-
-		<div class="conteneur-modale" v-else-if="modale === 'modifier-nom'">
-			<div class="modale">
+			<div class="modale" v-else-if="modale === 'modifier-nom'">
 				<header>
 					<span class="titre">{{ $t('modifierNomSerie') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleNomSerie"><i class="material-icons">close</i></span>
@@ -352,10 +354,7 @@
 					</div>
 				</div>
 			</div>
-		</div>
-
-		<div class="conteneur-modale" v-else-if="modale === 'modifier-acces'">
-			<div class="modale">
+			<div class="modale" v-else-if="modale === 'modifier-acces'">
 				<header>
 					<span class="titre">{{ $t('modifierAccesSerie') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAccesSerie"><i class="material-icons">close</i></span>
@@ -381,10 +380,7 @@
 					</div>
 				</div>
 			</div>
-		</div>
-
-		<div class="conteneur-modale" v-else-if="modale === 'importer'">
-			<div class="modale">
+			<div class="modale" v-else-if="modale === 'importer'">
 				<header>
 					<span class="titre">{{ $t('importerSerie') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="modale = ''"><i class="material-icons">close</i></span>
@@ -405,10 +401,7 @@
 					</div>
 				</div>
 			</div>
-		</div>
-
-		<div class="conteneur-modale" v-else-if="modale === 'suppression-serie'">
-			<div class="modale confirmation">
+			<div class="modale confirmation" v-else-if="modale === 'suppression-serie'">
 				<div class="conteneur">
 					<div class="contenu">
 						<p v-html="$t('confirmationSupprimerSerie')" />
@@ -617,7 +610,8 @@ export default {
 			cartesInversees: false,
 			copieCartes: [],
 			parametreImport: 'ajouter',
-			digidrive: false
+			digidrive: false,
+			boutonRetour: false
 		}
 	},
 	watch: {
@@ -718,6 +712,7 @@ export default {
 					} else if (this.cartes.length > 4 && this.options.exercices === true) {
 						this.definirExercicesEcrire()
 					}
+					document.querySelector('#app').classList.add('apprenant')
 				} else {
 					this.$nextTick(function () {
 						document.querySelector('#page').addEventListener('dragover', function (event) {
@@ -849,9 +844,12 @@ export default {
 		}.bind(this))
 
 		window.addEventListener('keydown', this.gererClavier, false)
+
+		document.body.addEventListener('scroll', this.gererScroll, false)
 	},
 	beforeUnmount () {
 		window.removeEventListener('keydown', this.gererClavier, false)
+		document.body.removeEventListener('scroll', this.gererScroll, false)
 	},
 	methods: {
 		definirRacine () {
@@ -2021,6 +2019,7 @@ export default {
 								this.copieCartes = []
 							}
 							this.verifierCartes()
+							document.querySelector('#app').classList.remove('apprenant')
 						}
 					} else {
 						this.$parent.$parent.chargement = false
@@ -2223,6 +2222,7 @@ export default {
 											this.copieCartes = []
 											this.verifierCartes()
 											this.$parent.$parent.notification = this.$t('serieImportee')
+											document.querySelector('#app').classList.remove('apprenant')
 										}
 									} else {
 										this.$parent.$parent.chargement = false
@@ -2270,6 +2270,7 @@ export default {
 							}.bind(this))
 						}
 						this.$parent.$parent.notification = this.$t('sessionTerminee')
+						document.querySelector('#app').classList.add('apprenant')
 					}
 				} else {
 					this.$parent.$parent.chargement = false
@@ -2385,6 +2386,17 @@ export default {
 				event.preventDefault()
 				this.definirOnglet('cartes')
 			}
+		},
+		gererScroll () {
+			const y = document.body.scrollTop - document.body.clientHeight
+			if (this.vue === 'editeur' && y > 10) {
+				this.boutonRetour = true
+			} else {
+				this.boutonRetour = false
+			}
+		},
+		retournerHaut () {
+			document.body.scrollTop = 0
 		},
 		gererPleinEcran () {
 			if (!this.pleinEcran) {
@@ -3849,6 +3861,24 @@ export default {
 #codeqr.modale .contenu {
 	text-align: center;
 	font-size: 0;
+}
+
+#retour-haut {
+	position: fixed;
+	bottom: 30px;
+	right: 20px;
+	display: flex;
+	font-size: 36px;
+	padding: 5px 10px;
+	background: rgba(0, 0, 0, 0.3);
+	color: #fff;
+	border-radius: 10px;
+	user-select: none;
+}
+
+#retour-haut span {
+	margin-left: 10px;
+	cursor: pointer;
 }
 
 @media screen and (max-width: 399px) {

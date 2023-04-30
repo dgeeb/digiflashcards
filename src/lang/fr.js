@@ -115,5 +115,6 @@ export default {
 	ajouterContenuImporte: 'Ajouter le contenu importé au contenu actuel',
 	remplacerContenuImporte: 'Remplacer le contenu actuel par le contenu importé',
 	reponsesQuiz: 'Réponses pour <i>Quiz</i>',
-	reponseEcrire: 'Réponse pour <i>Écrire</i>'
+	reponseEcrire: 'Réponse pour <i>Écrire</i>',
+	retourHaut: 'Retour en haut'
 }
