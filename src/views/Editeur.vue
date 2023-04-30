@@ -849,7 +849,6 @@ export default {
 	},
 	beforeUnmount () {
 		window.removeEventListener('keydown', this.gererClavier, false)
-		document.body.removeEventListener('scroll', this.gererScroll, false)
 	},
 	methods: {
 		definirRacine () {
@@ -3874,6 +3873,7 @@ export default {
 	color: #fff;
 	border-radius: 10px;
 	user-select: none;
+	z-index: 10;
 }
 
 #retour-haut span {
