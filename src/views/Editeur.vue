@@ -2387,8 +2387,8 @@ export default {
 			}
 		},
 		gererScroll () {
-			const y = document.body.scrollTop - document.body.clientHeight
-			if (this.vue === 'editeur' && y > 10) {
+			const y = document.body.scrollTop
+			if (this.vue === 'editeur' && y > 100) {
 				this.boutonRetour = true
 			} else {
 				this.boutonRetour = false
@@ -3869,7 +3869,7 @@ export default {
 	display: flex;
 	font-size: 36px;
 	padding: 5px 10px;
-	background: rgba(0, 0, 0, 0.3);
+	background: rgba(0, 0, 0, 0.4);
 	color: #fff;
 	border-radius: 10px;
 	user-select: none;
