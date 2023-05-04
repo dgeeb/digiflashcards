@@ -898,6 +898,17 @@ export default {
 		modifierOptions (type, valeur) {
 			this.options[type] = valeur
 			const xhr = new XMLHttpRequest()
+			xhr.onload = function () {
+				if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+					if (xhr.responseText === 'erreur') {
+						this.$parent.$parent.message = this.$t('erreurServeur')
+					} else if (xhr.responseText === 'non_autorise') {
+						this.$parent.$parent.message = this.$t('actionNonAutorisee')
+					}
+				} else {
+					this.$parent.$parent.message = this.$t('erreurServeur')
+				}
+			}.bind(this)
 			xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 			xhr.setRequestHeader('Content-type', 'application/json')
 			const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
@@ -1064,6 +1075,15 @@ export default {
 				const xhr = new XMLHttpRequest()
 				xhr.onload = function () {
 					this.chrono = ''
+					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+						if (xhr.responseText === 'erreur') {
+							this.$parent.$parent.message = this.$t('erreurServeur')
+						} else if (xhr.responseText === 'non_autorise') {
+							this.$parent.$parent.message = this.$t('actionNonAutorisee')
+						}
+					} else {
+						this.$parent.$parent.message = this.$t('erreurServeur')
+					}
 				}.bind(this)
 				xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 				xhr.setRequestHeader('Content-type', 'application/json')
@@ -1095,6 +1115,17 @@ export default {
 						} else {
 							this.cartes[index][type].image = xhr.responseText
 							xhr = new XMLHttpRequest()
+							xhr.onload = function () {
+								if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+									if (xhr.responseText === 'erreur') {
+										this.$parent.$parent.message = this.$t('erreurServeur')
+									} else if (xhr.responseText === 'non_autorise') {
+										this.$parent.$parent.message = this.$t('actionNonAutorisee')
+									}
+								} else {
+									this.$parent.$parent.message = this.$t('erreurServeur')
+								}
+							}.bind(this)
 							xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
 							xhr.setRequestHeader('Content-type', 'application/json')
 							const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
@@ -1205,6 +1236,8 @@ export default {
 						this.progression = 0
 						if (xhr.responseText === 'erreur') {
 							this.$parent.$parent.message = this.$t('erreurTeleversement')
+						} else if (xhr.responseText === 'non_autorise') {
+							this.$parent.$parent.message = this.$t('actionNonAutorisee')
 						} else {
 							this.cartes[index][type].audio = xhr.responseText
 							xhr = new XMLHttpRequest()
@@ -1266,6 +1299,8 @@ export default {
 						this.progression = 0
 						if (xhr.responseText === 'erreur') {
 							this.$parent.$parent.message = this.$t('erreurTeleversement')
+						} else if (xhr.responseText === 'non_autorise') {
+							this.$parent.$parent.message = this.$t('actionNonAutorisee')
 						} else {
 							this.cartes[index][type].audio = xhr.responseText
 							xhr = new XMLHttpRequest()
@@ -1525,7 +1560,9 @@ export default {
 				xhr.onload = function () {
 					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 						this.$parent.$parent.chargementTransparent = false
-						if (xhr.responseText === 'non_autorise') {
+						if (xhr.responseText === 'erreur') {
+							this.$parent.$parent.message = this.$t('erreurServeur')
+						} else if (xhr.responseText === 'non_autorise') {
 							this.$parent.$parent.message = this.$t('actionNonAutorisee')
 						}
 					} else {
