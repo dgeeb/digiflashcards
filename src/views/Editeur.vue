@@ -175,7 +175,7 @@
 
 					<div class="navigation">
 						<span class="precedent" :title="$t('afficherCartePrecedente')" @click="afficherCartePrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="actions"><span class="total">{{ navigationCartes + 1 }} / {{ cartes.length }}</span><span class="aleatoire" :title="$t('melangerCartes')" @click="melangerCartes"><i class="material-icons">shuffle</i></span><span class="aleatoire" :title="$t('inverserCartes')" @click="inverserCartes"><i class="material-icons">flip</i></span><span class="ecran" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
+						<span class="actions"><span class="total">{{ navigationCartes + 1 }} / {{ cartes.length }}</span><span class="memorise" :title="$t('marquerMemorisee')" @click="modifierCartesMemorisees(cartes[navigationCartes].id)" v-if="cartes[navigationCartes].hasOwnProperty('id') && !cartesMemorisees.includes(cartes[navigationCartes].id)"><i class="material-icons">check_circle</i></span><span class="memorise actif" :title="$t('supprimerMemorisee')" @click="modifierCartesMemorisees(cartes[navigationCartes].id)" v-else-if="cartes[navigationCartes].hasOwnProperty('id') && cartesMemorisees.includes(cartes[navigationCartes].id)"><i class="material-icons">check_circle</i></span><span class="aleatoire" :title="$t('melangerCartes')" @click="melangerCartes"><i class="material-icons">shuffle</i></span><span class="aleatoire" :title="$t('inverserCartes')" @click="inverserCartes"><i class="material-icons">flip</i></span><span class="ecran" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
 						<span class="suivant" :title="$t('afficherCarteSuivante')" @click="afficherCarteSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
@@ -611,7 +611,8 @@ export default {
 			copieCartes: [],
 			parametreImport: 'ajouter',
 			digidrive: false,
-			boutonRetour: false
+			boutonRetour: false,
+			cartesMemorisees: []
 		}
 	},
 	watch: {
@@ -626,6 +627,20 @@ export default {
 				this.audio = ''
 				this.lecture = false
 			}
+		},
+		cartes: {
+			handler (cartes) {
+				if (this.vue === 'editeur') {
+					for (let i = 0; i < cartes.length; i++) {
+						if (!cartes[i].hasOwnProperty('id')) {
+							const id = 'carte-' + (new Date()).getTime() + Math.random().toString(16).slice(12)
+							cartes[i].id = id
+						}
+					}
+					this.cartes = cartes
+				}
+			},
+			deep: true
 		}
 	},
 	created () {
@@ -701,6 +716,29 @@ export default {
 							})
 							window.MathJax.typeset()
 						}.bind(this))
+					}
+					this.cartes.forEach(function (carte) {
+						if (carte.recto.texte !== '') {
+							carte.recto.texte = carte.recto.texte.replace(/(?:\r\n|\r|\n)/g, '<br>')
+						}
+						if (carte.verso.texte !== '') {
+							carte.verso.texte = carte.verso.texte.replace(/(?:\r\n|\r|\n)/g, '<br>')
+						}
+					})
+					if (localStorage.getItem('digiflashcards_cartes_memorisees_' + this.id)) {
+						this.cartesMemorisees = JSON.parse(localStorage.getItem('digiflashcards_cartes_memorisees_' + this.id))
+						if (this.cartesMemorisees.length > 0) {
+							const cartes = JSON.parse(JSON.stringify(this.cartes))
+							const cartesMemorisees = []
+							cartes.forEach(function (carte, index) {
+								if (carte.hasOwnProperty('id') && this.cartesMemorisees.includes(carte.id)) {
+									cartesMemorisees.push(carte)
+									cartes.splice(index, 1)
+								}
+							}.bind(this))
+							cartes.push(...cartesMemorisees)
+							this.cartes = cartes
+						}
 					}
 					if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
 						this.exercicesQuiz = JSON.parse(localStorage.getItem('digiflashcards_quiz_' + this.id))
@@ -1649,6 +1687,26 @@ export default {
 			const json = { serie: this.id, donnees: JSON.stringify({ cartes: cartes, options: this.options }), fichiers: JSON.stringify(fichiers) }
 			xhr.send(JSON.stringify(json))
 			this.supprimerDonneesExercices()
+		},
+		modifierCartesMemorisees (id) {
+			this.$parent.$parent.chargement = true
+			let ajout = true
+			if (!this.cartesMemorisees.includes(id)) {
+				this.cartesMemorisees.push(id)
+			} else {
+				const index = this.cartesMemorisees.indexOf(id)
+				this.cartesMemorisees.splice(index, 1)
+				ajout = false
+			}
+			localStorage.setItem('digiflashcards_cartes_memorisees_' + this.id, JSON.stringify(this.cartesMemorisees))
+			setTimeout(function () {
+				if (ajout === true) {
+					this.$parent.$parent.notification = this.$t('carteMemorisee')
+				} else {
+					this.$parent.$parent.notification = this.$t('carteNonMemorisee')
+				}
+				this.$parent.$parent.chargement = false
+			}.bind(this), 200)
 		},
 		definirExercicesQuiz () {
 			const cartes = []
@@ -2983,7 +3041,7 @@ export default {
 
 #cartes.apprenant .carte .texte {
 	margin: auto 0;
-	line-height: 1.5;
+	line-height: 1.35;
 }
 
 #cartes.apprenant .carte .texte + .image {
@@ -3106,6 +3164,7 @@ export default {
 	border-radius: 5px;
 }
 
+#cartes .navigation .memorise,
 #cartes .navigation .aleatoire,
 #cartes .navigation .ecran,
 #exercices .navigation .ecran,
@@ -3115,14 +3174,18 @@ export default {
 	margin-left: 15px;
 }
 
+#cartes .navigation .memorise.actif {
+	color: #00b894;
+}
+
 #page.sans-plein-ecran #cartes .navigation .ecran,
 #page.sans-plein-ecran #exercices .navigation .ecran {
 	display: none!important;
 }
 
-#cartes .navigation span,
-#exercices .navigation span {
-	vertical-align: middle;
+#cartes .navigation .actions,
+#exercices .navigation .actions {
+	display: flex;
 }
 
 #cartes.admin .carte .actions {
