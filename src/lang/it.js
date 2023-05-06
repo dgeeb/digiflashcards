@@ -116,5 +116,9 @@ export default {
 	remplacerContenuImporte: 'Sostituire il contenuto attuale con quello importato',
 	reponsesQuiz: 'Risposte al <i>Quiz</i>',
 	reponseEcrire: 'Risposta al <i>Scrivere</i>',
-	retourHaut: 'Torna all\'inizio'
+	retourHaut: 'Torna all\'inizio',
+	marquerMemorisee: 'Segna come salvato',
+	supprimerMemorisee: 'Elimina dall\'elenco delle flashcard memorizzate',
+	carteMemorisee: 'Flashcard contrassegnata come salvata.',
+	carteNonMemorisee: 'Flashcard cancellata dall\'elenco delle flashcards memorizzate.'
 }

@@ -116,5 +116,9 @@ export default {
 	remplacerContenuImporte: 'Remplacer le contenu actuel par le contenu importé',
 	reponsesQuiz: 'Réponses pour <i>Quiz</i>',
 	reponseEcrire: 'Réponse pour <i>Écrire</i>',
-	retourHaut: 'Retour en haut'
+	retourHaut: 'Retour en haut',
+	marquerMemorisee: 'Marquer comme mémorisée',
+	supprimerMemorisee: 'Supprimer des cartes mémorisées',
+	carteMemorisee: 'Carte marquée comme mémorisée',
+	carteNonMemorisee: 'Carte supprimée des cartes mémorisées'
 }
