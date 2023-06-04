@@ -183,12 +183,12 @@
 				<div id="exercices" v-else-if="exercicesQuiz.length > 0 && vue === 'apprenant' && onglet === 'quiz'">
 					<article class="exercice" v-show="navigationQuiz === indexQuiz" v-for="(itemQuiz, indexQuiz) in exercicesQuiz" :key="'exercice_quiz_' + indexQuiz">
 						<template v-for="(itemQuestion, indexQuestion) in itemQuiz">
-							<div class="question" v-if="options.quiz === 'definition' && itemQuestion.correct === true" :key="'question_quiz_' + indexQuiz + '_' + indexQuestion">
+							<div class="question" v-if="options.quiz === 'definition' && itemQuestion.correct === true" :key="'question_quiz_definition_' + indexQuiz + '_' + indexQuestion">
 								<span class="image" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-audio': itemQuestion.recto.audio !== ''}" v-if="itemQuestion.recto.image !== ''"><img :src="definirLienMedia(itemQuestion.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.recto.image, ''))"></span>
 								<span class="audio" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-image': itemQuestion.recto.image !== '', 'lecture': lecture}" v-if="itemQuestion.recto.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemQuestion.recto.audio, ''))">volume_up</i></span>
 								<span class="texte" v-if="itemQuestion.recto.texte !== ''" v-html="itemQuestion.recto.texte" />
 							</div>
-							<div class="question" v-else-if="options.quiz === 'terme' && itemQuestion.correct === true" :key="'question_quiz_' + indexQuiz + '_' + indexQuestion">
+							<div class="question" v-else-if="options.quiz === 'terme' && itemQuestion.correct === true" :key="'question_quiz_terme_' + indexQuiz + '_' + indexQuestion">
 								<span class="image" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-audio': itemQuestion.verso.audio !== ''}" v-if="itemQuestion.verso.image !== ''"><img :src="definirLienMedia(itemQuestion.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.verso.image, ''))"></span>
 								<span class="audio" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-image': itemQuestion.verso.image !== '', 'lecture': lecture}" v-if="itemQuestion.verso.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemQuestion.verso.audio, ''))">volume_up</i></span>
 								<span class="texte" v-if="itemQuestion.verso.texte !== ''" v-html="itemQuestion.verso.texte" />
@@ -339,6 +339,7 @@
 					</div>
 				</div>
 			</div>
+
 			<div class="modale" v-else-if="modale === 'modifier-nom'">
 				<header>
 					<span class="titre">{{ $t('modifierNomSerie') }}</span>
@@ -354,6 +355,7 @@
 					</div>
 				</div>
 			</div>
+
 			<div class="modale" v-else-if="modale === 'modifier-acces'">
 				<header>
 					<span class="titre">{{ $t('modifierAccesSerie') }}</span>
@@ -380,6 +382,7 @@
 					</div>
 				</div>
 			</div>
+
 			<div class="modale" v-else-if="modale === 'importer'">
 				<header>
 					<span class="titre">{{ $t('importerSerie') }}</span>
@@ -401,6 +404,7 @@
 					</div>
 				</div>
 			</div>
+
 			<div class="modale confirmation" v-else-if="modale === 'suppression-serie'">
 				<div class="conteneur">
 					<div class="contenu">
@@ -2016,6 +2020,9 @@ export default {
 		ouvrirModaleNomSerie () {
 			this.nouveaunom = this.nom
 			this.modale = 'modifier-nom'
+			this.$nextTick(function () {
+				document.querySelector('.modale input').focus()
+			})
 		},
 		fermerModaleNomSerie () {
 			this.modale = ''
