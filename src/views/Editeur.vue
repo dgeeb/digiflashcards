@@ -1,7 +1,7 @@
 <template>
 	<div id="page" :class="{'plein-ecran': pleinEcran}">
 		<div id="serie">
-			<header id="header">
+			<header id="header" v-if="!integration && !impressionPDF">
 				<div id="conteneur-header">
 					<a id="conteneur-logo" :href="definirRacine()" :title="$t('accueil')">
 						<span id="logo"></span>
@@ -19,7 +19,7 @@
 				</div>
 			</header>
 
-			<div id="onglets" v-if="vue === 'apprenant' && cartes.length > 4 && options.exercices && (exercicesQuiz.length > 4 || exercicesEcrire.length > 4)">
+			<div id="onglets" v-if="vue === 'apprenant' && cartes.length > 4 && options.exercices && (exercicesQuiz.length > 4 || exercicesEcrire.length > 4) && !impressionPDF">
 				<span class="onglet" :class="{'selectionne': onglet === 'cartes'}" :title="$t('afficherCartes')" @click="definirOnglet('cartes')"><i class="material-icons">style</i></span>
 				<span class="onglet" :class="{'selectionne': onglet === 'quiz'}" :title="$t('afficherQuiz')" @click="definirOnglet('quiz')" v-if="exercicesQuiz.length > 4"><i class="material-icons">help_center</i></span>
 				<span class="onglet" :class="{'selectionne': onglet === 'ecrire'}" :title="$t('afficherEcrire')" @click="definirOnglet('ecrire')" v-if="exercicesEcrire.length > 4"><i class="material-icons">edit</i></span>
@@ -173,7 +173,7 @@
 						</div>
 					</article>
 
-					<div class="navigation">
+					<div class="navigation" v-if="!impressionPDF">
 						<span class="precedent" :title="$t('afficherCartePrecedente')" @click="afficherCartePrecedente"><i class="material-icons">arrow_back</i></span>
 						<span class="actions"><span class="total">{{ navigationCartes + 1 }} / {{ cartes.length }}</span><span class="memorise" :title="$t('marquerMemorisee')" @click="modifierCartesMemorisees(cartes[navigationCartes].id)" v-if="cartes[navigationCartes].hasOwnProperty('id') && !cartesMemorisees.includes(cartes[navigationCartes].id)"><i class="material-icons">check_circle</i></span><span class="memorise actif" :title="$t('supprimerMemorisee')" @click="modifierCartesMemorisees(cartes[navigationCartes].id)" v-else-if="cartes[navigationCartes].hasOwnProperty('id') && cartesMemorisees.includes(cartes[navigationCartes].id)"><i class="material-icons">check_circle</i></span><span class="aleatoire" :title="$t('melangerCartes')" @click="melangerCartes"><i class="material-icons">shuffle</i></span><span class="aleatoire" :title="$t('inverserCartes')" @click="inverserCartes"><i class="material-icons">flip</i></span><span class="ecran" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
 						<span class="suivant" :title="$t('afficherCarteSuivante')" @click="afficherCarteSuivante"><i class="material-icons">arrow_forward</i></span>
@@ -261,7 +261,7 @@
 					<span role="button" tabindex="0" @click="ajouterCarte">{{ $t('ajouterCarte') }}</span>
 				</div>
 
-				<div id="credits">
+				<div id="credits" v-if="!integration && !impressionPDF">
 					<p><a href="https://ladigitale.dev/digiflashcards/" target="_blank" rel="noreferrer" v-html="$t('credits')" /></p>
 					<p>{{ new Date().getFullYear() }} - <a href="https://ladigitale.dev" target="_blank" rel="noreferrer">La Digitale</a></p>
 				</div>
@@ -616,7 +616,10 @@ export default {
 			parametreImport: 'ajouter',
 			digidrive: false,
 			boutonRetour: false,
-			cartesMemorisees: []
+			cartesMemorisees: [],
+			integration: false,
+			impressionPDF: false,
+			fitties: ''
 		}
 	},
 	watch: {
@@ -658,6 +661,10 @@ export default {
 		if (vue && vue === 'apprenant') {
 			this.vue = 'apprenant'
 		}
+		if (window.location.href.includes('?print-pdf')) {
+			this.vue = 'apprenant'
+			this.impressionPDF = true
+		}
 		const question = this.$route.query.q
 		const reponse = this.$route.query.r
 		if (question && question !== '' && reponse && reponse !== '') {
@@ -687,7 +694,7 @@ export default {
 					return false
 				}
 				this.admin = reponse.admin
-				if (this.admin && !vue) {
+				if (this.admin && !vue && !this.impressionPDF) {
 					this.vue = 'editeur'
 				}
 				this.nom = reponse.nom
@@ -706,6 +713,7 @@ export default {
 					this.verifierCartes()
 				}
 				this.digidrive = Boolean(reponse.digidrive)
+
 				if (this.vue === 'apprenant') {
 					this.cartes = this.cartes.filter(function (carte) {
 						return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '')
@@ -755,6 +763,10 @@ export default {
 						this.definirExercicesEcrire()
 					}
 					document.querySelector('#app').classList.add('apprenant')
+
+					if (this.impressionPDF === true) {
+						this.definirTailleFonte()
+					}
 				} else {
 					this.$nextTick(function () {
 						document.querySelector('#page').addEventListener('dragover', function (event) {
@@ -871,6 +883,16 @@ export default {
 			}
 		}.bind(this))
 
+		if (window !== window.parent) {
+			this.integration = true
+			document.querySelector('#app').classList.add('integration')
+		}
+
+		if (this.impressionPDF === true) {
+			document.getElementsByTagName('html')[0].style.height = 'auto'
+			document.querySelector('#app').classList.add('pdf')
+		}
+
 		window.addEventListener('resize', function () {
 			if (this.menu === 'partager') {
 				this.menu = ''
@@ -965,7 +987,7 @@ export default {
 			}
 		},
 		definirTailleFonte () {
-			if (this.vue === 'apprenant') {
+			if (this.vue === 'apprenant' && !this.impressionPDF) {
 				this.$nextTick(function () {
 					if (document.body.clientWidth < 360) {
 						this.tailleFonte = 18
@@ -990,6 +1012,42 @@ export default {
 							minSize: tailleFonte,
 							maxSize: 100,
 							multiLine: true
+						})
+					}.bind(this))
+				}.bind(this))
+			} else if (this.vue === 'apprenant' && this.impressionPDF) {
+				this.$nextTick(function () {
+					if (document.body.clientWidth < 360) {
+						this.tailleFonte = 18
+					} else if (document.body.clientWidth < 400) {
+						this.tailleFonte = 20
+					} else if (document.body.clientWidth < 768) {
+						this.tailleFonte = 24
+					} else {
+						this.tailleFonte = 28
+					}
+					const tailleFonte = this.tailleFonte
+					if (this.fitty !== '') {
+						if (this.fitty[0]) {
+							this.fitty[0].unsubscribe()
+						}
+						if (this.fitty[1]) {
+							this.fitty[1].unsubscribe()
+						}
+					}
+					if (this.fitties !== '') {
+						this.fitties.forEach(function (element) {
+							element.unsubscribe()
+						})
+					}
+					this.$nextTick(function () {
+						this.fitties = fitty('#cartes .texte', {
+							minSize: tailleFonte,
+							maxSize: 70,
+							multiLine: true
+						})
+						this.fitties.forEach(function (element) {
+							element.fit()
 						})
 					}.bind(this))
 				}.bind(this))
@@ -2982,6 +3040,10 @@ export default {
 	cursor: pointer;
 }
 
+.integration #cartes.apprenant .carte {
+	height: 74vh;
+}
+
 #cartes.apprenant .carte > .recto,
 #cartes.apprenant .carte > .verso {
 	display: flex;
@@ -2994,6 +3056,11 @@ export default {
 	transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transition-duration: 0.5s;
     transition-property: transform, opacity;
+}
+
+.integration #cartes.apprenant .carte > .recto,
+.integration #cartes.apprenant .carte > .verso {
+    height: 74vh;
 }
 
 #page.plein-ecran #cartes.apprenant .carte > .recto,
@@ -4004,6 +4071,32 @@ export default {
 #retour-haut span {
 	margin-left: 10px;
 	cursor: pointer;
+}
+
+.pdf #cartes {
+	padding: 0 20px 0;
+}
+
+.pdf #cartes.apprenant .carte {
+	display: flex!important;
+	flex-wrap: wrap;
+	height: 100vh;
+	pointer-events: none;
+}
+
+.pdf #cartes.apprenant .carte > .recto,
+.pdf #cartes.apprenant .carte > .verso {
+	height: 50vh;
+}
+
+.pdf #cartes.apprenant .carte > .recto {
+	background-color: #ffffff;
+}
+
+.pdf #cartes.apprenant .carte > .verso {
+	position: relative;
+	opacity: 1;
+	transform: rotateX(0deg);
 }
 
 @media screen and (max-width: 399px) {
