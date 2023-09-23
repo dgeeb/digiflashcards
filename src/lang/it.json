@@ -67,7 +67,7 @@
 	"importerSerie": "Importa il set",
 	"serieImportee": "Set importato.",
 	"serieExportee": "Set esportato.",
-	"selectionnerFichier": "Selezione il file .zip",
+	"selectionnerFichier": "Selezione un file .zip",
 	"ajouterImage": "Aggiungi un'immagine",
 	"terme": "Termini",
 	"definition": "Definizione",
@@ -82,7 +82,7 @@
 	"ajouterAudio": "Aggiungi audio",
 	"afficherAudio": "Visualizza audio",
 	"enregistrerAudio": "Registrare audio",
-	"selectionnerFichierMP3": "Selezionare un file .mp3",
+	"selectionnerFichierMP3": "Selezione un file .mp3",
 	"ou": "o",
 	"annuler": "Annullare",
 	"enregistrementAudio": "Registrazione audio",
@@ -120,5 +120,6 @@
 	"marquerMemorisee": "Segna come salvato",
 	"supprimerMemorisee": "Elimina dall'elenco delle flashcard memorizzate",
 	"carteMemorisee": "Flashcard contrassegnata come salvata.",
-	"carteNonMemorisee": "Flashcard cancellata dall'elenco delle flashcards memorizzate."
+	"carteNonMemorisee": "Flashcard cancellata dall'elenco delle flashcards memorizzate.",
+	"selectionnerFichierCSV": "Selezione un file .csv"
 }

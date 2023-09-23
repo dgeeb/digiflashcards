@@ -28,8 +28,7 @@
 			<div id="conteneur">
 				<div id="actions" v-if="vue === 'editeur'">
 					<div id="importer-csv">
-						<label role="button" tabindex="0" for="televerser_csv"><i class="material-icons">upload_file</i><span>{{ $t('importerCSV') }}</span></label>
-						<input id="televerser_csv" type="file" accept=".csv" @change="importerCSV" style="display: none;">
+						<span class="bouton" role="button" tabindex="0" @click="modale = 'importerCSV'"><i class="material-icons">upload_file</i><span>{{ $t('importerCSV') }}</span></span>
 						<a href="./static/digiflashcards_template.csv" target="_blank">{{ $t('telechargerModele') }}</a>
 					</div>
 					<a :href="definirRacine() + '#/f/' + id + '?vue=apprenant'" target="_blank"><i class="material-icons">preview</i><span>{{ $t('apercuApprenant') }}</span></a>
@@ -312,6 +311,30 @@
 						<div class="actions">
 							<span class="bouton" role="button" tabindex="0" @click="debloquerSerie">{{ $t('valider') }}</span>
 						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="conteneur-modale" v-if="modale === 'importerCSV'">
+			<div class="modale">
+				<header>
+					<span class="titre">{{ $t('importerCSV') }}</span>
+					<span class="fermer" role="button" tabindex="0" @click="modale = ''"><i class="material-icons">close</i></span>
+				</header>
+				<div class="conteneur">
+					<div class="contenu">
+						<div class="parametre-import">
+							<label>{{ $t('parametreImport') }}</label>
+							<label class="bouton-radio">{{ $t('ajouterContenuImporte') }}
+								<input type="radio" name="import" :checked="parametreImport === 'ajouter'" @change="parametreImport = 'ajouter'">
+							</label>
+							<label class="bouton-radio">{{ $t('remplacerContenuImporte') }}
+								<input type="radio" name="import" :checked="parametreImport === 'remplacer'" @change="parametreImport = 'remplacer'">
+							</label>
+						</div>
+						<input type="file" id="televerser_csv" name="televerser_csv" style="display: none;" accept=".csv" @change="importerCSV">
+						<label for="televerser_csv" class="bouton large">{{ $t('selectionnerFichierCSV') }}</label>
 					</div>
 				</div>
 			</div>
@@ -2005,16 +2028,16 @@ export default {
 		},
 		verifierEcrire () {
 			let reponse = document.querySelector('#champ_' + this.navigationEcrire).value
+			reponse = reponse.trim().replace(/\s+/g, ' ')
 			let texteRecto, texteVerso
-			if (reponse.trim() !== '') {
+			if (reponse !== '') {
 				if (this.options.casse === false) {
-					reponse = reponse.trim().toLowerCase()
-					texteRecto = this.exercicesEcrire[this.navigationEcrire].recto.texte.toLowerCase()
-					texteVerso = this.exercicesEcrire[this.navigationEcrire].verso.texte.toLowerCase()
+					reponse = reponse.toLowerCase()
+					texteRecto = this.exercicesEcrire[this.navigationEcrire].recto.texte.replace(/\s+/g, ' ').toLowerCase()
+					texteVerso = this.exercicesEcrire[this.navigationEcrire].verso.texte.replace(/\s+/g, ' ').toLowerCase()
 				} else {
-					reponse = reponse.trim()
-					texteRecto = this.exercicesEcrire[this.navigationEcrire].recto.texte
-					texteVerso = this.exercicesEcrire[this.navigationEcrire].verso.texte
+					texteRecto = this.exercicesEcrire[this.navigationEcrire].recto.texte.replace(/\s+/g, ' ')
+					texteVerso = this.exercicesEcrire[this.navigationEcrire].verso.texte.replace(/\s+/g, ' ')
 				}
 				if ((this.options.ecrire === 'definition' && reponse === texteVerso) || (this.options.ecrire === 'terme' && reponse === texteRecto)) {
 					this.exercicesEcrire[this.navigationEcrire].correct = true
@@ -2493,8 +2516,9 @@ export default {
 				document.querySelector('#televerser_csv').value = ''
 				return false
 			} else {
+				this.modale = ''
 				const that = this
-				let cartes = JSON.parse(JSON.stringify(this.cartes))
+				let cartes
 				this.$parent.$parent.chargement = true
 				Papa.parse(fichier, {
 					header: true,
@@ -2502,6 +2526,11 @@ export default {
 					skipEmptyLines: true,
 					complete: function (results) {
 						const donnees = results.data
+						if (that.parametreImport === 'remplacer') {
+							cartes = []
+						} else {
+							cartes = JSON.parse(JSON.stringify(that.cartes))
+						}
 						donnees.forEach(function (item) {
 							if ((item.recto_texte !== '' || item.recto_image !== '' || item.recto_audio !== '') && (item.verso_texte !== '' || item.verso_image !== '' || item.verso_audio !== '')) {
 								cartes.push({ recto: { texte: item.recto_texte, image: item.recto_image, audio: item.recto_audio }, verso: { texte: item.verso_texte, image: item.verso_image, audio: item.verso_audio } })
@@ -2510,7 +2539,7 @@ export default {
 						cartes = cartes.filter(function (carte) {
 							return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '')
 						})
-						const xhr = new XMLHttpRequest()
+						let xhr = new XMLHttpRequest()
 						xhr.onload = function () {
 							if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 								that.$parent.$parent.chargement = false
@@ -2523,6 +2552,12 @@ export default {
 									that.cartesInversees = false
 									that.copieCartes = []
 									that.$parent.$parent.notification = that.$t('cartesImportees')
+									if (that.parametreImport === 'remplacer') {
+										xhr = new XMLHttpRequest()
+										xhr.open('POST', that.$parent.$parent.hote + 'inc/vider_dossier_serie.php', true)
+										xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+										xhr.send('serie=' + that.id)
+									}
 								}
 							} else {
 								that.$parent.$parent.chargement = false
@@ -3635,7 +3670,7 @@ export default {
 
 #exercices .valider span,
 #actions > a,
-#actions label,
+#actions span.bouton,
 #ajouter-carte span {
 	display: inline-block;
 	width: 100%;
@@ -3658,14 +3693,14 @@ export default {
 }
 
 #exercices .valider span,
-#actions label,
+#actions span.bouton,
 #actions > a {
 	width: auto;
 }
 
 #exercices .valider span:hover,
 #actions > a:hover,
-#actions label:hover,
+#actions span.bouton:hover,
 #ajouter-carte span:hover {
 	background: #001d1d;
 	color: #fff;
@@ -3713,7 +3748,7 @@ export default {
 	background-color: #777!important;
 }
 
-#actions label i,
+#actions span.bouton i,
 #actions > a i {
 	font-size: 24px;
 	margin-right: 0.5em;

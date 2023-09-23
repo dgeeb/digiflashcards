@@ -120,5 +120,6 @@
 	"marquerMemorisee": "Marquer comme mémorisée",
 	"supprimerMemorisee": "Supprimer des cartes mémorisées",
 	"carteMemorisee": "Carte marquée comme mémorisée.",
-	"carteNonMemorisee": "Carte supprimée des cartes mémorisées."
+	"carteNonMemorisee": "Carte supprimée des cartes mémorisées.",
+	"selectionnerFichierCSV": "Sélectionner un fichier .csv"
 }

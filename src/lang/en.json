@@ -120,5 +120,6 @@
 	"marquerMemorisee": "Mark as memorized",
 	"supprimerMemorisee": "Delete from memorized flashcards",
 	"carteMemorisee": "Flashcard marked as memorized.",
-	"carteNonMemorisee": "Flashcard deleted from memorized flashcards."
+	"carteNonMemorisee": "Flashcard deleted from memorized flashcards.",
+	"selectionnerFichierCSV": "Select a .csv file"
 }
