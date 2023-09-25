@@ -573,6 +573,7 @@
 import ClipboardJS from 'clipboard'
 import { saveAs } from 'file-saver'
 import latinise from 'voca/latinise'
+import stripTags from 'voca/strip_tags'
 import JSZip from 'jszip'
 import imagesLoaded from 'imagesloaded'
 import fitty from 'fitty'
@@ -2027,19 +2028,20 @@ export default {
 			}.bind(this), 200)
 		},
 		verifierEcrire () {
-			let reponse = document.querySelector('#champ_' + this.navigationEcrire).value
-			reponse = reponse.trim().replace(/\s+/g, ' ')
+			const reponse = document.querySelector('#champ_' + this.navigationEcrire).value
+			let reponseFormatee = reponse.trim().replace(/\s+/g, ' ')
+			const exercicesEcrire = JSON.parse(JSON.stringify(this.exercicesEcrire))
 			let texteRecto, texteVerso
-			if (reponse !== '') {
+			if (reponseFormatee !== '') {
 				if (this.options.casse === false) {
-					reponse = reponse.toLowerCase()
-					texteRecto = this.exercicesEcrire[this.navigationEcrire].recto.texte.replace(/\s+/g, ' ').toLowerCase()
-					texteVerso = this.exercicesEcrire[this.navigationEcrire].verso.texte.replace(/\s+/g, ' ').toLowerCase()
+					reponseFormatee = reponseFormatee.toLowerCase()
+					texteRecto = stripTags(exercicesEcrire[this.navigationEcrire].recto.texte.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, '').toLowerCase())
+					texteVerso = stripTags(exercicesEcrire[this.navigationEcrire].verso.texte.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, '').toLowerCase())
 				} else {
-					texteRecto = this.exercicesEcrire[this.navigationEcrire].recto.texte.replace(/\s+/g, ' ')
-					texteVerso = this.exercicesEcrire[this.navigationEcrire].verso.texte.replace(/\s+/g, ' ')
+					texteRecto = stripTags(exercicesEcrire[this.navigationEcrire].recto.texte.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, ''))
+					texteVerso = stripTags(exercicesEcrire[this.navigationEcrire].verso.texte.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, ''))
 				}
-				if ((this.options.ecrire === 'definition' && reponse === texteVerso) || (this.options.ecrire === 'terme' && reponse === texteRecto)) {
+				if ((this.options.ecrire === 'definition' && reponseFormatee === texteVerso) || (this.options.ecrire === 'terme' && reponseFormatee === texteRecto)) {
 					this.exercicesEcrire[this.navigationEcrire].correct = true
 					const correct = new Audio('./static/fx/correct.mp3')
 					correct.play()
