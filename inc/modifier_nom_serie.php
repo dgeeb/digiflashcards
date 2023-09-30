@@ -38,7 +38,9 @@ if (!empty($_POST['serie']) && !empty($_POST['nouveaunom'])) {
 	$stmt = $db->prepare('SELECT reponse FROM digiflashcards_series WHERE url = :url');
 	if ($stmt->execute(array('url' => $serie))) {
 		$resultat = $stmt->fetchAll();
-		if ($resultat[0]['reponse'] === $reponse) {
+		if (!$resultat) {
+			echo 'contenu_inexistant';
+		} else if ($resultat[0]['reponse'] === $reponse) {
 			$nouveaunom = $_POST['nouveaunom'];
 			$stmt = $db->prepare('UPDATE digiflashcards_series SET nom = :nouveaunom WHERE url = :url');
 			if ($stmt->execute(array('nouveaunom' => $nouveaunom, 'url' => $serie))) {

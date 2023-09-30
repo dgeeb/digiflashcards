@@ -579,7 +579,7 @@ import imagesLoaded from 'imagesloaded'
 import fitty from 'fitty'
 import Papa from 'papaparse'
 import fscreen from 'fscreen'
-import lamejs from 'lamejstmp'
+import lamejs from 'lamejs'
 import { VueDraggableNext } from 'vue-draggable-next'
 
 export default {
@@ -988,7 +988,10 @@ export default {
 			const xhr = new XMLHttpRequest()
 			xhr.onload = function () {
 				if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-					if (xhr.responseText === 'erreur') {
+					if (xhr.responseText === 'contenu_inexistant') {
+						document.title = 'Digiflashcards by La Digitale'
+						this.$router.push('/')
+					} else if (xhr.responseText === 'erreur') {
 						this.$parent.$parent.message = this.$t('erreurServeur')
 					} else if (xhr.responseText === 'non_autorise') {
 						this.$parent.$parent.message = this.$t('actionNonAutorisee')
@@ -1200,7 +1203,10 @@ export default {
 				xhr.onload = function () {
 					this.chrono = ''
 					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-						if (xhr.responseText === 'erreur') {
+						if (xhr.responseText === 'contenu_inexistant') {
+							document.title = 'Digiflashcards by La Digitale'
+							this.$router.push('/')
+						} else if (xhr.responseText === 'erreur') {
 							this.$parent.$parent.message = this.$t('erreurServeur')
 						} else if (xhr.responseText === 'non_autorise') {
 							this.$parent.$parent.message = this.$t('actionNonAutorisee')
@@ -1241,7 +1247,10 @@ export default {
 							xhr = new XMLHttpRequest()
 							xhr.onload = function () {
 								if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-									if (xhr.responseText === 'erreur') {
+									if (xhr.responseText === 'contenu_inexistant') {
+										document.title = 'Digiflashcards by La Digitale'
+										this.$router.push('/')
+									} else if (xhr.responseText === 'erreur') {
 										this.$parent.$parent.message = this.$t('erreurServeur')
 									} else if (xhr.responseText === 'non_autorise') {
 										this.$parent.$parent.message = this.$t('actionNonAutorisee')
@@ -1322,7 +1331,10 @@ export default {
 			xhr.onload = function () {
 				if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 					this.$parent.$parent.chargement = false
-					if (xhr.responseText === 'erreur') {
+					if (xhr.responseText === 'contenu_inexistant') {
+						document.title = 'Digiflashcards by La Digitale'
+						this.$router.push('/')
+					} else if (xhr.responseText === 'erreur') {
 						this.$parent.$parent.message = this.$t('erreurServeur')
 					} else if (xhr.responseText === 'non_autorise') {
 						this.$parent.$parent.message = this.$t('actionNonAutorisee')
@@ -1365,7 +1377,10 @@ export default {
 							xhr = new XMLHttpRequest()
 							xhr.onload = function () {
 								if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-									if (xhr.responseText === 'erreur') {
+									if (xhr.responseText === 'contenu_inexistant') {
+										document.title = 'Digiflashcards by La Digitale'
+										this.$router.push('/')
+									} else if (xhr.responseText === 'erreur') {
 										this.$parent.$parent.message = this.$t('erreurServeur')
 									} else if (xhr.responseText === 'non_autorise') {
 										this.$parent.$parent.message = this.$t('actionNonAutorisee')
@@ -1437,7 +1452,10 @@ export default {
 							xhr = new XMLHttpRequest()
 							xhr.onload = function () {
 								if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-									if (xhr.responseText === 'erreur') {
+									if (xhr.responseText === 'contenu_inexistant') {
+										document.title = 'Digiflashcards by La Digitale'
+										this.$router.push('/')
+									} else if (xhr.responseText === 'erreur') {
 										this.$parent.$parent.message = this.$t('erreurServeur')
 									} else if (xhr.responseText === 'non_autorise') {
 										this.$parent.$parent.message = this.$t('actionNonAutorisee')
@@ -1677,7 +1695,10 @@ export default {
 			xhr.onload = function () {
 				if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 					this.$parent.$parent.chargement = false
-					if (xhr.responseText === 'erreur') {
+					if (xhr.responseText === 'contenu_inexistant') {
+						document.title = 'Digiflashcards by La Digitale'
+						this.$router.push('/')
+					} else if (xhr.responseText === 'erreur') {
 						this.$parent.$parent.message = this.$t('erreurServeur')
 					} else if (xhr.responseText === 'non_autorise') {
 						this.$parent.$parent.message = this.$t('actionNonAutorisee')
@@ -1702,7 +1723,10 @@ export default {
 				xhr.onload = function () {
 					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 						this.$parent.$parent.chargementTransparent = false
-						if (xhr.responseText === 'erreur') {
+						if (xhr.responseText === 'contenu_inexistant') {
+							document.title = 'Digiflashcards by La Digitale'
+							this.$router.push('/')
+						} else if (xhr.responseText === 'erreur') {
 							this.$parent.$parent.message = this.$t('erreurServeur')
 						} else if (xhr.responseText === 'non_autorise') {
 							this.$parent.$parent.message = this.$t('actionNonAutorisee')
@@ -1753,7 +1777,10 @@ export default {
 			xhr.onload = function () {
 				if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 					this.$parent.$parent.chargement = false
-					if (xhr.responseText === 'erreur') {
+					if (xhr.responseText === 'contenu_inexistant') {
+						document.title = 'Digiflashcards by La Digitale'
+						this.$router.push('/')
+					} else if (xhr.responseText === 'erreur') {
 						this.$parent.$parent.message = this.$t('erreurServeur')
 					} else if (xhr.responseText === 'non_autorise') {
 						this.$parent.$parent.message = this.$t('actionNonAutorisee')
@@ -2118,7 +2145,10 @@ export default {
 				xhr.onload = function () {
 					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 						this.$parent.$parent.chargement = false
-						if (xhr.responseText === 'erreur') {
+						if (xhr.responseText === 'contenu_inexistant') {
+							document.title = 'Digiflashcards by La Digitale'
+							this.$router.push('/')
+						} else if (xhr.responseText === 'erreur') {
 							this.$parent.$parent.message = this.$t('erreurServeur')
 							this.fermerModaleNomSerie()
 						} else if (xhr.responseText === 'non_autorise') {
@@ -2161,7 +2191,10 @@ export default {
 					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 						this.$parent.$parent.chargement = false
 						this.fermerModaleAccesSerie()
-						if (xhr.responseText === 'erreur') {
+						if (xhr.responseText === 'contenu_inexistant') {
+							document.title = 'Digiflashcards by La Digitale'
+							this.$router.push('/')
+						} else if (xhr.responseText === 'erreur') {
 							this.$parent.$parent.message = this.$t('erreurServeur')
 						} else if (xhr.responseText === 'non_autorise') {
 							this.$parent.$parent.message = this.$t('informationsIncorrectes')
@@ -2203,7 +2236,10 @@ export default {
 					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 						this.$parent.$parent.chargement = false
 						this.fermerModaleConnexion()
-						if (xhr.responseText === 'erreur') {
+						if (xhr.responseText === 'contenu_inexistant') {
+							document.title = 'Digiflashcards by La Digitale'
+							this.$router.push('/')
+						} else if (xhr.responseText === 'erreur') {
 							this.$parent.$parent.message = this.$t('erreurServeur')
 						} else if (xhr.responseText === 'non_autorise') {
 							this.$parent.$parent.message = this.$t('informationsIncorrectes')
@@ -2409,7 +2445,10 @@ export default {
 								xhr.onload = function () {
 									if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 										this.$parent.$parent.chargement = false
-										if (xhr.responseText === 'erreur') {
+										if (xhr.responseText === 'contenu_inexistant') {
+											document.title = 'Digiflashcards by La Digitale'
+											this.$router.push('/')
+										} else if (xhr.responseText === 'erreur') {
 											this.$parent.$parent.message = this.$t('erreurServeur')
 										} else if (xhr.responseText === 'non_autorise') {
 											this.$parent.$parent.message = this.$t('actionNonAutorisee')
@@ -2498,7 +2537,7 @@ export default {
 						this.$parent.$parent.message = this.$t('erreurServeur')
 					} else if (xhr.responseText === 'non_autorise') {
 						this.$parent.$parent.message = this.$t('actionNonAutorisee')
-					} else if (xhr.responseText === 'serie_supprimee') {
+					} else if (xhr.responseText === 'serie_supprimee' || xhr.responseText === 'contenu_inexistant') {
 						document.title = 'Digiflashcards by La Digitale'
 						this.$router.push('/')
 					}
@@ -2545,7 +2584,10 @@ export default {
 						xhr.onload = function () {
 							if (xhr.readyState === xhr.DONE && xhr.status === 200) {
 								that.$parent.$parent.chargement = false
-								if (xhr.responseText === 'erreur') {
+								if (xhr.responseText === 'contenu_inexistant') {
+									document.title = 'Digiflashcards by La Digitale'
+									that.$router.push('/')
+								} else if (xhr.responseText === 'erreur') {
 									that.$parent.$parent.message = that.$t('erreurServeur')
 								} else if (xhr.responseText === 'non_autorise') {
 									that.$parent.$parent.message = that.$t('actionNonAutorisee')
