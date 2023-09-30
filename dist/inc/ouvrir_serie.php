@@ -37,44 +37,48 @@ if (!empty($_POST['serie']) && !empty($_POST['question']) && !empty($_POST['repo
 	if ($stmt->execute(array('url' => $serie))) {
 		$resultat = $stmt->fetchAll();
 		$questionSecrete = '';
-		switch ($resultat[0]['question']) {
-			case 'Quel est mon mot préféré ?':
-				$questionSecrete = 'motPrefere';
-				break;
-			case 'Quel est mon film préféré ?':
-				$questionSecrete = 'filmPrefere';
-				break;
-			case 'Quelle est ma chanson préférée ?':
-				$questionSecrete = 'chansonPreferee';
-				break;
-			case 'Quel est le prénom de ma mère ?':
-				$questionSecrete = 'prenomMere';
-				break;
-			case 'Quel est le prénom de mon père ?':
-				$questionSecrete = 'prenomPere';
-				break;
-			case 'Quel est le nom de ma rue ?':
-				$questionSecrete = 'nomRue';
-				break;
-			case 'Quel est le nom de mon employeur ?':
-				$questionSecrete = 'nomEmployeur';
-				break;
-			case 'Quel est le nom de mon animal de compagnie ?':
-				$questionSecrete = 'nomAnimal';
-				break;
-			default:
-				$questionSecrete = $resultat[0]['question'];
-		}
-		$reponseSecrete = $resultat[0]['reponse'];
-		if ($question === $questionSecrete && password_verify($reponse, $reponseSecrete)) {
-			$_SESSION['digiflashcards'][$serie]['reponse'] = $reponseSecrete;
-			$type = $_POST['type'];
-			if ($type === 'api' && !isset($_SESSION['digiflashcards'][$serie]['digidrive'])) {
-				$_SESSION['digiflashcards'][$serie]['digidrive'] = 1;
-			}
-			echo 'serie_debloquee';
+		if (!$resultat) {
+			echo 'contenu_inexistant';
 		} else {
-			echo 'non_autorise';
+			switch ($resultat[0]['question']) {
+				case 'Quel est mon mot préféré ?':
+					$questionSecrete = 'motPrefere';
+					break;
+				case 'Quel est mon film préféré ?':
+					$questionSecrete = 'filmPrefere';
+					break;
+				case 'Quelle est ma chanson préférée ?':
+					$questionSecrete = 'chansonPreferee';
+					break;
+				case 'Quel est le prénom de ma mère ?':
+					$questionSecrete = 'prenomMere';
+					break;
+				case 'Quel est le prénom de mon père ?':
+					$questionSecrete = 'prenomPere';
+					break;
+				case 'Quel est le nom de ma rue ?':
+					$questionSecrete = 'nomRue';
+					break;
+				case 'Quel est le nom de mon employeur ?':
+					$questionSecrete = 'nomEmployeur';
+					break;
+				case 'Quel est le nom de mon animal de compagnie ?':
+					$questionSecrete = 'nomAnimal';
+					break;
+				default:
+					$questionSecrete = $resultat[0]['question'];
+			}
+			$reponseSecrete = $resultat[0]['reponse'];
+			if ($question === $questionSecrete && password_verify($reponse, $reponseSecrete)) {
+				$_SESSION['digiflashcards'][$serie]['reponse'] = $reponseSecrete;
+				$type = $_POST['type'];
+				if ($type === 'api' && !isset($_SESSION['digiflashcards'][$serie]['digidrive'])) {
+					$_SESSION['digiflashcards'][$serie]['digidrive'] = 1;
+				}
+				echo 'serie_debloquee';
+			} else {
+				echo 'non_autorise';
+			}
 		}
 	} else {
 		echo 'erreur';

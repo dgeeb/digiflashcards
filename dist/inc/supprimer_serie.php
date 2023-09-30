@@ -38,7 +38,9 @@ if (!empty($_POST['serie'])) {
 	$stmt = $db->prepare('SELECT reponse FROM digiflashcards_series WHERE url = :url');
 	if ($stmt->execute(array('url' => $serie))) {
 		$resultat = $stmt->fetchAll();
-		if ($resultat[0]['reponse'] === $reponse) {
+		if (!$resultat) {
+			echo 'contenu_inexistant';
+		} else if ($resultat[0]['reponse'] === $reponse) {
 			$stmt = $db->prepare('DELETE FROM digiflashcards_series WHERE url = :url');
 			if ($stmt->execute(array('url' => $serie))) {
 				if (file_exists('../fichiers/' . $serie)) {
