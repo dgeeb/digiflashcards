@@ -69,27 +69,29 @@ function creer_vignette ($src, $dest, $h) {
 	} else if ($ext === 'jpg' || $ext === 'jpeg') {
         $resource = imagecreatefromjpeg($src);
 	}
-    $width  = imagesx($resource);
-    $height = imagesy($resource);
-    $w  = floor($width * ($h / $height));
-    $img = imagecreatetruecolor($w, $h);
-	if ($ext === 'png') {
-		imagealphablending($img, false);
-		imagesavealpha($img, true);
-	}
-    imagecopyresampled($img, $resource, 0, 0, 0, 0, $w, $h, $width, $height);
-    $fparts = pathinfo($dest);
-    $ext = strtolower($fparts['extension']);
-    if (!in_array($ext, array('jpg', 'jpeg', 'png', 'gif'))) {
-		$ext = 'jpg';
-	}
-    $dest = $fparts['dirname'] . '/' . $fparts['filename'] . '.' . $ext;
-    if ($ext == 'gif') {
-        imagegif($img, $dest);
-	} else if ($ext === 'png') {
-        imagepng($img, $dest, 1);
-	} else if ($ext === 'jpg' || $ext === 'jpeg') {
-        imagejpeg($img, $dest, 85);
+	if ($resource !== false) {
+		$width  = imagesx($resource);
+		$height = imagesy($resource);
+		$w  = floor($width * ($h / $height));
+		$img = imagecreatetruecolor($w, $h);
+		if ($ext === 'png') {
+			imagealphablending($img, false);
+			imagesavealpha($img, true);
+		}
+		imagecopyresampled($img, $resource, 0, 0, 0, 0, $w, $h, $width, $height);
+		$fparts = pathinfo($dest);
+		$ext = strtolower($fparts['extension']);
+		if (!in_array($ext, array('jpg', 'jpeg', 'png', 'gif'))) {
+			$ext = 'jpg';
+		}
+		$dest = $fparts['dirname'] . '/' . $fparts['filename'] . '.' . $ext;
+		if ($ext == 'gif') {
+			imagegif($img, $dest);
+		} else if ($ext === 'png') {
+			imagepng($img, $dest, 1);
+		} else if ($ext === 'jpg' || $ext === 'jpeg') {
+			imagejpeg($img, $dest, 85);
+		}
 	}
 }
 
