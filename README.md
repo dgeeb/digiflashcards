@@ -15,6 +15,12 @@ npm install
 npm run dev
 ```
 
+### Variable d'environnement (fichier .env.production à créer à la racine avant compilation)
+Liste des domaines autorisés pour les requêtes POST et l'API, séparés par une virgule (* par défaut)
+```
+AUTHORIZED_DOMAINS=*
+```
+
 ### Compilation et minification des fichiers
 ```
 npm run build
@@ -35,5 +41,7 @@ https://ladigitale.dev/digiflashcards/
 Traduction en italien par Paolo Mauri (https://gitlab.com/maupao) et @nilocram (Roberto Marcolin)
 
 ### Soutien
-https://opencollective.com/ladigitale
+Open Collective : https://opencollective.com/ladigitale
+
+Liberapay : https://liberapay.com/ladigitale/
 
