@@ -288,8 +288,8 @@
 			</div>
 		</div>
 
-		<div class="conteneur-modale" v-if="modale === 'connexion'">
-			<div class="modale">
+		<div class="conteneur-modale" role="dialog" tabindex="-1" v-if="modale === 'connexion'">
+			<div class="modale" role="document">
 				<header>
 					<span class="titre">{{ $t('debloquerSerie') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleConnexion"><i class="material-icons">close</i></span>
@@ -316,8 +316,8 @@
 			</div>
 		</div>
 
-		<div class="conteneur-modale" v-if="modale === 'importerCSV'">
-			<div class="modale">
+		<div class="conteneur-modale" role="dialog" tabindex="-1" v-if="modale === 'importerCSV'">
+			<div class="modale" role="document">
 				<header>
 					<span class="titre">{{ $t('importerCSV') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="modale = ''"><i class="material-icons">close</i></span>
@@ -340,8 +340,8 @@
 			</div>
 		</div>
 
-		<div class="conteneur-modale" v-else-if="modale === 'serie' || modale === 'modifier-nom' || modale === 'modifier-acces' || modale === 'importer' || modale === 'suppression-serie'">
-			<div class="modale" v-if="modale === 'serie'">
+		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'serie' || modale === 'modifier-nom' || modale === 'modifier-acces' || modale === 'importer' || modale === 'suppression-serie'">
+			<div class="modale" role="document" v-if="modale === 'serie'">
 				<header>
 					<span class="titre">{{ $t('parametresSerie') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleSerie"><i class="material-icons">close</i></span>
@@ -363,7 +363,7 @@
 				</div>
 			</div>
 
-			<div class="modale" v-else-if="modale === 'modifier-nom'">
+			<div class="modale" role="document" v-else-if="modale === 'modifier-nom'">
 				<header>
 					<span class="titre">{{ $t('modifierNomSerie') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleNomSerie"><i class="material-icons">close</i></span>
@@ -379,7 +379,7 @@
 				</div>
 			</div>
 
-			<div class="modale" v-else-if="modale === 'modifier-acces'">
+			<div class="modale" role="document" v-else-if="modale === 'modifier-acces'">
 				<header>
 					<span class="titre">{{ $t('modifierAccesSerie') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAccesSerie"><i class="material-icons">close</i></span>
@@ -406,7 +406,7 @@
 				</div>
 			</div>
 
-			<div class="modale" v-else-if="modale === 'importer'">
+			<div class="modale" role="document" v-else-if="modale === 'importer'">
 				<header>
 					<span class="titre">{{ $t('importerSerie') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="modale = ''"><i class="material-icons">close</i></span>
@@ -428,7 +428,7 @@
 				</div>
 			</div>
 
-			<div class="modale confirmation" v-else-if="modale === 'suppression-serie'">
+			<div class="modale confirmation" role="document" v-else-if="modale === 'suppression-serie'">
 				<div class="conteneur">
 					<div class="contenu">
 						<p v-html="$t('confirmationSupprimerSerie')" />
@@ -441,8 +441,8 @@
 			</div>
 		</div>
 
-		<div class="conteneur-modale" v-else-if="modale === 'suppression-carte'">
-			<div class="modale confirmation">
+		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'suppression-carte'">
+			<div class="modale confirmation" role="document">
 				<div class="conteneur">
 					<div class="contenu">
 						<p v-html="$t('confirmationSupprimerCarte')" />
@@ -455,8 +455,8 @@
 			</div>
 		</div>
 
-		<div class="conteneur-modale" v-else-if="modale === 'image'">
-			<div id="modale-image" class="modale">
+		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'image'">
+			<div id="modale-image" class="modale" role="document">
 				<header>
 					<span class="titre" />
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleImage"><i class="material-icons">close</i></span>
@@ -477,12 +477,12 @@
 			</div>
 		</div>
 
-		<div id="zoom-image" class="conteneur-modale" v-else-if="modale === 'zoom-image'" @click="fermerModaleZoomImage">
+		<div id="zoom-image" class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'zoom-image'" @click="fermerModaleZoomImage">
 			<img :src="image">
 		</div>
 
-		<div class="conteneur-modale" v-else-if="modale === 'ajouter-audio'">
-			<div id="modale-ajouter-audio" class="modale" :class="{'transcodage': transcodage}">
+		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'ajouter-audio'">
+			<div id="modale-ajouter-audio" class="modale" :class="{'transcodage': transcodage}" role="document">
 				<header v-if="!transcodage">
 					<span class="titre">{{ titreAjouterAudio }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAjouterAudio"><i class="material-icons">close</i></span>
@@ -522,8 +522,8 @@
 			</div>
 		</div>
 
-		<div class="conteneur-modale" v-else-if="modale === 'audio'">
-			<div id="modale-audio" class="modale">
+		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'audio'">
+			<div id="modale-audio" class="modale" role="document">
 				<header>
 					<span class="titre" />
 					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAudio"><i class="material-icons">close</i></span>
@@ -539,22 +539,22 @@
 			</div>
 		</div>
 
-		<div class="conteneur-modale score" v-else-if="modale === 'score-quiz'" @click="modale = ''">
+		<div class="conteneur-modale score" role="dialog" tabindex="-1" v-else-if="modale === 'score-quiz'" @click="modale = ''">
 			<div class="conteneur">
 				<span class="icone"><i class="material-icons">emoji_events</i></span>
 				<span class="score">{{ definirScoreQuiz() }} %</span>
 			</div>
 		</div>
 
-		<div class="conteneur-modale score" v-else-if="modale === 'score-ecrire'" @click="modale = ''">
+		<div class="conteneur-modale score" role="dialog" tabindex="-1" v-else-if="modale === 'score-ecrire'" @click="modale = ''">
 			<div class="conteneur">
 				<span class="icone"><i class="material-icons">emoji_events</i></span>
 				<span class="score">{{ definirScoreEcrire() }} %</span>
 			</div>
 		</div>
 
-		<div class="conteneur-modale" v-else-if="modale === 'code-qr'">
-			<div id="codeqr" class="modale">
+		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'code-qr'">
+			<div id="codeqr" class="modale" role="document">
 				<header>
 					<span class="titre">{{ $t('codeQR') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="modale = ''"><i class="material-icons">close</i></span>

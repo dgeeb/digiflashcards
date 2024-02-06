@@ -22,8 +22,8 @@
 				</div>
 			</div>
 		</div>
-		<div class="conteneur-modale" v-if="modale === 'serie'">
-			<div class="modale">
+		<div class="conteneur-modale" role="dialog" tabindex="-1" v-if="modale === 'serie'">
+			<div class="modale" role="document">
 				<header>
 					<span class="titre">{{ $t('nouvelleSerie') }}</span>
 					<span class="fermer" role="button" tabindex="0" @click="fermerModale"><i class="material-icons">close</i></span>

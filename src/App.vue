@@ -5,8 +5,8 @@
 				<div class="spinner"><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /></div>
 			</div>
 		</div>
-		<div id="conteneur-message" class="conteneur-modale" v-if="message">
-			<div id="message" class="modale">
+		<div id="conteneur-message" class="conteneur-modale" role="dialog" tabindex="-1" v-if="message">
+			<div id="message" class="modale" role="document">
 				<div class="conteneur">
 					<div class="contenu">
 						<div class="message" v-html="message" />
