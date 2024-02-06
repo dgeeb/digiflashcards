@@ -8,12 +8,19 @@ if ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_NAME'] === '127.
 	header('Access-Control-Max-Age: 1000');
 	header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
 } else {
-	$listeDomaines = '../../../domaines-autorises.txt';
-	if (isset($_SESSION['domainesAutorises']) || file_exists($listeDomaines)) {
+	$env = '../.env';
+	if (isset($_SESSION['domainesAutorises']) || file_exists($env)) {
 		if (isset($_SESSION['domainesAutorises']) && $_SESSION['domainesAutorises'] !== '') {
 			$domainesAutorises = $_SESSION['domainesAutorises'];
-		} else if (file_exists($listeDomaines)) {
-			$domainesAutorises = file_get_contents($listeDomaines);
+		} else if (file_exists($env)) {
+			$donneesEnv = explode("\n", file_get_contents($env));
+			foreach ($donneesEnv as $ligne) {
+				preg_match('/([^#]+)\=(.*)/', $ligne, $matches);
+				if (isset($matches[2])) {
+					putenv(trim($ligne));
+				}
+			}
+			$domainesAutorises = getenv('AUTHORIZED_DOMAINS');
 			$_SESSION['domainesAutorises'] = $domainesAutorises;
 		}
 		$domainesAutorises = explode(',', $domainesAutorises);

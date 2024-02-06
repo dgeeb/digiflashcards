@@ -2,31 +2,7 @@
 
 session_start();
 
-$listeDomaines = '../../../domaines-autorises.txt';
-if (isset($_SESSION['domainesAutorises']) || file_exists($listeDomaines)) {
-	if (isset($_SESSION['domainesAutorises']) && $_SESSION['domainesAutorises'] !== '') {
-		$domainesAutorises = $_SESSION['domainesAutorises'];
-	} else if (file_exists($listeDomaines)) {
-		$domainesAutorises = file_get_contents($listeDomaines);
-		$_SESSION['domainesAutorises'] = $domainesAutorises;
-	}
-	$domainesAutorises = explode(',', $domainesAutorises);
-	$origine = $_SERVER['SERVER_NAME'];
-	if (in_array($origine, $domainesAutorises, true)) {
-		header('Access-Control-Allow-Origin: $origine');
-		header('Access-Control-Allow-Methods: POST');
-		header('Access-Control-Max-Age: 1000');
-		header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
-	} else {
-		header('Location: ../');
-		exit();
-	}
-} else {
-	header('Access-Control-Allow-Origin: *');
-	header('Access-Control-Allow-Methods: POST');
-	header('Access-Control-Max-Age: 1000');
-	header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
-}
+require 'headers.php';
 
 if (!empty($_FILES['blob']) && !empty($_POST['serie'])) {
 	$index = $_POST['index'];
@@ -69,27 +45,29 @@ function creer_vignette ($src, $dest, $h) {
 	} else if ($ext === 'jpg' || $ext === 'jpeg') {
         $resource = imagecreatefromjpeg($src);
 	}
-    $width  = imagesx($resource);
-    $height = imagesy($resource);
-    $w  = floor($width * ($h / $height));
-    $img = imagecreatetruecolor($w, $h);
-	if ($ext === 'png') {
-		imagealphablending($img, false);
-		imagesavealpha($img, true);
-	}
-    imagecopyresampled($img, $resource, 0, 0, 0, 0, $w, $h, $width, $height);
-    $fparts = pathinfo($dest);
-    $ext = strtolower($fparts['extension']);
-    if (!in_array($ext, array('jpg', 'jpeg', 'png', 'gif'))) {
-		$ext = 'jpg';
-	}
-    $dest = $fparts['dirname'] . '/' . $fparts['filename'] . '.' . $ext;
-    if ($ext == 'gif') {
-        imagegif($img, $dest);
-	} else if ($ext === 'png') {
-        imagepng($img, $dest, 1);
-	} else if ($ext === 'jpg' || $ext === 'jpeg') {
-        imagejpeg($img, $dest, 85);
+	if ($resource !== false) {
+		$width  = imagesx($resource);
+		$height = imagesy($resource);
+		$w  = floor($width * ($h / $height));
+		$img = imagecreatetruecolor($w, $h);
+		if ($ext === 'png') {
+			imagealphablending($img, false);
+			imagesavealpha($img, true);
+		}
+		imagecopyresampled($img, $resource, 0, 0, 0, 0, $w, $h, $width, $height);
+		$fparts = pathinfo($dest);
+		$ext = strtolower($fparts['extension']);
+		if (!in_array($ext, array('jpg', 'jpeg', 'png', 'gif'))) {
+			$ext = 'jpg';
+		}
+		$dest = $fparts['dirname'] . '/' . $fparts['filename'] . '.' . $ext;
+		if ($ext == 'gif') {
+			imagegif($img, $dest);
+		} else if ($ext === 'png') {
+			imagepng($img, $dest, 1);
+		} else if ($ext === 'jpg' || $ext === 'jpeg') {
+			imagejpeg($img, $dest, 85);
+		}
 	}
 }
 
