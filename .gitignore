@@ -9,6 +9,7 @@ src/assets/fonts/HKGroteskWide-ExtraBold.woff
 src/assets/fonts/HKGroteskWide-ExtraBold.woff2
 
 # env files
+.env
 .env.production
 .env.development
 
