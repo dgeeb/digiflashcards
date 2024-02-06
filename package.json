@@ -1,6 +1,6 @@
 {
   "name": "digiflashcards",
-  "version": "0.5.12",
+  "version": "0.5.13",
   "homepage": "https://ladigitale.dev/digiflashcards/",
   "repository": {
     "type": "git",
@@ -14,6 +14,7 @@
   "license": "GNU AGPLv3",
   "scripts": {
     "dev": "vite",
+    "build:dist": "vite build --mode dist",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
