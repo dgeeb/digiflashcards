@@ -15,9 +15,13 @@ if (isset($_SESSION['domainesAutorises']) || file_exists($env)) {
 		$domainesAutorises = getenv('AUTHORIZED_DOMAINS');
 		$_SESSION['domainesAutorises'] = $domainesAutorises;
 	}
-	$domainesAutorises = explode(',', $domainesAutorises);
-	$origine = $_SERVER['SERVER_NAME'];
-	if (in_array($origine, $domainesAutorises, true)) {
+	if ($domainesAutorises === '*') {
+		$origine = $domainesAutorises;
+	} else {
+		$domainesAutorises = explode(',', $domainesAutorises);
+		$origine = $_SERVER['SERVER_NAME'];
+	}
+	if (in_array($origine, $domainesAutorises, true) || $origine === '*') {
 		header('Access-Control-Allow-Origin: $origine');
 		header('Access-Control-Allow-Methods: POST');
 		header('Access-Control-Max-Age: 1000');
