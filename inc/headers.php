@@ -21,7 +21,7 @@ if (isset($_SESSION['domainesAutorises']) || file_exists($env)) {
 		$domainesAutorises = explode(',', $domainesAutorises);
 		$origine = $_SERVER['SERVER_NAME'];
 	}
-	if (in_array($origine, $domainesAutorises, true) || $origine === '*') {
+	if ($origine === '*' || in_array($origine, $domainesAutorises, true)) {
 		header('Access-Control-Allow-Origin: $origine');
 		header('Access-Control-Allow-Methods: POST');
 		header('Access-Control-Max-Age: 1000');
