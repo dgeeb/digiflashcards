@@ -147,7 +147,7 @@ if (!empty($_POST['token']) && !empty($_POST['lien'])) {
 	exit();
 }
 
-function supprimer($path) {
+function supprimer ($path) {
 	if (is_dir($path) === true) {
 		$files = array_diff(scandir($path), array('.', '..'));
 		foreach ($files as $file) {

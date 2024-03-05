@@ -39,7 +39,7 @@ if (!empty($_POST['serie'])) {
 	exit();
 }
 
-function supprimer($path) {
+function supprimer ($path) {
 	if (is_dir($path) === true) {
 		$files = array_diff(scandir($path), array('.', '..'));
 		foreach ($files as $file) {
