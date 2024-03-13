@@ -1,7 +1,7 @@
 <template>
 	<div id="page" :class="{'plein-ecran': pleinEcran}">
 		<div id="serie">
-			<header id="header" v-if="!integration && !impressionPDF">
+			<header id="header" v-if="vue === 'editeur' || (vue === 'apprenant' && !integration && !impressionPDF)">
 				<div id="conteneur-header">
 					<a id="conteneur-logo" :href="definirRacine()" :title="$t('accueil')">
 						<span id="logo"></span>
@@ -875,7 +875,7 @@ export default {
 		clipboard.on('success', function () {
 			this.$parent.$parent.notification = this.$t('lienCopie')
 		}.bind(this))
-		const iframe = '<iframe src="' + lien + '" allowfullscreen frameborder="0" width="100%" height="500"></iframe>'
+		const iframe = '<iframe src="' + lien + '?vue=apprenant" allowfullscreen frameborder="0" width="100%" height="500"></iframe>'
 		const clipboardIframe = new ClipboardJS('#copier-iframe span', {
 			text: function () {
 				return iframe
