@@ -33,7 +33,6 @@
 	"copierCode": "Copia il codice per l'incorporamento",
 	"ajouter": "Aggiungi",
 	"modifier": "Modifica",
-	"debloquerSerie": "Sblocca questo set",
 	"valider": "Conferma",
 	"parametresSerie": "Opzioni del set",
 	"modifierNomSerie": "Cambia il nome del set",
@@ -62,7 +61,6 @@
 	"sessionTerminee": "Sessione terminata.",
 	"remplirChampNouveauNom": "Compila il campo \"Nuovo nome\".",
 	"informationsIncorrectes": "La domanda e la risposta segreta non sono corrette.",
-	"serieDebloquee": "Set sbloccato.",
 	"exporterSerie": "Esporta il set",
 	"importerSerie": "Importa il set",
 	"serieImportee": "Set importato.",
@@ -121,5 +119,11 @@
 	"supprimerMemorisee": "Elimina dall'elenco delle flashcard memorizzate",
 	"carteMemorisee": "Flashcard contrassegnata come salvata.",
 	"carteNonMemorisee": "Flashcard cancellata dall'elenco delle flashcards memorizzate.",
-	"selectionnerFichierCSV": "Selezione un file .csv"
+	"selectionnerFichierCSV": "Selezione un file .csv",
+	"nombreVues": "Numero di visualizzazioni:",
+	"partager": "Condividi",
+	"seConnecter": "Accedi",
+	"parametres": "Impostazioni",
+	"connexion": "Connessione",
+	"connexionReussie": "Connessione riuscita."
 }

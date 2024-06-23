@@ -33,7 +33,6 @@
 	"copierCode": "Copy the embed code",
 	"ajouter": "Add",
 	"modifier": "Edit",
-	"debloquerSerie": "Unlock this set",
 	"valider": "Validate",
 	"parametresSerie": "Settings of the set",
 	"modifierNomSerie": "Change the name of the set",
@@ -62,7 +61,6 @@
 	"sessionTerminee": "Session ended.",
 	"remplirChampNouveauNom": "Please fill in the \"New name\" field.",
 	"informationsIncorrectes": "The question and the secret answer are not correct.",
-	"serieDebloquee": "Set unlocked.",
 	"exporterSerie": "Export the set",
 	"importerSerie": "Import a set",
 	"serieImportee": "Set imported.",
@@ -121,5 +119,11 @@
 	"supprimerMemorisee": "Delete from memorized flashcards",
 	"carteMemorisee": "Flashcard marked as memorized.",
 	"carteNonMemorisee": "Flashcard deleted from memorized flashcards.",
-	"selectionnerFichierCSV": "Select a .csv file"
+	"selectionnerFichierCSV": "Select a .csv file",
+	"nombreVues": "Number of views:",
+	"partager": "Share",
+	"seConnecter": "Login",
+	"parametres": "Settings",
+	"connexion": "Login",
+	"connexionReussie": "Login successful."
 }

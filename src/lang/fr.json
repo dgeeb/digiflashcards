@@ -33,7 +33,6 @@
 	"copierCode": "Copier le code d'intégration",
 	"ajouter": "Ajouter",
 	"modifier": "Modifier",
-	"debloquerSerie": "Débloquer cette série",
 	"valider": "Valider",
 	"parametresSerie": "Paramètres de la série",
 	"modifierNomSerie": "Modifier le nom de cette série",
@@ -62,7 +61,6 @@
 	"sessionTerminee": "Session terminée.",
 	"remplirChampNouveauNom": "Veuillez remplir le champ «&nbsp;Nouveau nom&nbsp;».",
 	"informationsIncorrectes": "La question et la réponse secrètes ne sont pas correctes.",
-	"serieDebloquee": "Série débloquée.",
 	"exporterSerie": "Exporter la série",
 	"importerSerie": "Importer une série",
 	"serieImportee": "Série importée.",
@@ -121,5 +119,11 @@
 	"supprimerMemorisee": "Supprimer des cartes mémorisées",
 	"carteMemorisee": "Carte marquée comme mémorisée.",
 	"carteNonMemorisee": "Carte supprimée des cartes mémorisées.",
-	"selectionnerFichierCSV": "Sélectionner un fichier .csv"
+	"selectionnerFichierCSV": "Sélectionner un fichier .csv",
+	"nombreVues": "Nombre de vues :",
+	"partager": "Partager",
+	"seConnecter": "Se connecter",
+	"parametres": "Paramètres",
+	"connexion": "Connexion",
+	"connexionReussie": "Connexion réussie."
 }
