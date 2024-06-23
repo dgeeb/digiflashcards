@@ -26,7 +26,20 @@ if (!empty($_POST['id'])) {
 			if (isset($_SESSION['digiflashcards'][$id]['digidrive'])) {
 				$digidrive = $_SESSION['digiflashcards'][$id]['digidrive'];
 			}
-			echo json_encode(array('nom' => $serie[0]['nom'], 'donnees' => $donnees, 'admin' =>  $admin, 'digidrive' => $digidrive));
+			$date = date('Y-m-d H:i:s');
+			$vues = 0;
+			if ($serie[0]['vues'] !== '') {
+				$vues = intval($serie[0]['vues']);
+			}
+			if ($admin === false) {
+				$vues = $vues + 1;
+			}
+			$stmt = $db->prepare('UPDATE digiflashcards_series SET vues = :vues, derniere_visite = :derniere_visite WHERE url = :url');
+			if ($stmt->execute(array('vues' => $vues, 'derniere_visite' => $date, 'url' => $id))) {
+				echo json_encode(array('nom' => $serie[0]['nom'], 'donnees' => $donnees, 'vues' => $vues, 'admin' =>  $admin, 'digidrive' => $digidrive));
+			} else {
+				echo 'erreur';
+			}
 		} else {
 			echo 'contenu_inexistant';
 		}
