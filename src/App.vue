@@ -5,13 +5,13 @@
 				<div class="spinner"><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /></div>
 			</div>
 		</div>
-		<div id="conteneur-message" class="conteneur-modale" role="dialog" tabindex="-1" v-if="message">
-			<div id="message" class="modale" role="document">
+		<div id="conteneur-message" class="conteneur-modale" v-if="message">
+			<div id="message" class="modale" role="dialog">
 				<div class="conteneur">
 					<div class="contenu">
 						<div class="message" v-html="message" />
 						<div class="actions">
-							<span class="bouton" role="button" tabindex="0" @click="message = ''">{{ $t('fermer') }}</span>
+							<span class="bouton" role="button" tabindex="0" @click="fermerMessage" @keydown.enter="fermerMessage">{{ $t('fermer') }}</span>
 						</div>
 					</div>
 				</div>
@@ -32,10 +32,19 @@ export default {
 			message: '',
 			notification: '',
 			langues: ['fr', 'en', 'it'],
-			langue: 'fr'
+			langue: 'fr',
+			elementPrecedent: null
 		}
 	},
 	watch: {
+		message: function (message) {
+			if (message !== '') {
+				this.elementPrecedent = (document.activeElement || document.body)
+				this.$nextTick(function () {
+					document.querySelector('#message .bouton').focus()
+				})
+			}
+		},
 		notification: function (notification) {
 			if (notification !== '') {
 				const element = document.createElement('div')
@@ -53,6 +62,15 @@ export default {
 	},
 	created () {
 		this.hote = window.location.href.split('#')[0]
+	},
+	methods: {
+		fermerMessage () {
+			this.message = ''
+			if (this.elementPrecedent) {
+				this.elementPrecedent.focus()
+				this.elementPrecedent = null
+			}
+		}
 	}
 }
 </script>

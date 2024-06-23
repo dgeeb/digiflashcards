@@ -2,9 +2,9 @@
 	<div id="page">
 		<div id="accueil" :style="{'background-image': 'url(./static/img/fond.png)'}">
 			<div id="langues">
-				<span class="bouton" role="button" tabindex="0" :class="{'selectionne': $parent.$parent.langue === 'fr'}" @click="modifierLangue('fr')">FR</span>
-				<span class="bouton" role="button" tabindex="0" :class="{'selectionne': $parent.$parent.langue === 'it'}" @click="modifierLangue('it')">IT</span>
-				<span class="bouton" role="button" tabindex="0" :class="{'selectionne': $parent.$parent.langue === 'en'}" @click="modifierLangue('en')">EN</span>
+				<span class="bouton" role="button" :tabindex="modale === '' && $parent.$parent.message === '' && !hub ? 0 : -1" :class="{'selectionne': $parent.$parent.langue === 'fr'}" @click="modifierLangue('fr')" @keydown.enter="modifierLangue('fr')">FR</span>
+				<span class="bouton" role="button" :tabindex="modale === '' && $parent.$parent.message === '' && !hub ? 0 : -1" :class="{'selectionne': $parent.$parent.langue === 'it'}" @click="modifierLangue('it')" @keydown.enter="modifierLangue('it')">IT</span>
+				<span class="bouton" role="button" :tabindex="modale === '' && $parent.$parent.message === '' && !hub ? 0 : -1" :class="{'selectionne': $parent.$parent.langue === 'en'}" @click="modifierLangue('en')" @keydown.enter="modifierLangue('en')">EN</span>
 			</div>
 			<div id="conteneur">
 				<div id="contenu">
@@ -13,42 +13,42 @@
 					</h1>
 					<div>
 						<p v-html="$t('slogan')" />
-						<span id="bouton" role="button" tabindex="0" @click="ouvrirModale">{{ $t('creerSerie') }}</span>
+						<span id="bouton" role="button" :tabindex="modale === '' && $parent.$parent.message === '' && !hub ? 0 : -1" @click="ouvrirModale" @keydown.enter="ouvrirModale">{{ $t('creerSerie') }}</span>
 					</div>
 				</div>
 				<div id="credits">
 					<p><a href="https://opencollective.com/ladigitale" target="_blank" rel="noreferrer">{{ $t('soutien') }}</a></p>
-					<p>{{ new Date().getFullYear() }} - <a href="https://ladigitale.dev" target="_blank" rel="noreferrer">La Digitale</a> - <a href="https://codeberg.org/ladigitale/digiflashcards" target="_blank" rel="noreferrer">{{ $t('codeSource') }}</a> - <a href="https://codeberg.org/ladigitale/digiflashcards/releases" target="_blank" rel="noreferrer">v{{ version }}</a> - <span class="hub" @click="ouvrirHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#001d1d" width="36px" height="36px"><path d="M0 0h24v24H0z" fill="none"/><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg></span></p>
+					<p>{{ new Date().getFullYear() }} - <a href="https://ladigitale.dev" target="_blank" rel="noreferrer">La Digitale</a> - <a href="https://codeberg.org/ladigitale/digiflashcards" target="_blank" rel="noreferrer">{{ $t('codeSource') }}</a> - <a href="https://codeberg.org/ladigitale/digiflashcards/releases" target="_blank" rel="noreferrer">v{{ version }}</a> - <span class="hub" role="button" :tabindex="modale === '' && $parent.$parent.message === '' && !hub ? 0 : -1" @click="ouvrirHub" @keydown.enter="ouvrirHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#001d1d" width="36px" height="36px"><path d="M0 0h24v24H0z" fill="none"/><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg></span></p>
 				</div>
 			</div>
 		</div>
-		<div class="conteneur-modale" role="dialog" tabindex="-1" v-if="modale === 'serie'">
-			<div class="modale" role="document">
+		<div class="conteneur-modale" v-if="modale === 'serie'">
+			<div class="modale" role="dialog">
 				<header>
 					<span class="titre">{{ $t('nouvelleSerie') }}</span>
-					<span class="fermer" role="button" tabindex="0" @click="fermerModale"><i class="material-icons">close</i></span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModale" @keydown.enter="fermerModale"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
-						<label>{{ $t('nomSerie') }}</label>
-						<input type="text" :value="nom" @input="nom = $event.target.value">
-						<label>{{ $t('questionSecrete') }}</label>
-						<select :value="question" @change="question = $event.target.value">
+						<label for="nom">{{ $t('nomSerie') }}</label>
+						<input id="nom" type="text" :value="nom" @input="nom = $event.target.value">
+						<label for="question-secrete">{{ $t('questionSecrete') }}</label>
+						<select id="question-secrete" :value="question" @change="question = $event.target.value">
 							<option value="" selected>-</option>
 							<option v-for="(item, index) in questions" :value="item" :key="'option_' + index">{{ $t(item) }}</option>
 						</select>
-						<label>{{ $t('reponseSecreteEdition') }}</label>
-						<input type="text" :value="reponse" @input="reponse = $event.target.value" @keydown.enter="creer">
+						<label for="reponse-secrete">{{ $t('reponseSecreteEdition') }}</label>
+						<input id="reponse-secrete" type="text" :value="reponse" @input="reponse = $event.target.value" @keydown.enter="creer">
 						<div class="actions">
-							<span class="bouton" role="button" tabindex="0" @click="creer">{{ $t('creer') }}</span>
+							<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="creer" @keydown.enter="creer">{{ $t('creer') }}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		<div id="hub" :class="{'ouvert': hub}">
-			<span @click="fermerHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff" width="36px" height="36px"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></span>
-			<iframe src="https://ladigitale.dev/hub.html"></iframe>
+		<div id="hub" :class="{'ouvert': hub}" :tabindex="hub ? 0 : -1">
+			<span role="button" :tabindex="hub ? 0 : -1" @click="fermerHub" @keydown.enter="fermerHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff" width="36px" height="36px"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></span>
+			<iframe src="https://ladigitale.dev/hub.html" title="Le Hub by La Digitale"></iframe>
 		</div>
 	</div>
 </template>
@@ -63,6 +63,7 @@ export default {
 			question: '',
 			questions: ['motPrefere', 'filmPrefere', 'chansonPreferee', 'prenomMere', 'prenomPere', 'nomRue', 'nomEmployeur', 'nomAnimal'],
 			reponse: '',
+			elementPrecedent: null,
 			hub: false,
 			version: app_version
 		}
@@ -87,6 +88,10 @@ export default {
 		setTimeout(function () {
 			this.$parent.$parent.chargement = false
 		}.bind(this), 300)
+		document.addEventListener('keydown', this.gererClavier, false)
+	},
+	beforeUnmount () {
+		document.removeEventListener('keydown', this.gererClavier, false)
 	},
 	methods: {
 		modifierLangue (langue) {
@@ -97,6 +102,7 @@ export default {
 			localStorage.setItem('digiflashcards_lang', langue)
 		},
 		ouvrirModale () {
+			this.elementPrecedent = (document.activeElement || document.body)
 			this.modale = 'serie'
 			this.$nextTick(function () {
 				document.querySelector('.modale input').focus()
@@ -107,6 +113,7 @@ export default {
 			this.nom = ''
 			this.question = ''
 			this.reponse = ''
+			this.gererFocus()
 		},
 		creer () {
 			if (this.nom !== '' && this.question !== '' && this.reponse !== '') {
@@ -138,11 +145,32 @@ export default {
 				this.$parent.$parent.message = this.$t('remplirReponseSecrete')
 			}
 		},
+		gererClavier (event) {
+			if (event.key === 'Escape' && this.$parent.$parent.message !== '') {
+				this.$parent.$parent.message = ''
+			} else if (event.key === 'Escape' && this.modale) {
+				this.fermerModale()
+			} else if (event.key === 'Escape' && this.hub) {
+				this.hub = false
+				this.gererFocus()
+			}
+		},
+		gererFocus () {
+			if (this.elementPrecedent) {
+				this.elementPrecedent.focus()
+				this.elementPrecedent = null
+			}
+		},
 		ouvrirHub () {
+			this.elementPrecedent = (document.activeElement || document.body)
 			this.hub = true
+			this.$nextTick(function () {
+				document.querySelector('#hub span').focus()
+			})
 		},
 		fermerHub () {
 			this.hub = false
+			this.gererFocus()
 		}
 	}
 }

@@ -343,40 +343,6 @@ main {
 	line-height: 30px;
 }
 
-.modale .conteneur .couleurs span input[type="color"] {
-	width: 30px;
-	height: 30px;
-	padding: 0;
-	border: none;
-	cursor: pointer;
-}
-
-.modale .conteneur .couleurs span input[type="color"]::-moz-color-swatch {
-	border: none;
-	border-radius: 50%;
-}
-
-.modale .conteneur .couleurs span input[type="color"]::-webkit-color-swatch {
-	border: none;
-	border-radius: 50%;
-}
-
-.modale .conteneur .couleurs span input[type="color"]::-webkit-color-swatch-wrapper {
-	padding: 0;
-}
-
-.modale .conteneur .couleurs span input[type="color"].selectionne::-moz-color-swatch {
-	border: 2px solid #000;
-}
-
-.modale .conteneur .couleurs span input[type="color"].selectionne::-webkit-color-swatch {
-	border: 2px solid #000;
-}
-
-.modale .conteneur .couleurs span.selectionne {
-	border: 2px solid #000;
-}
-
 .modale .patienter {
 	display: block;
 	font-size: 14px;
@@ -405,6 +371,12 @@ main {
 
 #message.modale .bouton {
 	margin-top: 20px;
+}
+
+#modale-parametres .vues {
+	display: block;
+	font-size: 16px;
+	margin-bottom: 20px;
 }
 
 @keyframes fonduEntrant {

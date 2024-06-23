@@ -7,28 +7,28 @@
 						<span id="logo"></span>
 					</a>
 					<span id="titre">{{ nom }}</span>
-					<span id="conteneur-partage" @click="afficherMenuPartager">
-						<i class="material-icons">share_alt</i>
+					<span id="conteneur-partage" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('partager')" @click="afficherMenuPartager" @keydown.enter="afficherMenuPartager">
+						<i class="material-icons">share</i>
 					</span>
-					<span id="conteneur-parametres" @click="ouvrirModaleSerie" v-if="admin">
+					<span id="conteneur-parametres" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('parametres')" @click="ouvrirModaleSerie" @keydown.enter="ouvrirModaleSerie" v-if="admin">
 						<i class="material-icons">settings</i>
 					</span>
-					<span id="conteneur-parametres" @click="ouvrirModaleConnexion" v-else>
+					<span id="conteneur-parametres" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('seConnecter')" @click="ouvrirModaleConnexion" @keydown.enter="ouvrirModaleConnexion" v-else>
 						<i class="material-icons">lock_open</i>
 					</span>
 				</div>
 			</header>
 
 			<div id="onglets" v-if="vue === 'apprenant' && cartes.length > 4 && options.exercices && (exercicesQuiz.length > 4 || exercicesEcrire.length > 4) && !impressionPDF">
-				<span class="onglet" :class="{'selectionne': onglet === 'cartes'}" :title="$t('afficherCartes')" @click="definirOnglet('cartes')"><i class="material-icons">style</i></span>
-				<span class="onglet" :class="{'selectionne': onglet === 'quiz'}" :title="$t('afficherQuiz')" @click="definirOnglet('quiz')" v-if="exercicesQuiz.length > 4"><i class="material-icons">help_center</i></span>
-				<span class="onglet" :class="{'selectionne': onglet === 'ecrire'}" :title="$t('afficherEcrire')" @click="definirOnglet('ecrire')" v-if="exercicesEcrire.length > 4"><i class="material-icons">edit</i></span>
+				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'cartes'}" :title="$t('afficherCartes')" @click="definirOnglet('cartes')" @keydown.enter="definirOnglet('cartes')"><i class="material-icons">style</i></span>
+				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'quiz'}" :title="$t('afficherQuiz')" @click="definirOnglet('quiz')" @keydown.enter="definirOnglet('quiz')" v-if="exercicesQuiz.length > 4"><i class="material-icons">help_center</i></span>
+				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'ecrire'}" :title="$t('afficherEcrire')" @click="definirOnglet('ecrire')" @keydown.enter="definirOnglet('ecrire')" v-if="exercicesEcrire.length > 4"><i class="material-icons">edit</i></span>
 			</div>
 
 			<div id="conteneur">
 				<div id="actions" v-if="vue === 'editeur'">
 					<div id="importer-csv">
-						<span class="bouton" role="button" tabindex="0" @click="modale = 'importerCSV'"><i class="material-icons">upload_file</i><span>{{ $t('importerCSV') }}</span></span>
+						<span class="bouton" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="ouvrirModaleImporterCSV" @keydown.enter="ouvrirModaleImporterCSV"><i class="material-icons">upload_file</i><span>{{ $t('importerCSV') }}</span></span>
 						<a href="./static/digiflashcards_template.csv" target="_blank">{{ $t('telechargerModele') }}</a>
 					</div>
 					<a :href="definirRacine() + '#/f/' + id + '?vue=apprenant'" target="_blank"><i class="material-icons">preview</i><span>{{ $t('apercuApprenant') }}</span></a>
@@ -37,45 +37,45 @@
 				<div id="options" v-if="vue === 'editeur' && cartes.length > 4">
 					<div class="option">
 						<h3 v-html="$t('optionExercices')" />
-						<label class="bouton-radio">{{ $t('oui') }}
-							<input type="radio" name="exercices" :checked="options.exercices === true" @change="modifierOptions('exercices', true)">
+						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-exercices-oui')">{{ $t('oui') }}
+							<input id="option-exercices-oui" type="radio" name="exercices" :checked="options.exercices === true" @change="modifierOptions('exercices', true)">
 							<span class="coche" />
 						</label>
-						<label class="bouton-radio">{{ $t('non') }}
-							<input type="radio" name="exercices" :checked="options.exercices === false" @change="modifierOptions('exercices', false)">
+						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-exercices-non')">{{ $t('non') }}
+							<input id="option-exercices-non" type="radio" name="exercices" :checked="options.exercices === false" @change="modifierOptions('exercices', false)">
 							<span class="coche" />
 						</label>
 					</div>
 					<div class="option" v-if="options.exercices === true">
 						<h3 v-html="$t('reponsesQuiz')" />
-						<label class="bouton-radio">{{ $t('terme') }}
-							<input type="radio" name="quiz" :checked="options.quiz === 'terme'" @change="modifierOptions('quiz', 'terme')">
+						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-quiz-terme')">{{ $t('terme') }}
+							<input id="option-quiz-terme" type="radio" name="quiz" :checked="options.quiz === 'terme'" @change="modifierOptions('quiz', 'terme')">
 							<span class="coche" />
 						</label>
-						<label class="bouton-radio">{{ $t('definition') }}
-							<input type="radio" name="quiz" :checked="options.quiz === 'definition'" @change="modifierOptions('quiz', 'definition')">
+						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-quiz-definition')">{{ $t('definition') }}
+							<input id="option-quiz-definition" type="radio" name="quiz" :checked="options.quiz === 'definition'" @change="modifierOptions('quiz', 'definition')">
 							<span class="coche" />
 						</label>
 					</div>
 					<div class="option" v-if="options.exercices === true">
 						<h3 v-html="$t('reponseEcrire')" />
-						<label class="bouton-radio">{{ $t('terme') }}
-							<input type="radio" name="ecrire" :checked="options.ecrire === 'terme'" @change="modifierOptions('ecrire', 'terme')">
+						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-ecrire-terme')">{{ $t('terme') }}
+							<input id="option-ecrire-terme" type="radio" name="ecrire" :checked="options.ecrire === 'terme'" @change="modifierOptions('ecrire', 'terme')">
 							<span class="coche" />
 						</label>
-						<label class="bouton-radio">{{ $t('definition') }}
-							<input type="radio" name="ecrire" :checked="options.ecrire === 'definition'" @change="modifierOptions('ecrire', 'definition')">
+						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-ecrire-definition')">{{ $t('definition') }}
+							<input id="option-ecrire-definition" type="radio" name="ecrire" :checked="options.ecrire === 'definition'" @change="modifierOptions('ecrire', 'definition')">
 							<span class="coche" />
 						</label>
 					</div>
 					<div class="option" v-if="options.exercices === true">
 						<h3 v-html="$t('optionCasse')" />
-						<label class="bouton-radio">{{ $t('oui') }}
-							<input type="radio" name="casse" :checked="options.casse === true" @change="modifierOptions('casse', true)">
+						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-casse-oui')">{{ $t('oui') }}
+							<input id="option-casse-oui" type="radio" name="casse" :checked="options.casse === true" @change="modifierOptions('casse', true)">
 							<span class="coche" />
 						</label>
-						<label class="bouton-radio">{{ $t('non') }}
-							<input type="radio" name="casse" :checked="options.casse === false" @change="modifierOptions('casse', false)">
+						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-casse-non')">{{ $t('non') }}
+							<input id="option-casse-non" type="radio" name="casse" :checked="options.casse === false" @change="modifierOptions('casse', false)">
 							<span class="coche" />
 						</label>
 					</div>
@@ -89,7 +89,7 @@
 							</div>
 							<div class="droite">
 								<span><i class="material-icons">drag_handle</i></span>
-								<span class="supprimer" :class="{'desactive': cartes.length < 3}" role="button" tabindex="0" @click="afficherSupprimerCarte(index)" :title="$t('supprimer')"><i class="material-icons">delete</i></span>
+								<span class="supprimer" :class="{'desactive': cartes.length < 3}" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="afficherSupprimerCarte(index)" @keydown.enter="afficherSupprimerCarte(index)" :title="$t('supprimer')"><i class="material-icons">delete</i></span>
 							</div>
 						</div>
 
@@ -102,17 +102,17 @@
 								<span class="progression" v-if="progression > 0">{{ progression }} %</span>
 							</span>
 							<template v-else-if="chargement !== 'image_recto_' + index && item.recto.image === ''">
-								<label class="image" role="button" tabindex="0" :for="'televerser_image_recto_' + index" :title="$t('ajouterImage')"><i class="material-icons">add_photo_alternate</i></label>
+								<label :for="'televerser_image_recto_' + index" class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('ajouterImage')" @keydown.enter="activerInput('televerser_image_recto_' + index)"><i class="material-icons">add_photo_alternate</i></label>
 								<input :id="'televerser_image_recto_' + index" type="file" accept=".jpg, .jpeg, .png, .gif" @change="televerserImage($event.target.files[0], index, 'recto')" style="display: none;">
 							</template>
-							<span class="image" @click="afficherImage(index, 'recto', definirLienMedia(item.recto.image, ''))" :title="$t('afficherImage')" v-else-if="chargement !== 'image_recto_' + index && item.recto.image !== ''" :style="{'background-image': 'url(' + definirLienMedia(item.recto.image, 'vignette_') + ')'}" />
+							<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherImage')" @click="afficherImage(index, 'recto', definirLienMedia(item.recto.image, ''))" @keydown.enter="afficherImage(index, 'recto', definirLienMedia(item.recto.image, ''))" v-else-if="chargement !== 'image_recto_' + index && item.recto.image !== ''" :style="{'background-image': 'url(' + definirLienMedia(item.recto.image, 'vignette_') + ')'}" />
 
 							<span class="conteneur-chargement" v-if="chargement === 'audio_recto_' + index">
 								<span class="chargement" />
 								<span class="progression" v-if="progression > 0">{{ progression }} %</span>
 							</span>
-							<span class="audio" role="button" tabindex="0" @click="afficherAudio(index, 'recto', '')" :title="$t('ajouterAudio')" v-else-if="chargement !== 'audio_recto_' + index && item.recto.audio === ''"><i class="material-icons">audiotrack</i></span>
-							<span class="audio televerse" role="button" tabindex="0" @click="afficherAudio(index, 'recto', definirLienMedia(item.recto.audio, ''))" :title="$t('afficherAudio')" v-else-if="chargement !== 'audio_recto_' + index && item.recto.audio !== ''"><i class="material-icons">graphic_eq</i></span>
+							<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('ajouterAudio')" @click="afficherAudio(index, 'recto', '')" @keydown.enter="afficherAudio(index, 'recto', '')" v-else-if="chargement !== 'audio_recto_' + index && item.recto.audio === ''"><i class="material-icons">audiotrack</i></span>
+							<span class="audio televerse" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherAudio')" @click="afficherAudio(index, 'recto', definirLienMedia(item.recto.audio, ''))" @keydown.enter="afficherAudio(index, 'recto', definirLienMedia(item.recto.audio, ''))" v-else-if="chargement !== 'audio_recto_' + index && item.recto.audio !== ''"><i class="material-icons">graphic_eq</i></span>
 						</div>
 
 						<div class="conteneur verso">
@@ -124,31 +124,31 @@
 								<span class="progression" v-if="progression > 0">{{ progression }} %</span>
 							</span>
 							<template v-else-if="chargement !== 'image_verso_' + index && item.verso.image === ''">
-								<label class="image" role="button" tabindex="0" :for="'televerser_image_verso_' + index" :title="$t('ajouterImage')"><i class="material-icons">add_photo_alternate</i></label>
+								<label :for="'televerser_image_verso_' + index" class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('ajouterImage')" @keydown.enter="activerInput('televerser_image_verso_' + index)"><i class="material-icons">add_photo_alternate</i></label>
 								<input :id="'televerser_image_verso_' + index" type="file" accept=".jpg, .jpeg, .png, .gif" @change="televerserImage($event.target.files[0], index, 'verso')" style="display: none;">
 							</template>
-							<span class="image" @click="afficherImage(index, 'verso', definirLienMedia(item.verso.image, ''))" :title="$t('afficherImage')" v-else-if="chargement !== 'image_verso_' + index && item.verso.image !== ''" :style="{'background-image': 'url(' + definirLienMedia(item.verso.image, 'vignette_') + ')'}" />
+							<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherImage')" @click="afficherImage(index, 'verso', definirLienMedia(item.verso.image, ''))" @keydown.enter="afficherImage(index, 'verso', definirLienMedia(item.verso.image, ''))" v-else-if="chargement !== 'image_verso_' + index && item.verso.image !== ''" :style="{'background-image': 'url(' + definirLienMedia(item.verso.image, 'vignette_') + ')'}" />
 
 							<span class="conteneur-chargement audio" v-if="chargement === 'audio_verso_' + index">
 								<span class="chargement" />
 								<span class="progression" v-if="progression > 0">{{ progression }} %</span>
 							</span>
-							<span class="audio" role="button" tabindex="0" @click="afficherAudio(index, 'verso', '')" :title="$t('ajouterAudio')" v-else-if="chargement !== 'audio_verso_' + index && item.verso.audio === ''"><i class="material-icons">audiotrack</i></span>
-							<span class="audio televerse" role="button" tabindex="0" @click="afficherAudio(index, 'verso', definirLienMedia(item.verso.audio, ''))" :title="$t('afficherAudio')" v-else-if="chargement !== 'audio_verso_' + index && item.verso.audio !== ''"><i class="material-icons">graphic_eq</i></span>
+							<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('ajouterAudio')" @click="afficherAudio(index, 'verso', '')" @keydown.enter="afficherAudio(index, 'verso', '')" v-else-if="chargement !== 'audio_verso_' + index && item.verso.audio === ''"><i class="material-icons">audiotrack</i></span>
+							<span class="audio televerse" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherAudio')" @click="afficherAudio(index, 'verso', definirLienMedia(item.verso.audio, ''))" @keydown.enter="afficherAudio(index, 'verso', definirLienMedia(item.verso.audio, ''))" v-else-if="chargement !== 'audio_verso_' + index && item.verso.audio !== ''"><i class="material-icons">graphic_eq</i></span>
 						</div>
 					</article>
 				</draggable>
 
 				<div id="cartes" class="apprenant" v-else-if="cartes.length > 0 && vue === 'apprenant' && onglet === 'cartes'">
-					<article :id="'carte_' + index" class="carte" :class="{'flip': recto === false}" @click="recto = !recto" v-show="navigationCartes === index" v-for="(item, index) in cartes" :key="'carte_' + index">
+					<article :id="'carte_' + index" class="carte" :class="{'flip': recto === false}" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="recto = !recto" @keydown.enter="recto = !recto" v-show="navigationCartes === index" v-for="(item, index) in cartes" :key="'carte_' + index">
 						<div class="recto" v-show="!transition">
 							<div class="conteneur-media" :class="{'avec-texte': item.recto.texte !== ''}" v-if="item.recto.image !== '' || item.recto.audio !== ''">
 								<div class="conteneur-image" :class="{'avec-audio': item.recto.audio !== ''}" v-if="item.recto.image !== ''">
-									<span class="image" v-if="item.recto.texte !== ''"><img :src="definirLienMedia(item.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(item.recto.image, ''))"></span>
-									<span class="image" v-else><img :src="definirLienMedia(item.recto.image, '')"></span>
+									<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="afficherZoomImage($event, definirLienMedia(item.recto.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(item.recto.image, ''))" v-if="item.recto.texte !== ''"><img :src="definirLienMedia(item.recto.image, '')" :alt="item.recto.image"></span>
+									<span class="image" v-else><img :src="definirLienMedia(item.recto.image, '')" :alt="item.recto.image"></span>
 								</div>
 								<div class="conteneur-audio" :class="{'avec-image': item.recto.image !== ''}" v-if="item.recto.audio !== ''">
-									<span class="audio" :class="{'lecture': lecture}"><i class="material-icons" @click="lireAudio($event, definirLienMedia(item.recto.audio, ''))">volume_up</i></span>
+									<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'lecture': lecture}" @click="lireAudio($event, definirLienMedia(item.recto.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(item.recto.audio, ''))"><i class="material-icons">volume_up</i></span>
 								</div>
 							</div>
 							<div class="conteneur-texte" v-if="item.recto.texte !== ''">
@@ -159,11 +159,11 @@
 						<div class="verso" v-show="!transition">
 							<div class="conteneur-media" :class="{'avec-texte': item.verso.texte !== ''}" v-if="item.verso.image !== '' || item.verso.audio !== ''">
 								<div class="conteneur-image" :class="{'avec-audio': item.verso.audio !== ''}" v-if="item.verso.image !== ''">
-									<span class="image" v-if="item.verso.texte !== ''"><img :src="definirLienMedia(item.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(item.verso.image, ''))"></span>
-									<span class="image" v-else><img :src="definirLienMedia(item.verso.image, '')"></span>
+									<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="afficherZoomImage($event, definirLienMedia(item.verso.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(item.verso.image, ''))" v-if="item.verso.texte !== ''"><img :src="definirLienMedia(item.verso.image, '')" :alt="item.verso.image"></span>
+									<span class="image" v-else><img :src="definirLienMedia(item.verso.image, '')" :alt="item.verso.image"></span>
 								</div>
 								<div class="conteneur-audio" :class="{'avec-image': item.verso.image !== ''}" v-if="item.verso.audio !== ''">
-									<span class="audio" :class="{'lecture': lecture}"><i class="material-icons" @click="lireAudio($event, definirLienMedia(item.verso.audio, ''))">volume_up</i></span>
+									<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="lireAudio($event, definirLienMedia(item.verso.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(item.verso.audio, ''))" :class="{'lecture': lecture}"><i class="material-icons">volume_up</i></span>
 								</div>
 							</div>
 							<div class="conteneur-texte" v-if="item.verso.texte !== ''">
@@ -173,9 +173,17 @@
 					</article>
 
 					<div class="navigation" v-if="!impressionPDF">
-						<span class="precedent" :title="$t('afficherCartePrecedente')" @click="afficherCartePrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="actions"><span class="total">{{ navigationCartes + 1 }} / {{ cartes.length }}</span><span class="memorise" :title="$t('marquerMemorisee')" @click="modifierCartesMemorisees(cartes[navigationCartes].id)" v-if="cartes[navigationCartes].hasOwnProperty('id') && !cartesMemorisees.includes(cartes[navigationCartes].id)"><i class="material-icons">check_circle</i></span><span class="memorise actif" :title="$t('supprimerMemorisee')" @click="modifierCartesMemorisees(cartes[navigationCartes].id)" v-else-if="cartes[navigationCartes].hasOwnProperty('id') && cartesMemorisees.includes(cartes[navigationCartes].id)"><i class="material-icons">check_circle</i></span><span class="aleatoire" :title="$t('melangerCartes')" @click="melangerCartes"><i class="material-icons">shuffle</i></span><span class="aleatoire" :title="$t('inverserCartes')" @click="inverserCartes"><i class="material-icons">flip</i></span><span class="ecran" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
-						<span class="suivant" :title="$t('afficherCarteSuivante')" @click="afficherCarteSuivante"><i class="material-icons">arrow_forward</i></span>
+						<span class="precedent" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherCartePrecedente')" @click="afficherCartePrecedente" @keydown.enter="afficherCartePrecedente"><i class="material-icons">arrow_back</i></span>
+						<span class="actions">
+							<span class="total">{{ navigationCartes + 1 }} / {{ cartes.length }}</span>
+							<span class="memorise" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('marquerMemorisee')" @click="modifierCartesMemorisees(cartes[navigationCartes].id)" @keydown.enter="modifierCartesMemorisees(cartes[navigationCartes].id)" v-if="cartes[navigationCartes].hasOwnProperty('id') && !cartesMemorisees.includes(cartes[navigationCartes].id)"><i class="material-icons">check_circle</i></span>
+							<span class="memorise actif" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('supprimerMemorisee')" @click="modifierCartesMemorisees(cartes[navigationCartes].id)" @keydown.enter="modifierCartesMemorisees(cartes[navigationCartes].id)" v-else-if="cartes[navigationCartes].hasOwnProperty('id') && cartesMemorisees.includes(cartes[navigationCartes].id)"><i class="material-icons">check_circle</i></span>
+							<span class="aleatoire" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('melangerCartes')" @click="melangerCartes" @keydown.enter="melangerCartes"><i class="material-icons">shuffle</i></span>
+							<span class="aleatoire" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('inverserCartes')" @click="inverserCartes" @keydown.enter="inverserCartes"><i class="material-icons">flip</i></span>
+							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span>
+							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span>
+						</span>
+						<span class="suivant" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherCarteSuivante')" @click="afficherCarteSuivante" @keydown.enter="afficherCarteSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
 
@@ -183,13 +191,13 @@
 					<article class="exercice" v-show="navigationQuiz === indexQuiz" v-for="(itemQuiz, indexQuiz) in exercicesQuiz" :key="'exercice_quiz_' + indexQuiz">
 						<template v-for="(itemQuestion, indexQuestion) in itemQuiz">
 							<div class="question" v-if="options.quiz === 'definition' && itemQuestion.correct === true" :key="'question_quiz_definition_' + indexQuiz + '_' + indexQuestion">
-								<span class="image" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-audio': itemQuestion.recto.audio !== ''}" v-if="itemQuestion.recto.image !== ''"><img :src="definirLienMedia(itemQuestion.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.recto.image, ''))"></span>
-								<span class="audio" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-image': itemQuestion.recto.image !== '', 'lecture': lecture}" v-if="itemQuestion.recto.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemQuestion.recto.audio, ''))">volume_up</i></span>
+								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-audio': itemQuestion.recto.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.recto.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemQuestion.recto.image, ''))" v-if="itemQuestion.recto.image !== ''"><img :src="definirLienMedia(itemQuestion.recto.image, '')" :alt="itemQuestion.recto.image"></span>
+								<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-image': itemQuestion.recto.image !== '', 'lecture': lecture}" @click="lireAudio($event, definirLienMedia(itemQuestion.recto.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(itemQuestion.recto.audio, ''))" v-if="itemQuestion.recto.audio !== ''"><i class="material-icons">volume_up</i></span>
 								<span class="texte" v-if="itemQuestion.recto.texte !== ''" v-html="itemQuestion.recto.texte" />
 							</div>
 							<div class="question" v-else-if="options.quiz === 'terme' && itemQuestion.correct === true" :key="'question_quiz_terme_' + indexQuiz + '_' + indexQuestion">
-								<span class="image" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-audio': itemQuestion.verso.audio !== ''}" v-if="itemQuestion.verso.image !== ''"><img :src="definirLienMedia(itemQuestion.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.verso.image, ''))"></span>
-								<span class="audio" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-image': itemQuestion.verso.image !== '', 'lecture': lecture}" v-if="itemQuestion.verso.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemQuestion.verso.audio, ''))">volume_up</i></span>
+								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-audio': itemQuestion.verso.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.verso.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemQuestion.verso.image, ''))" v-if="itemQuestion.verso.image !== ''"><img :src="definirLienMedia(itemQuestion.verso.image, '')" :alt="itemQuestion.verso.image"></span>
+								<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-image': itemQuestion.verso.image !== '', 'lecture': lecture}" @click="lireAudio($event, definirLienMedia(itemQuestion.verso.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(itemQuestion.verso.audio, ''))" v-if="itemQuestion.verso.audio !== ''"><i class="material-icons">volume_up</i></span>
 								<span class="texte" v-if="itemQuestion.verso.texte !== ''" v-html="itemQuestion.verso.texte" />
 							</div>
 						</template>
@@ -197,31 +205,37 @@
 						<div :id="'reponses_' + indexQuiz" class="reponses">
 							<div class="reponse" v-for="(itemReponse, indexReponse) in itemQuiz" :key="'reponse_quiz_' + indexQuiz + '_' + indexReponse">
 								<label class="conteneur-coche" :class="{'correct': itemReponse.reponse && itemReponse.correct, 'incorrect': itemReponse.reponse && !itemReponse.correct}" v-if="options.quiz === 'definition'">
-									<input type="radio" :checked="itemReponse.reponse" :disabled="itemReponse.repondu" :value="itemReponse.correct" :name="'reponse_quiz_' + indexQuiz" :data-index="indexReponse">
-									<span class="radio" />
-									<span class="image" :class="{'avec-texte': itemReponse.verso.texte !== ''}" v-if="itemReponse.verso.image !== ''"><img :src="definirLienMedia(itemReponse.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemReponse.verso.image, ''))"></span>
-									<span class="audio" :class="{'avec-texte': itemReponse.verso.texte !== '', 'avec-image': itemReponse.verso.image !== '', 'lecture': lectureQuiz === indexReponse}" v-if="itemReponse.verso.audio !== ''"><i class="material-icons" @click="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.verso.audio, ''))">volume_up</i></span>
+									<input :id="'reponse_quiz_' + indexQuiz + '_' + indexReponse" type="radio" :checked="itemReponse.reponse" :disabled="itemReponse.repondu" :value="itemReponse.correct" :name="'reponse_quiz_' + indexQuiz" :data-index="indexReponse">
+									<span class="radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('reponse_quiz_' + indexQuiz + '_' + indexReponse)" />
+									<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.verso.texte !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemReponse.verso.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemReponse.verso.image, ''))" v-if="itemReponse.verso.image !== ''"><img :src="definirLienMedia(itemReponse.verso.image, '')" :alt="itemReponse.verso.image"></span>
+									<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.verso.texte !== '', 'avec-image': itemReponse.verso.image !== '', 'lecture': lectureQuiz === indexReponse}" @keydown.enter="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.verso.audio, ''))" v-if="itemReponse.verso.audio !== ''"><i class="material-icons">volume_up</i></span>
 									<span class="texte" v-if="itemReponse.verso.texte !== ''" v-html="itemReponse.verso.texte" />
 								</label>
 								<label class="conteneur-coche" :class="{'correct': itemReponse.reponse && itemReponse.correct, 'incorrect': itemReponse.reponse && !itemReponse.correct}" v-else>
-									<input type="radio" :checked="itemReponse.reponse" :disabled="itemReponse.repondu" :value="itemReponse.correct" :name="'reponse_quiz_' + indexQuiz" :data-index="indexReponse">
-									<span class="radio" />
-									<span class="image" :class="{'avec-texte': itemReponse.recto.texte !== ''}" v-if="itemReponse.recto.image !== ''"><img :src="definirLienMedia(itemReponse.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemReponse.recto.image, ''))"></span>
-									<span class="audio" :class="{'avec-texte': itemReponse.recto.texte !== '', 'avec-image': itemReponse.recto.image !== '', 'lecture': lectureQuiz === indexReponse}" v-if="itemReponse.recto.audio !== ''"><i class="material-icons" @click="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.recto.audio, ''))">volume_up</i></span>
+									<input :id="'reponse_quiz_' + indexQuiz + '_' + indexReponse" type="radio" :checked="itemReponse.reponse" :disabled="itemReponse.repondu" :value="itemReponse.correct" :name="'reponse_quiz_' + indexQuiz" :data-index="indexReponse">
+									<span class="radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('reponse_quiz_' + indexQuiz + '_' + indexReponse)" />
+									<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.recto.texte !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemReponse.recto.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemReponse.recto.image, ''))" v-if="itemReponse.recto.image !== ''"><img :src="definirLienMedia(itemReponse.recto.image, '')" :alt="itemReponse.recto.image"></span>
+									<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.recto.texte !== '', 'avec-image': itemReponse.recto.image !== '', 'lecture': lectureQuiz === indexReponse}" @click="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.recto.audio, ''))" @keydown.enter="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.recto.audio, ''))" v-if="itemReponse.recto.audio !== ''"><i class="material-icons">volume_up</i></span>
 									<span class="texte" v-if="itemReponse.recto.texte !== ''" v-html="itemReponse.recto.texte" />
 								</label>
 							</div>
 						</div>
 
 						<div class="valider" v-if="!exercicesQuiz[indexQuiz][0].repondu">
-							<span role="button" tabindex="0" @click="verifierQuiz">{{ $t('valider') }}</span>
+							<span role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="verifierQuiz" @keydown.enter="verifierQuiz">{{ $t('valider') }}</span>
 						</div>
 					</article>
 
 					<div class="navigation">
-						<span class="precedent" :title="$t('afficherQuestionPrecedente')" @click="afficherQuestionQuizPrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="actions"><span class="total">{{ navigationQuiz + 1 }} / {{ exercicesQuiz.length }}</span><span class="reinitialiser" :title="$t('reinitialiser')" @click="reinitialiserQuiz"><i class="material-icons">autorenew</i></span><span class="score" :title="$t('afficherScore')" @click="modale = 'score-quiz'" v-if="verifierReponsesQuiz() === exercicesQuiz.length"><i class="material-icons">emoji_events</i></span><span class="ecran" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
-						<span class="suivant" :title="$t('afficherQuestionSuivante')" @click="afficherQuestionQuizSuivante"><i class="material-icons">arrow_forward</i></span>
+						<span class="precedent" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherQuestionPrecedente')" @click="afficherQuestionQuizPrecedente" @keydown.enter="afficherQuestionQuizPrecedente"><i class="material-icons">arrow_back</i></span>
+						<span class="actions">
+							<span class="total">{{ navigationQuiz + 1 }} / {{ exercicesQuiz.length }}</span>
+							<span class="reinitialiser" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('reinitialiser')" @click="reinitialiserQuiz" @keydown.enter="reinitialiserQuiz"><i class="material-icons">autorenew</i></span>
+							<span class="score" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherScore')" @click="afficherScoreQuiz" @keydown.enter="afficherScoreQuiz" v-if="verifierReponsesQuiz() === exercicesQuiz.length"><i class="material-icons">emoji_events</i></span>
+							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span>
+							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span>
+						</span>
+						<span class="suivant" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherQuestionSuivante')" @click="afficherQuestionQuizSuivante" @keydown.enter="afficherQuestionQuizSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
 
@@ -229,13 +243,13 @@
 					<article class="exercice" v-show="navigationEcrire === indexEcrire" v-for="(itemEcrire, indexEcrire) in exercicesEcrire" :key="'exercice_ecrire_' + indexEcrire">
 						<div class="question">
 							<template v-if="options.ecrire === 'definition' && (itemEcrire.recto.image !== '' || itemEcrire.recto.audio !== '' || itemEcrire.recto.texte !== '') && itemEcrire.verso.texte !== ''">
-								<span class="image" :class="{'avec-texte': itemEcrire.recto.texte !== '', 'avec-audio': itemEcrire.recto.audio !== ''}" v-if="itemEcrire.recto.image !== ''"><img :src="definirLienMedia(itemEcrire.recto.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.recto.image, ''))"></span>
-								<span class="audio" :class="{'avec-texte': itemEcrire.recto.texte !== '', 'avec-image': itemEcrire.recto.image !== '', 'lecture': lecture}" v-if="itemEcrire.recto.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemEcrire.recto.audio, ''))">volume_up</i></span>
+								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemEcrire.recto.texte !== '', 'avec-audio': itemEcrire.recto.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.recto.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemEcrire.recto.image, ''))" v-if="itemEcrire.recto.image !== ''"><img :src="definirLienMedia(itemEcrire.recto.image, '')" :alt="itemEcrire.recto.image"></span>
+								<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemEcrire.recto.texte !== '', 'avec-image': itemEcrire.recto.image !== '', 'lecture': lecture}" @click="lireAudio($event, definirLienMedia(itemEcrire.recto.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(itemEcrire.recto.audio, ''))" v-if="itemEcrire.recto.audio !== ''"><i class="material-icons">volume_up</i></span>
 								<span class="texte" v-if="itemEcrire.recto.texte !== ''" v-html="itemEcrire.recto.texte" />
 							</template>
 							<template v-else-if="options.ecrire === 'terme' && (itemEcrire.verso.image !== '' || itemEcrire.verso.audio !== '' || itemEcrire.verso.texte !== '') && itemEcrire.recto.texte !== ''">
-								<span class="image" :class="{'avec-texte': itemEcrire.verso.texte !== '', 'avec-audio': itemEcrire.verso.audio !== ''}" v-if="itemEcrire.verso.image !== ''"><img :src="definirLienMedia(itemEcrire.verso.image, '')" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.verso.image, ''))"></span>
-								<span class="audio" :class="{'avec-texte': itemEcrire.verso.texte !== '', 'avec-image': itemEcrire.verso.image !== '', 'lecture': lecture}" v-if="itemEcrire.verso.audio !== ''"><i class="material-icons" @click="lireAudio($event, definirLienMedia(itemEcrire.verso.audio, ''))">volume_up</i></span>
+								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemEcrire.verso.texte !== '', 'avec-audio': itemEcrire.verso.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.verso.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemEcrire.verso.image, ''))" v-if="itemEcrire.verso.image !== ''"><img :src="definirLienMedia(itemEcrire.verso.image, '')" :alt="itemEcrire.verso.image"></span>
+								<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemEcrire.verso.texte !== '', 'avec-image': itemEcrire.verso.image !== '', 'lecture': lecture}" @click="lireAudio($event, definirLienMedia(itemEcrire.verso.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(itemEcrire.verso.audio, ''))" v-if="itemEcrire.verso.audio !== ''"><i class="material-icons">volume_up</i></span>
 								<span class="texte" v-if="itemEcrire.verso.texte !== ''" v-html="itemEcrire.verso.texte" />
 							</template>
 						</div>
@@ -245,19 +259,25 @@
 						</div>
 
 						<div class="valider" v-if="itemEcrire.reponse === ''">
-							<span role="button" tabindex="0" @click="verifierEcrire">{{ $t('valider') }}</span>
+							<span role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="verifierEcrire" @keydown.enter="verifierEcrire">{{ $t('valider') }}</span>
 						</div>
 					</article>
 
 					<div class="navigation">
-						<span class="precedent" :title="$t('afficherQuestionPrecedente')" @click="afficherQuestionEcrirePrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="actions"><span class="total">{{ navigationEcrire + 1 }} / {{ exercicesEcrire.length }}</span><span class="reinitialiser" :title="$t('reinitialiser')" @click="reinitialiserEcrire"><i class="material-icons">autorenew</i></span><span class="score" :title="$t('afficherScore')" @click="modale = 'score-ecrire'" v-if="verifierReponsesEcrire() === exercicesEcrire.length"><i class="material-icons">emoji_events</i></span><span class="ecran" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span><span class="ecran" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span></span>
-						<span class="suivant" :title="$t('afficherQuestionSuivante')" @click="afficherQuestionEcrireSuivante"><i class="material-icons">arrow_forward</i></span>
+						<span class="precedent" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherQuestionPrecedente')" @click="afficherQuestionEcrirePrecedente" @keydown.enter="afficherQuestionEcrirePrecedente"><i class="material-icons">arrow_back</i></span>
+						<span class="actions">
+							<span class="total">{{ navigationEcrire + 1 }} / {{ exercicesEcrire.length }}</span>
+							<span class="reinitialiser" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('reinitialiser')" @click="reinitialiserEcrire" @keydown.enter="reinitialiserEcrire"><i class="material-icons">autorenew</i></span>
+							<span class="score" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherScore')" @click="afficherScoreEcrire" @keydown.enter="afficherScoreEcrire" v-if="verifierReponsesEcrire() === exercicesEcrire.length"><i class="material-icons">emoji_events</i></span>
+							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span>
+							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span>
+						</span>
+						<span class="suivant" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherQuestionSuivante')" @click="afficherQuestionEcrireSuivante" @keydown.enter="afficherQuestionEcrireSuivante"><i class="material-icons">arrow_forward</i></span>
 					</div>
 				</div>
 
 				<div id="ajouter-carte" v-if="vue === 'editeur'">
-					<span role="button" tabindex="0" @click="ajouterCarte">{{ $t('ajouterCarte') }}</span>
+					<span role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="ajouterCarte" @keydown.enter="ajouterCarte">{{ $t('ajouterCarte') }}</span>
 				</div>
 
 				<div id="credits" v-if="!integration && !impressionPDF">
@@ -268,7 +288,7 @@
 
 			<div id="retour-haut" v-if="vue === 'editeur' && boutonRetour">
 				<a :href="definirRacine() + '#/f/' + id + '?vue=apprenant'" target="_blank" :title="$t('apercuApprenant')"><i class="material-icons">preview</i></a>
-				<span role="button" tabindex="0" :title="$t('retourHaut')" @click="retournerHaut"><i class="material-icons">arrow_circle_up</i></span>
+				<span role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('retourHaut')" @click="retournerHaut" @keydown.enter="retournerHaut"><i class="material-icons">arrow_circle_up</i></span>
 			</div>
 
 			<div id="menu-partager" v-show="menu === 'partager'" :style="{'left': position + 'px'}">
@@ -276,239 +296,241 @@
 					<label>{{ $t('lienEtCodeQR') }}</label>
 					<div id="copier-lien" class="copier">
 						<input type="text" disabled :value="definirRacine() + '#/f/' + id">
-						<span class="icone lien" role="button" tabindex="0" :title="$t('copierLien')"><i class="material-icons">content_copy</i></span>
-						<span class="icone codeqr" role="button" tabindex="0" :title="$t('afficherCodeQR')" @click="afficherCodeQR"><i class="material-icons">qr_code</i></span>
+						<span class="icone lien" role="button" :tabindex="menu === '' ? -1 : 0" :title="$t('copierLien')" @keydown.enter="copierLien"><i class="material-icons">content_copy</i></span>
+						<span class="icone codeqr" role="button" :tabindex="menu === '' ? -1 : 0" :title="$t('afficherCodeQR')" @click="afficherCodeQR" @keydown.enter="afficherCodeQR"><i class="material-icons">qr_code</i></span>
 					</div>
 					<label>{{ $t('codeIntegration') }}</label>
 					<div id="copier-iframe" class="copier">
 						<input type="text" disabled :value="'<iframe src=&quot;' + definirRacine() + '#/f/' + id + '&quot; allowfullscreen frameborder=&quot;0&quot; width=&quot;100%&quot; height=&quot;500&quot;></iframe>'">
-						<span class="icone" role="button" tabindex="0" :title="$t('copierCode')"><i class="material-icons">content_copy</i></span>
+						<span class="icone" role="button" :tabindex="menu === '' ? -1 : 0" :title="$t('copierCode')" @keydown.enter="copierIframe"><i class="material-icons">content_copy</i></span>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="conteneur-modale" role="dialog" tabindex="-1" v-if="modale === 'connexion'">
-			<div class="modale" role="document">
+		<div class="conteneur-modale" v-if="modale === 'connexion'">
+			<div class="modale" role="dialog">
 				<header>
-					<span class="titre">{{ $t('debloquerSerie') }}</span>
-					<span class="fermer" role="button" tabindex="0" @click="fermerModaleConnexion"><i class="material-icons">close</i></span>
+					<span class="titre">{{ $t('connexion') }}</span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModaleConnexion" @keydown.enter="fermerModaleConnexion"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
 						<div class="langue">
-							<span :class="{'selectionne': $parent.$parent.langue === 'fr'}" @click="modifierLangue('fr')">FR</span>
-							<span :class="{'selectionne': $parent.$parent.langue === 'it'}" @click="modifierLangue('it')">IT</span>
-							<span :class="{'selectionne': $parent.$parent.langue === 'en'}" @click="modifierLangue('en')">EN</span>
+							<span role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': $parent.$parent.langue === 'fr'}" @click="modifierLangue('fr')" @keydown.enter="modifierLangue('fr')">FR</span>
+							<span role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': $parent.$parent.langue === 'it'}" @click="modifierLangue('it')" @keydown.enter="modifierLangue('it')">IT</span>
+							<span role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': $parent.$parent.langue === 'en'}" @click="modifierLangue('en')" @keydown.enter="modifierLangue('en')">EN</span>
 						</div>
-						<label>{{ $t('questionSecrete') }}</label>
-						<select :value="question" @change="question = $event.target.value">
+						<label for="question-secrete">{{ $t('questionSecrete') }}</label>
+						<select id="question-secrete" :value="question" @change="question = $event.target.value">
 							<option value="" selected>-</option>
 							<option v-for="(item, index) in questions" :value="item" :key="'option_' + index">{{ $t(item) }}</option>
 						</select>
-						<label>{{ $t('reponseSecrete') }}</label>
-						<input type="password" :value="reponse" @input="reponse = $event.target.value" @keydown.enter="debloquerSerie">
+						<label for="question-secrete">{{ $t('reponseSecrete') }}</label>
+						<input id="question-secrete" type="password" :value="reponse" @input="reponse = $event.target.value" @keydown.enter="debloquerSerie">
 						<div class="actions">
-							<span class="bouton" role="button" tabindex="0" @click="debloquerSerie">{{ $t('valider') }}</span>
+							<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="debloquerSerie" @keydown.enter="debloquerSerie">{{ $t('valider') }}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="conteneur-modale" role="dialog" tabindex="-1" v-if="modale === 'importerCSV'">
-			<div class="modale" role="document">
+		<div class="conteneur-modale" v-if="modale === 'importer-csv'">
+			<div class="modale" role="dialog">
 				<header>
 					<span class="titre">{{ $t('importerCSV') }}</span>
-					<span class="fermer" role="button" tabindex="0" @click="modale = ''"><i class="material-icons">close</i></span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModale" @keydown.enter="fermerModale"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
 						<div class="parametre-import">
 							<label>{{ $t('parametreImport') }}</label>
-							<label class="bouton-radio">{{ $t('ajouterContenuImporte') }}
-								<input type="radio" name="import" :checked="parametreImport === 'ajouter'" @change="parametreImport = 'ajouter'">
+							<label class="bouton-radio" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('import-ajouter')">{{ $t('ajouterContenuImporte') }}
+								<input id="import-ajouter" type="radio" name="import" :checked="parametreImport === 'ajouter'" @change="parametreImport = 'ajouter'">
 							</label>
-							<label class="bouton-radio">{{ $t('remplacerContenuImporte') }}
-								<input type="radio" name="import" :checked="parametreImport === 'remplacer'" @change="parametreImport = 'remplacer'">
+							<label class="bouton-radio" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('import-remplacer')">{{ $t('remplacerContenuImporte') }}
+								<input id="import-remplacer" type="radio" name="import" :checked="parametreImport === 'remplacer'" @change="parametreImport = 'remplacer'">
 							</label>
 						</div>
 						<input type="file" id="televerser_csv" name="televerser_csv" style="display: none;" accept=".csv" @change="importerCSV">
-						<label for="televerser_csv" class="bouton large">{{ $t('selectionnerFichierCSV') }}</label>
+						<label for="televerser_csv" class="bouton large" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('televerser_csv')">{{ $t('selectionnerFichierCSV') }}</label>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'serie' || modale === 'modifier-nom' || modale === 'modifier-acces' || modale === 'importer' || modale === 'suppression-serie'">
-			<div class="modale" role="document" v-if="modale === 'serie'">
+		<div class="conteneur-modale" v-else-if="modale === 'serie' || modale === 'modifier-nom' || modale === 'modifier-acces' || modale === 'importer' || modale === 'suppression-serie'">
+			<div id="modale-parametres" class="modale" role="dialog" v-if="modale === 'serie'">
 				<header>
 					<span class="titre">{{ $t('parametresSerie') }}</span>
-					<span class="fermer" role="button" tabindex="0" @click="fermerModaleSerie"><i class="material-icons">close</i></span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModaleSerie" @keydown.enter="fermerModaleSerie"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
 						<div class="langue">
-							<span :class="{'selectionne': $parent.$parent.langue === 'fr'}" @click="modifierLangue('fr')">FR</span>
-							<span :class="{'selectionne': $parent.$parent.langue === 'it'}" @click="modifierLangue('it')">IT</span>
-							<span :class="{'selectionne': $parent.$parent.langue === 'en'}" @click="modifierLangue('en')">EN</span>
+							<span role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': $parent.$parent.langue === 'fr'}" @click="modifierLangue('fr')" @keydown.enter="modifierLangue('fr')">FR</span>
+							<span role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': $parent.$parent.langue === 'it'}" @click="modifierLangue('it')" @keydown.enter="modifierLangue('it')">IT</span>
+							<span role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': $parent.$parent.langue === 'en'}" @click="modifierLangue('en')" @keydown.enter="modifierLangue('en')">EN</span>
 						</div>
-						<span class="bouton large" role="button" tabindex="0" @click="ouvrirModaleNomSerie" v-if="!digidrive">{{ $t('modifierNomSerie') }}</span>
-						<span class="bouton large" role="button" tabindex="0" @click="ouvrirModaleAccesSerie" v-if="!digidrive">{{ $t('modifierAccesSerie') }}</span>
-						<span class="bouton large" role="button" tabindex="0" @click="exporterSerie">{{ $t('exporterSerie') }}</span>
-						<span class="bouton large" role="button" tabindex="0" @click="modale = 'importer'">{{ $t('importerSerie') }}</span>
-						<span class="bouton large rouge" role="button" tabindex="0" @click="afficherSupprimerSerie" v-if="!digidrive">{{ $t('supprimerSerie') }}</span>
-						<span class="bouton large" role="button" tabindex="0" @click="terminerSession">{{ $t('terminerSession') }}</span>
+						<span class="vues"><b>{{ $t('nombreVues') }}</b> {{ vues }}</span>
+						<span class="bouton large" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="ouvrirModaleNomSerie" @keydown.enter="ouvrirModaleNomSerie" v-if="!digidrive">{{ $t('modifierNomSerie') }}</span>
+						<span class="bouton large" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="ouvrirModaleAccesSerie" @keydown.enter="ouvrirModaleAccesSerie" v-if="!digidrive">{{ $t('modifierAccesSerie') }}</span>
+						<span class="bouton large" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="exporterSerie" @keydown.enter="exporterSerie">{{ $t('exporterSerie') }}</span>
+						<span class="bouton large" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="ouvrirModaleImporter" @keydown.enter="ouvrirModaleImporter">{{ $t('importerSerie') }}</span>
+						<span class="bouton large rouge" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="afficherSupprimerSerie" @keydown.enter="afficherSupprimerSerie" v-if="!digidrive">{{ $t('supprimerSerie') }}</span>
+						<span class="bouton large" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="terminerSession" @keydown.enter="terminerSession">{{ $t('terminerSession') }}</span>
 					</div>
 				</div>
 			</div>
 
-			<div class="modale" role="document" v-else-if="modale === 'modifier-nom'">
+			<div class="modale" role="dialog" v-else-if="modale === 'modifier-nom'">
 				<header>
 					<span class="titre">{{ $t('modifierNomSerie') }}</span>
-					<span class="fermer" role="button" tabindex="0" @click="fermerModaleNomSerie"><i class="material-icons">close</i></span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModaleNomSerie" @keydown.enter="fermerModaleNomSerie"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
-						<label>{{ $t('nouveauNom') }}</label>
-						<input type="text" :value="nouveaunom" @input="nouveaunom = $event.target.value" @keydown.enter="modifierNomSerie">
+						<label for="nouveau-nom">{{ $t('nouveauNom') }}</label>
+						<input id="nouveau-nom" type="text" :value="nouveaunom" @input="nouveaunom = $event.target.value" @keydown.enter="modifierNomSerie">
 						<div class="actions">
-							<span class="bouton" role="button" tabindex="0" @click="modifierNomSerie">{{ $t('modifier') }}</span>
+							<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="modifierNomSerie" @keydown.enter="modifierNomSerie">{{ $t('modifier') }}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<div class="modale" role="document" v-else-if="modale === 'modifier-acces'">
+			<div class="modale" role="dialog" v-else-if="modale === 'modifier-acces'">
 				<header>
 					<span class="titre">{{ $t('modifierAccesSerie') }}</span>
-					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAccesSerie"><i class="material-icons">close</i></span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModaleAccesSerie" @keydown.enter="fermerModaleAccesSerie"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
-						<label>{{ $t('questionSecreteActuelle') }}</label>
-						<select :value="question" @change="question = $event.target.value">
+						<label for="question-secrete">{{ $t('questionSecreteActuelle') }}</label>
+						<select id="question-secrete" :value="question" @change="question = $event.target.value">
 							<option value="" selected>-</option>
 							<option v-for="(item, index) in questions" :value="item" :key="'option_' + index">{{ $t(item) }}</option>
 						</select>
-						<label>{{ $t('reponseSecreteActuelle') }}</label>
-						<input type="text" :value="reponse" @input="reponse = $event.target.value">
-						<label>{{ $t('nouvelleQuestionSecrete') }}</label>
-						<select :value="nouvellequestion" @change="nouvellequestion = $event.target.value">
+						<label for="reponse-secrete">{{ $t('reponseSecreteActuelle') }}</label>
+						<input id="reponse-secrete" type="text" :value="reponse" @input="reponse = $event.target.value">
+						<label for="nouvelle-question-secrete">{{ $t('nouvelleQuestionSecrete') }}</label>
+						<select id="nouvelle-question-secrete" :value="nouvellequestion" @change="nouvellequestion = $event.target.value">
+							<option value="" selected>-</option>
 							<option v-for="(item, index) in questions" :value="item" :key="'option_' + index">{{ $t(item) }}</option>
 						</select>
-						<label>{{ $t('nouvelleReponseSecrete') }}</label>
-						<input type="text" :value="nouvellereponse" @input="nouvellereponse = $event.target.value" @keydown.enter="modifierAccesSerie">
+						<label for="nouvelle-reponse-secrete">{{ $t('nouvelleReponseSecrete') }}</label>
+						<input id="nouvelle-reponse-secrete" type="text" :value="nouvellereponse" @input="nouvellereponse = $event.target.value" @keydown.enter="modifierAccesSerie">
 						<div class="actions">
-							<span class="bouton" role="button" tabindex="0" @click="modifierAccesSerie">{{ $t('modifier') }}</span>
+							<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="modifierAccesSerie" @keydown.enter="modifierAccesSerie">{{ $t('modifier') }}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<div class="modale" role="document" v-else-if="modale === 'importer'">
+			<div class="modale" role="dialog" v-else-if="modale === 'importer'">
 				<header>
 					<span class="titre">{{ $t('importerSerie') }}</span>
-					<span class="fermer" role="button" tabindex="0" @click="modale = ''"><i class="material-icons">close</i></span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModale" @keydown.enter="fermerModale"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
 						<div class="parametre-import">
 							<label>{{ $t('parametreImport') }}</label>
-							<label class="bouton-radio">{{ $t('ajouterContenuImporte') }}
-								<input type="radio" name="import" :checked="parametreImport === 'ajouter'" @change="parametreImport = 'ajouter'">
+							<label class="bouton-radio" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('import-ajouter')">{{ $t('ajouterContenuImporte') }}
+								<input id="import-ajouter" type="radio" name="import" :checked="parametreImport === 'ajouter'" @change="parametreImport = 'ajouter'">
 							</label>
-							<label class="bouton-radio">{{ $t('remplacerContenuImporte') }}
-								<input type="radio" name="import" :checked="parametreImport === 'remplacer'" @change="parametreImport = 'remplacer'">
+							<label class="bouton-radio" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('import-remplacer')">{{ $t('remplacerContenuImporte') }}
+								<input id="import-remplacer" type="radio" name="import" :checked="parametreImport === 'remplacer'" @change="parametreImport = 'remplacer'">
 							</label>
 						</div>
 						<input type="file" id="importer" name="importer" style="display: none;" accept=".zip" @change="importerSerie">
-						<label for="importer" class="bouton large">{{ $t('selectionnerFichier') }}</label>
+						<label for="importer" class="bouton large" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('importer')">{{ $t('selectionnerFichier') }}</label>
 					</div>
 				</div>
 			</div>
 
-			<div class="modale confirmation" role="document" v-else-if="modale === 'suppression-serie'">
+			<div class="modale confirmation" role="dialog" v-else-if="modale === 'suppression-serie'">
 				<div class="conteneur">
 					<div class="contenu">
 						<p v-html="$t('confirmationSupprimerSerie')" />
 						<div class="actions">
-							<span class="bouton" role="button" tabindex="0" @click="modale = ''">{{ $t('non') }}</span>
-							<span class="bouton" role="button" tabindex="0" @click="supprimerSerie">{{ $t('oui') }}</span>
+							<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModale" @keydown.enter="fermerModale">{{ $t('non') }}</span>
+							<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="supprimerSerie" @keydown.enter="supprimerSerie">{{ $t('oui') }}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'suppression-carte'">
-			<div class="modale confirmation" role="document">
+		<div class="conteneur-modale" v-else-if="modale === 'suppression-carte'">
+			<div class="modale confirmation" role="dialog">
 				<div class="conteneur">
 					<div class="contenu">
 						<p v-html="$t('confirmationSupprimerCarte')" />
 						<div class="actions">
-							<span class="bouton" role="button" tabindex="0" @click="modale = ''">{{ $t('non') }}</span>
-							<span class="bouton" role="button" tabindex="0" @click="supprimerCarte">{{ $t('oui') }}</span>
+							<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModale" @keydown.enter="fermerModale">{{ $t('non') }}</span>
+							<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="supprimerCarte" @keydown.enter="supprimerCarte">{{ $t('oui') }}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'image'">
-			<div id="modale-image" class="modale" role="document">
+		<div class="conteneur-modale" v-else-if="modale === 'image'">
+			<div id="modale-image" class="modale" role="dialog">
 				<header>
 					<span class="titre" />
-					<span class="fermer" role="button" tabindex="0" @click="fermerModaleImage"><i class="material-icons">close</i></span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModaleImage" @keydown.enter="fermerModaleImage"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
 						<div class="conteneur-chargement" v-show="chargementImage">
 							<div class="chargement" />
 						</div>
-						<img :src="image">
+						<img :src="image" :alt="image">
 						<div class="actions">
-							<label :for="'televerser_image_' + carteIndex" class="bouton" role="button" tabindex="0">{{ $t('modifier') }}</label>
+							<label :for="'televerser_image_' + carteIndex" class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('televerser_image_' + carteIndex)">{{ $t('modifier') }}</label>
 							<input :id="'televerser_image_' + carteIndex" type="file" @change="televerserImage($event.target.files[0], carteIndex, carteType)" style="display: none" accept=".jpg, .jpeg, .png, .gif">
-							<span class="bouton" role="button" tabindex="0" @click="supprimerImage(carteIndex, carteType)">{{ $t('supprimer') }}</span>
+							<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="supprimerImage(carteIndex, carteType)" @keydown.enter="supprimerImage(carteIndex, carteType)">{{ $t('supprimer') }}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div id="zoom-image" class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'zoom-image'" @click="fermerModaleZoomImage">
-			<img :src="image">
+		<div id="zoom-image" class="conteneur-modale" v-else-if="modale === 'zoom-image'" @click="fermerModaleZoomImage">
+			<img :src="image" :alt="image" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="fermerModaleZoomImage">
 		</div>
 
-		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'ajouter-audio'">
-			<div id="modale-ajouter-audio" class="modale" :class="{'transcodage': transcodage}" role="document">
+		<div class="conteneur-modale" v-else-if="modale === 'ajouter-audio'">
+			<div id="modale-ajouter-audio" class="modale" :class="{'transcodage': transcodage}" role="dialog">
 				<header v-if="!transcodage">
 					<span class="titre">{{ titreAjouterAudio }}</span>
-					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAjouterAudio"><i class="material-icons">close</i></span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModaleAjouterAudio" @keydown.enter="fermerModaleAjouterAudio"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu" v-if="!transcodage">
 						<template v-if="audio === '' && !enregistrement">
-							<span id="enregistrer" class="bouton" role="button" tabindex="0" @click="enregistrerAudio"><i class="material-icons">fiber_manual_record</i><span>{{ $t('enregistrerAudio') }}</span></span>
+							<span id="enregistrer" class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="enregistrerAudio" @keydown.enter="enregistrerAudio"><i class="material-icons">fiber_manual_record</i><span>{{ $t('enregistrerAudio') }}</span></span>
 							<div class="separateur">
 								<span>{{ $t('ou') }}</span>
 							</div>
-							<label :for="'televerser_audio_' + carteIndex" class="bouton" role="button" tabindex="0">{{ $t('selectionnerFichierMP3') }}</label>
+							<label :for="'televerser_audio_' + carteIndex" class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('televerser_audio_' + carteIndex)">{{ $t('selectionnerFichierMP3') }}</label>
 							<input :id="'televerser_audio_' + carteIndex" type="file" @change="selectionnerAudio" style="display: none" accept=".mp3">
 						</template>
 						<div id="enregistrement" v-else-if="audio === '' && enregistrement">
 							<canvas id="visualisation" width="360" height="60" />
 							<div class="enregistrement">
-								<span class="bouton stopper" role="button" tabindex="0" @click="arreterEnregistrementAudio"><i class="material-icons">stop</i></span>
+								<span class="bouton stopper" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="arreterEnregistrementAudio" @keydown.enter="arreterEnregistrementAudio"><i class="material-icons">stop</i></span>
 								<span class="duree">{{ dureeEnregistrement }}</span>
 							</div>
 						</div>
 						<template v-else>
 							<audio controls><source :src="audio"></audio>
 							<div class="actions">
-								<span class="bouton" role="button" tabindex="0" @click="audio = ''">{{ $t('annuler') }}</span>
-								<span class="bouton" role="button" tabindex="0" @click="ajouterAudio(carteIndex, carteType)">{{ $t('valider') }}</span>
+								<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="audio = ''" @keydown.enter="audio = ''">{{ $t('annuler') }}</span>
+								<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="ajouterAudio(carteIndex, carteType)" @keydown.enter="ajouterAudio(carteIndex, carteType)">{{ $t('valider') }}</span>
 							</div>
 						</template>
 					</div>
@@ -522,42 +544,42 @@
 			</div>
 		</div>
 
-		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'audio'">
-			<div id="modale-audio" class="modale" role="document">
+		<div class="conteneur-modale" v-else-if="modale === 'audio'">
+			<div id="modale-audio" class="modale" role="dialog">
 				<header>
 					<span class="titre" />
-					<span class="fermer" role="button" tabindex="0" @click="fermerModaleAudio"><i class="material-icons">close</i></span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModaleAudio" @keydown.enter="fermerModaleAudio"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
 						<audio controls><source :src="audio"></audio>
 						<div class="actions">
-							<span class="bouton" role="button" tabindex="0" @click="supprimerAudio(carteIndex, carteType)">{{ $t('supprimer') }}</span>
+							<span class="bouton" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="supprimerAudio(carteIndex, carteType)" @keydown.enter="supprimerAudio(carteIndex, carteType)">{{ $t('supprimer') }}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="conteneur-modale score" role="dialog" tabindex="-1" v-else-if="modale === 'score-quiz'" @click="modale = ''">
-			<div class="conteneur">
+		<div class="conteneur-modale score" v-else-if="modale === 'score-quiz'" @click="fermerModale">
+			<div class="conteneur" role="dialog">
 				<span class="icone"><i class="material-icons">emoji_events</i></span>
-				<span class="score">{{ definirScoreQuiz() }} %</span>
+				<span class="score" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="fermerModale">{{ definirScoreQuiz() }} %</span>
 			</div>
 		</div>
 
-		<div class="conteneur-modale score" role="dialog" tabindex="-1" v-else-if="modale === 'score-ecrire'" @click="modale = ''">
-			<div class="conteneur">
+		<div class="conteneur-modale score" v-else-if="modale === 'score-ecrire'" @click="fermerModale">
+			<div class="conteneur" role="dialog">
 				<span class="icone"><i class="material-icons">emoji_events</i></span>
-				<span class="score">{{ definirScoreEcrire() }} %</span>
+				<span class="score" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="fermerModale">{{ definirScoreEcrire() }} %</span>
 			</div>
 		</div>
 
-		<div class="conteneur-modale" role="dialog" tabindex="-1" v-else-if="modale === 'code-qr'">
-			<div id="codeqr" class="modale" role="document">
+		<div class="conteneur-modale" v-else-if="modale === 'code-qr'">
+			<div id="codeqr" class="modale" role="dialog">
 				<header>
 					<span class="titre">{{ $t('codeQR') }}</span>
-					<span class="fermer" role="button" tabindex="0" @click="modale = ''"><i class="material-icons">close</i></span>
+					<span class="fermer" role="button" :tabindex="$parent.$parent.message === '' ? 0 : -1" @click="fermerModale" @keydown.enter="fermerModale"><i class="material-icons">close</i></span>
 				</header>
 				<div class="conteneur">
 					<div class="contenu">
@@ -604,6 +626,7 @@ export default {
 			nouveaunom: '',
 			nouvellequestion: '',
 			nouvellereponse: '',
+			vues: 0,
 			codeqr: '',
 			position: 0,
 			chargement: '',
@@ -643,7 +666,8 @@ export default {
 			cartesMemorisees: [],
 			integration: false,
 			impressionPDF: false,
-			fitties: ''
+			fitties: '',
+			elementPrecedent: null
 		}
 	},
 	watch: {
@@ -722,6 +746,7 @@ export default {
 					this.vue = 'editeur'
 				}
 				this.nom = reponse.nom
+				this.vues = reponse.vues
 				if (reponse.donnees !== '' && this.verifierJSON(reponse.donnees) === true) {
 					const donnees = JSON.parse(reponse.donnees)
 					this.cartes = donnees.cartes
@@ -873,6 +898,7 @@ export default {
 			}
 		})
 		clipboard.on('success', function () {
+			document.querySelector('#copier-lien .lien').focus()
 			this.$parent.$parent.notification = this.$t('lienCopie')
 		}.bind(this))
 		const iframe = '<iframe src="' + lien + '?vue=apprenant" allowfullscreen frameborder="0" width="100%" height="500"></iframe>'
@@ -882,6 +908,7 @@ export default {
 			}
 		})
 		clipboardIframe.on('success', function () {
+			document.querySelector('#copier-iframe span').focus()
 			this.$parent.$parent.notification = this.$t('codeCopie')
 		}.bind(this))
 
@@ -931,12 +958,12 @@ export default {
 			}
 		}.bind(this))
 
-		window.addEventListener('keydown', this.gererClavier, false)
+		document.addEventListener('keydown', this.gererClavier, false)
 
 		document.body.addEventListener('scroll', this.gererScroll, false)
 	},
 	beforeUnmount () {
-		window.removeEventListener('keydown', this.gererClavier, false)
+		document.removeEventListener('keydown', this.gererClavier, false)
 	},
 	methods: {
 		definirRacine () {
@@ -982,6 +1009,9 @@ export default {
 					window.MathJax.typeset()
 				}.bind(this))
 			}
+		},
+		activerInput (id) {
+			document.querySelector('#' + id).click()
 		},
 		modifierOptions (type, valeur) {
 			this.options[type] = valeur
@@ -1095,15 +1125,24 @@ export default {
 			localStorage.setItem('digiflashcards_lang', langue)
 		},
 		afficherMenuPartager () {
+			this.elementPrecedent = (document.activeElement || document.body)
 			this.menu = 'partager'
 			this.$nextTick(function () {
 				const rect = document.querySelector('#conteneur-partage').getBoundingClientRect()
 				const largeurBouton = rect.width
 				const largeurMenu = document.querySelector('#menu-partager').getBoundingClientRect().width
 				this.position = rect.left - ((largeurMenu * 90) / 100 - largeurBouton / 2)
+				document.querySelector('#menu-partager span').focus()
 			}.bind(this))
 		},
+		copierLien () {
+			document.querySelector('#copier-lien .lien').click()
+		},
+		copierIframe () {
+			document.querySelector('#copier-iframe span').click()
+		},
 		afficherCodeQR () {
+			this.elementPrecedent = (document.activeElement || document.body)
 			this.modale = 'code-qr'
 			this.$nextTick(function () {
 				const lien = this.definirRacine() + '#/f/' + this.id
@@ -1118,6 +1157,11 @@ export default {
 					correctLevel : QRCode.CorrectLevel.H
 				})
 			}.bind(this))
+			document.querySelector('#codeqr .fermer').focus()
+		},
+		fermerModale () {
+			this.modale = ''
+			this.gererFocus()
 		},
 		supprimerDonneesExercices () {
 			if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
@@ -1152,6 +1196,7 @@ export default {
 							maxSize: 100,
 							multiLine: true
 						})
+						document.querySelector('#carte_' + this.navigationCartes).focus()
 					}.bind(this))
 				}.bind(this))
 			}.bind(this), 200)
@@ -1181,6 +1226,7 @@ export default {
 							maxSize: 100,
 							multiLine: true
 						})
+						document.querySelector('#carte_' + this.navigationCartes).focus()
 					}.bind(this))
 				}.bind(this))
 			}.bind(this), 200)
@@ -1285,6 +1331,7 @@ export default {
 		},
 		afficherImage (index, type, image) {
 			this.chargementImage = true
+			this.elementPrecedent = (document.activeElement || document.body)
 			this.carteIndex = index
 			this.carteType = type
 			this.image = image
@@ -1292,6 +1339,7 @@ export default {
 			this.$nextTick(function () {
 				imagesLoaded('#modale-image .contenu', function () {
 					this.chargementImage = false
+					document.querySelector('#modale-image .fermer').focus()
 				}.bind(this))
 			}.bind(this))
 		},
@@ -1301,22 +1349,26 @@ export default {
 			this.carteIndex = ''
 			this.carteType = ''
 			this.chargementImage = false
+			this.gererFocus()
 		},
 		afficherZoomImage (event, image) {
 			event.preventDefault()
 			event.stopPropagation()
 			this.$parent.$parent.chargement = true
+			this.elementPrecedent = (document.activeElement || document.body)
 			this.image = image
 			this.modale = 'zoom-image'
 			this.$nextTick(function () {
 				imagesLoaded('#zoom-image', function () {
 					this.$parent.$parent.chargement = false
+					document.querySelector('#zoom-image img').focus()
 				}.bind(this))
 			}.bind(this))
 		},
 		fermerModaleZoomImage () {
 			this.modale = ''
 			this.image = ''
+			this.gererFocus()
 		},
 		supprimerImage (index, type) {
 			this.fermerModaleImage()
@@ -1650,12 +1702,19 @@ export default {
 		afficherAudio (index, type, audio) {
 			this.carteIndex = index
 			this.carteType = type
+			this.elementPrecedent = (document.activeElement || document.body)
 			if (audio === '') {
 				this.titreAjouterAudio = this.$t('ajouterAudio')
 				this.modale = 'ajouter-audio'
+				this.$nextTick(function () {
+					document.querySelector('#enregistrer').focus()
+				})
 			} else {
 				this.audio = audio
 				this.modale = 'audio'
+				this.$nextTick(function () {
+					document.querySelector('#modale-audio audio').focus()
+				})
 			}
 		},
 		fermerModaleAudio () {
@@ -1663,6 +1722,7 @@ export default {
 			this.audio = ''
 			this.carteIndex = ''
 			this.carteType = ''
+			this.gererFocus()
 		},
 		fermerModaleAjouterAudio () {
 			this.modale = ''
@@ -1681,6 +1741,7 @@ export default {
 				this.intervalle = ''
 			}
 			this.transcodage = false
+			this.gererFocus()
 		},
 		supprimerAudio (index, type) {
 			this.fermerModaleAudio()
@@ -1745,12 +1806,17 @@ export default {
 		afficherSupprimerCarte (index) {
 			if (this.cartes.length > 2) {
 				this.carteIndex = index
+				this.elementPrecedent = (document.activeElement || document.body)
 				this.modale = 'suppression-carte'
+				this.$nextTick(function () {
+					document.querySelector('.modale .bouton').focus()
+				})
 			}
 		},
 		fermerModaleSupprimerCarte () {
 			this.modale = ''
 			this.carteIndex = ''
+			this.gererFocus()
 		},
 		supprimerCarte () {
 			this.modale = ''
@@ -1947,12 +2013,19 @@ export default {
 				})
 				localStorage.setItem('digiflashcards_quiz_' + this.id, JSON.stringify(this.exercicesQuiz))
 				if (this.verifierReponsesQuiz() === this.exercicesQuiz.length) {
-					this.modale = 'score-quiz'
+					this.afficherScoreQuiz()
 					if (this.definirScoreQuiz() > 79) {
 						this.lancerConfettis()
 					}
 				}
 			}
+		},
+		afficherScoreQuiz () {
+			this.elementPrecedent = (document.activeElement || document.body)
+			this.modale = 'score-quiz'
+			this.$nextTick(function () {
+				document.querySelector('.conteneur-modale.score .score').focus()
+			})
 		},
 		verifierReponsesQuiz () {
 			let reponses = 0
@@ -2080,12 +2153,19 @@ export default {
 				this.exercicesEcrire[this.navigationEcrire].reponse = reponse
 				localStorage.setItem('digiflashcards_ecrire_' + this.id, JSON.stringify(this.exercicesEcrire))
 				if (this.verifierReponsesEcrire() === this.exercicesEcrire.length) {
-					this.modale = 'score-ecrire'
+					this.afficherScoreEcrire()
 					if (this.definirScoreEcrire() > 79) {
 						this.lancerConfettis()
 					}
 				}
 			}
+		},
+		afficherScoreEcrire () {
+			this.elementPrecedent = (document.activeElement || document.body)
+			this.modale = 'score-ecrire'
+			this.$nextTick(function () {
+				document.querySelector('.conteneur-modale.score .score').focus()
+			})
 		},
 		verifierReponsesEcrire () {
 			let reponses = 0
@@ -2117,7 +2197,11 @@ export default {
 			}.bind(this), 200)
 		},
 		ouvrirModaleSerie () {
+			this.elementPrecedent = (document.activeElement || document.body)
 			this.modale = 'serie'
+			this.$nextTick(function () {
+				document.querySelector('.modale .fermer').focus()
+			})
 		},
 		fermerModaleSerie () {
 			this.modale = ''
@@ -2126,6 +2210,7 @@ export default {
 			this.nouveaunom = ''
 			this.nouvellequestion = ''
 			this.nouvellereponse = ''
+			this.gererFocus()
 		},
 		ouvrirModaleNomSerie () {
 			this.nouveaunom = this.nom
@@ -2137,6 +2222,7 @@ export default {
 		fermerModaleNomSerie () {
 			this.modale = ''
 			this.nouveaunom = ''
+			this.gererFocus()
 		},
 		modifierNomSerie () {
 			if (this.nouveaunom !== '' && this.nom !== this.nouveaunom) {
@@ -2175,6 +2261,9 @@ export default {
 		},
 		ouvrirModaleAccesSerie () {
 			this.modale = 'modifier-acces'
+			this.$nextTick(function () {
+				document.querySelector('.modale select').focus()
+			})
 		},
 		fermerModaleAccesSerie () {
 			this.modale = ''
@@ -2182,6 +2271,7 @@ export default {
 			this.reponse = ''
 			this.nouvellequestion = ''
 			this.nouvellereponse = ''
+			this.gererFocus()
 		},
 		modifierAccesSerie () {
 			if (this.question !== '' && this.reponse !== '' && this.nouvellequestion !== '' && this.nouvellereponse !== '') {
@@ -2221,12 +2311,17 @@ export default {
 			}
 		},
 		ouvrirModaleConnexion () {
+			this.elementPrecedent = (document.activeElement || document.body)
 			this.modale = 'connexion'
+			this.$nextTick(function () {
+				document.querySelector('.modale .fermer').focus()
+			})
 		},
 		fermerModaleConnexion () {
 			this.modale = ''
 			this.question = ''
 			this.reponse = ''
+			this.gererFocus()
 		},
 		debloquerSerie () {
 			if (this.question !== '' && this.reponse !== '') {
@@ -2246,7 +2341,7 @@ export default {
 						} else if (xhr.responseText === 'serie_debloquee') {
 							this.admin = true
 							this.vue = 'editeur'
-							this.$parent.$parent.notification = this.$t('serieDebloquee')
+							this.$parent.$parent.notification = this.$t('connexionReussie')
 							if (this.pleinEcran) {
 								fscreen.exitFullscreen()
 								this.pleinEcran = false
@@ -2345,6 +2440,12 @@ export default {
 					this.$parent.$parent.notification = this.$t('serieExportee')
 				}.bind(this))
 			}.bind(this))
+		},
+		ouvrirModaleImporter () {
+			this.modale = 'importer'
+			this.$nextTick(function () {
+				document.querySelector('.modale .fermer').focus()
+			})
 		},
 		importerSerie (event) {
 			const fichier = event.target.files[0]
@@ -2525,6 +2626,9 @@ export default {
 		},
 		afficherSupprimerSerie () {
 			this.modale = 'suppression-serie'
+			this.$nextTick(function () {
+				document.querySelector('.modale .bouton').focus()
+			})
 		},
 		supprimerSerie () {
 			this.modale = ''
@@ -2532,10 +2636,11 @@ export default {
 			const xhr = new XMLHttpRequest()
 			xhr.onload = function () {
 				if (xhr.readyState === xhr.DONE && xhr.status === 200) {
-					this.$parent.$parent.chargement = false
 					if (xhr.responseText === 'erreur') {
+						this.$parent.$parent.chargement = false
 						this.$parent.$parent.message = this.$t('erreurServeur')
 					} else if (xhr.responseText === 'non_autorise') {
+						this.$parent.$parent.chargement = false
 						this.$parent.$parent.message = this.$t('actionNonAutorisee')
 					} else if (xhr.responseText === 'serie_supprimee' || xhr.responseText === 'contenu_inexistant') {
 						document.title = 'Digiflashcards by La Digitale'
@@ -2543,13 +2648,20 @@ export default {
 					}
 				} else {
 					this.$parent.$parent.chargement = false
-					this.fermerModaleConnexion()
+					this.fermerModale()
 					this.$parent.$parent.message = this.$t('erreurServeur')
 				}
 			}.bind(this)
 			xhr.open('POST', this.$parent.$parent.hote + 'inc/supprimer_serie.php', true)
 			xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
 			xhr.send('serie=' + this.id)
+		},
+		ouvrirModaleImporterCSV () {
+			this.elementPrecedent = (document.activeElement || document.body)
+			this.modale = 'importer-csv'
+			this.$nextTick(function () {
+				document.querySelector('.modale .fermer').focus()
+			})
 		},
 		importerCSV (event) {
 			const fichier = event.target.files[0]
@@ -2596,6 +2708,7 @@ export default {
 									that.cartesInversees = false
 									that.copieCartes = []
 									that.$parent.$parent.notification = that.$t('cartesImportees')
+									that.gererFocus()
 									if (that.parametreImport === 'remplacer') {
 										xhr = new XMLHttpRequest()
 										xhr.open('POST', that.$parent.$parent.hote + 'inc/vider_dossier_serie.php', true)
@@ -2617,13 +2730,40 @@ export default {
 				})
 			}
 		},
+		gererFocus () {
+			if (this.elementPrecedent) {
+				this.elementPrecedent.focus()
+				this.elementPrecedent = null
+			}
+		},
 		gererClavier (event) {
-			if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'ArrowLeft') {
+			if (event.key === 'Escape' && this.$parent.$parent.message !== '') {
+				this.$parent.$parent.message = ''
+			} else if (event.key === 'Escape' && this.modale === 'connexion') {
+				this.fermerModaleConnexion()
+			} else if (event.key === 'Escape' && this.modale === 'serie') {
+				this.fermerModaleSerie()
+			} else if (event.key === 'Escape' && this.modale === 'modifier-nom') {
+				this.fermerModaleNomSerie()
+			} else if (event.key === 'Escape' && this.modale === 'modifier-acces') {
+				this.fermerModaleAccesSerie()
+			} else if (event.key === 'Escape' && this.modale === 'image') {
+				this.fermerModaleImage()
+			} else if (event.key === 'Escape' && this.modale === 'zoom-image') {
+				this.fermerModaleZoomImage()
+			} else if (event.key === 'Escape' && this.modale === 'ajouter-audio') {
+				this.fermerModaleAjouterAudio()
+			} else if (event.key === 'Escape' && this.modale === 'audio') {
+				this.fermerModaleAudio()
+			} else if (event.key === 'Escape' && this.modale !== '') {
+				this.fermerModale()
+			} else if (event.key === 'Escape' && this.menu !== '') {
+				this.menu = ''
+				this.gererFocus()
+			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'ArrowLeft') {
 				this.afficherCartePrecedente()
 			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'ArrowRight') {
 				this.afficherCarteSuivante()
-			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'Enter') {
-				this.recto = !this.recto
 			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'quiz' && event.key === 'ArrowLeft') {
 				this.afficherQuestionQuizPrecedente()
 			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'quiz' && event.key === 'ArrowRight') {
@@ -2632,15 +2772,6 @@ export default {
 				this.afficherQuestionEcrirePrecedente()
 			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'ecrire' && event.key === 'ArrowRight') {
 				this.afficherQuestionEcrireSuivante()
-			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'Tab') {
-				event.preventDefault()
-				this.definirOnglet('quiz')
-			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'quiz' && event.key === 'Tab') {
-				event.preventDefault()
-				this.definirOnglet('ecrire')
-			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'ecrire' && event.key === 'Tab') {
-				event.preventDefault()
-				this.definirOnglet('cartes')
 			}
 		},
 		gererScroll () {
@@ -2915,6 +3046,7 @@ export default {
 #conteneur-partage i,
 #conteneur-parametres i {
 	font-size: 24px;
+	width: 24px;
 }
 
 #logo {
@@ -3024,11 +3156,7 @@ export default {
 }
 
 #options .bouton-radio input {
-	position: absolute;
-	opacity: 0;
-	cursor: pointer;
-	height: 0;
-	width: 0;
+	display: none;
 }
 
 #options .coche {
