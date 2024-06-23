@@ -1142,7 +1142,6 @@ export default {
 			document.querySelector('#copier-iframe span').click()
 		},
 		afficherCodeQR () {
-			this.elementPrecedent = (document.activeElement || document.body)
 			this.modale = 'code-qr'
 			this.$nextTick(function () {
 				const lien = this.definirRacine() + '#/f/' + this.id
@@ -1156,8 +1155,8 @@ export default {
 					// eslint-disable-next-line
 					correctLevel : QRCode.CorrectLevel.H
 				})
+				document.querySelector('#codeqr .fermer').focus()
 			}.bind(this))
-			document.querySelector('#codeqr .fermer').focus()
 		},
 		fermerModale () {
 			this.modale = ''
