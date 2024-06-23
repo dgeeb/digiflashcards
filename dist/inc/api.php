@@ -72,8 +72,8 @@ if (!empty($_POST['token']) && !empty($_POST['lien'])) {
 			$reponse = password_hash(strtolower($_POST['reponse']), PASSWORD_DEFAULT);
 			$donnees = '';
 			$date = date('Y-m-d H:i:s');
-			$stmt = $db->prepare('INSERT INTO digiflashcards_series (url, nom, question, reponse, donnees, date) VALUES (:url, :nom, :question, :reponse, :donnees, :date)');
-			if ($stmt->execute(array('url' => $id, 'nom' => $nom, 'question' => $question, 'reponse' => $reponse, 'donnees' => $donnees, 'date' => $date))) {
+			$stmt = $db->prepare('INSERT INTO digiflashcards_series (url, nom, question, reponse, donnees, date, vues, derniere_visite) VALUES (:url, :nom, :question, :reponse, :donnees, :date, :vues, :derniere_visite)');
+			if ($stmt->execute(array('url' => $id, 'nom' => $nom, 'question' => $question, 'reponse' => $reponse, 'donnees' => $donnees, 'date' => $date, 'vues' => $vues, 'derniere_visite' => $date))) {
 				echo $id;
 			} else {
 				echo 'erreur';
