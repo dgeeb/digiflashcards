@@ -931,6 +931,7 @@ export default {
 			const menuPartager = document.querySelector('#menu-partager')
 			if (partager && menuPartager && event.target !== partager && event.target !== menuPartager && !partager.contains(event.target) && !menuPartager.contains(event.target)) {
 				this.menu = ''
+				this.gererFocus()
 			}
 		}.bind(this))
 
@@ -947,6 +948,7 @@ export default {
 		window.addEventListener('resize', function () {
 			if (this.menu === 'partager') {
 				this.menu = ''
+				this.gererFocus()
 			}
 			this.definirTailleFonte()
 			if (this.enregistrement === true) {
