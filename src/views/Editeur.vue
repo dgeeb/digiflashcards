@@ -291,7 +291,7 @@
 				<span role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('retourHaut')" @click="retournerHaut" @keydown.enter="retournerHaut"><i class="material-icons">arrow_circle_up</i></span>
 			</div>
 
-			<div id="menu-partager" v-show="menu === 'partager'" :style="{'left': position + 'px'}">
+			<div id="menu-partager" v-if="menu === 'partager'" :style="{'left': position + 'px'}">
 				<div id="conteneur-partager">
 					<label>{{ $t('lienEtCodeQR') }}</label>
 					<div id="copier-lien" class="copier">
