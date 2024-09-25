@@ -208,7 +208,7 @@
 									<input :id="'reponse_quiz_' + indexQuiz + '_' + indexReponse" type="radio" :checked="itemReponse.reponse" :disabled="itemReponse.repondu" :value="itemReponse.correct" :name="'reponse_quiz_' + indexQuiz" :data-index="indexReponse">
 									<span class="radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('reponse_quiz_' + indexQuiz + '_' + indexReponse)" />
 									<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.verso.texte !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemReponse.verso.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemReponse.verso.image, ''))" v-if="itemReponse.verso.image !== ''"><img :src="definirLienMedia(itemReponse.verso.image, '')" :alt="itemReponse.verso.image"></span>
-									<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.verso.texte !== '', 'avec-image': itemReponse.verso.image !== '', 'lecture': lectureQuiz === indexReponse}" @keydown.enter="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.verso.audio, ''))" v-if="itemReponse.verso.audio !== ''"><i class="material-icons">volume_up</i></span>
+									<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.verso.texte !== '', 'avec-image': itemReponse.verso.image !== '', 'lecture': lectureQuiz === indexReponse}" @click="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.verso.audio, ''))" @keydown.enter="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.verso.audio, ''))" v-if="itemReponse.verso.audio !== ''"><i class="material-icons">volume_up</i></span>
 									<span class="texte" v-if="itemReponse.verso.texte !== ''" v-html="itemReponse.verso.texte" />
 								</label>
 								<label class="conteneur-coche" :class="{'correct': itemReponse.reponse && itemReponse.correct, 'incorrect': itemReponse.reponse && !itemReponse.correct}" v-else>
@@ -681,6 +681,14 @@ export default {
 				this.audio.pause()
 				this.audio = ''
 				this.lecture = false
+			}
+		},
+		onglet: function () {
+			if (this.audio !== '') {
+				this.audio.pause()
+				this.audio = ''
+				this.lecture = false
+				this.lectureQuiz = ''
 			}
 		},
 		cartes: {
@@ -2867,6 +2875,10 @@ export default {
 					})
 					window.MathJax.typeset()
 				}.bind(this))
+				if (this.cartes.length > 4) {
+					this.definirExercicesEcrire()
+					this.definirExercicesQuiz()
+				}
 				this.$parent.$parent.notification = this.$t('cartesInversees')
 				this.$parent.$parent.chargement = false
 			}.bind(this), 200)
@@ -3346,7 +3358,9 @@ export default {
 
 #cartes.apprenant .carte .conteneur-audio,
 #cartes.apprenant .carte .conteneur-image {
-	display: block;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	width: 100%;
 	height: 100%;
 }
@@ -3384,10 +3398,9 @@ export default {
 
 #cartes.apprenant .carte .audio {
 	display: flex;
-	width: 100%;
-	height: 100%;
 	justify-content: center;
 	align-items: center;
+	width: 100%;
 	font-size: 150px;
 	text-align: center;
 	cursor: pointer;
