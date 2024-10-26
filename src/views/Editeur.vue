@@ -81,7 +81,7 @@
 					</div>
 				</div>
 
-				<draggable id="cartes" class="admin" v-model="cartes" :animation="250" :sort="true" :swap-threshold="0.5" :force-fallback="true" :fallback-tolerance="10" handle=".statique" filter=".supprimer" :preventOnFilter="true" draggable=".carte" v-if="cartes.length > 0 && vue === 'editeur'" @end="modifierPositionCarte">
+				<draggable id="cartes" class="admin" v-model="cartes" :animation="250" :sort="true" :swap-threshold="0.5" handle=".statique" filter=".supprimer" :preventOnFilter="true" draggable=".carte" v-if="cartes.length > 0 && vue === 'editeur'" @end="modifierPositionCarte">
 					<article :id="'carte' + index" class="carte" v-for="(item, index) in cartes" :key="'carte_' + index">
 						<div class="actions statique">
 							<div class="gauche">
@@ -1786,8 +1786,8 @@ export default {
 			xhr.send(JSON.stringify(json))
 			this.supprimerDonneesExercices()
 		},
-		modifierPositionCarte () {
-			if (this.cartes.length > 1) {
+		modifierPositionCarte (event) {
+			if (this.cartes.length > 1 && event.oldIndex !== event.newIndex) {
 				this.$parent.$parent.chargementTransparent = true
 				const xhr = new XMLHttpRequest()
 				xhr.onload = function () {
@@ -4565,6 +4565,16 @@ export default {
 </style>
 
 <style>
+.sortable-chosen,
+.sortable-ghost {
+	background-color: #aaa!important;
+}
+
+.sortable-drag {
+	opacity: 0.85!important;
+	background-color: #ccc!important;
+}
+
 #codeqr.modale #qr {
 	display: inline-block;
 }
