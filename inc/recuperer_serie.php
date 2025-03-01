@@ -25,6 +25,8 @@ if (!empty($_POST['id'])) {
 			$digidrive = 0;
 			if (isset($_SESSION['digiflashcards'][$id]['digidrive'])) {
 				$digidrive = $_SESSION['digiflashcards'][$id]['digidrive'];
+			} else if (intval($serie[0]['digidrive']) === 1) {
+				$digidrive = 1;
 			}
 			$date = date('Y-m-d H:i:s');
 			$vues = 0;

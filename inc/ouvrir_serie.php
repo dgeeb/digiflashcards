@@ -9,7 +9,7 @@ if (!empty($_POST['serie']) && !empty($_POST['question']) && !empty($_POST['repo
 	$serie = $_POST['serie'];
 	$question = $_POST['question'];
 	$reponse = strtolower($_POST['reponse']);
-	$stmt = $db->prepare('SELECT question, reponse FROM digiflashcards_series WHERE url = :url');
+	$stmt = $db->prepare('SELECT question, reponse, digidrive FROM digiflashcards_series WHERE url = :url');
 	if ($stmt->execute(array('url' => $serie))) {
 		$resultat = $stmt->fetchAll();
 		$questionSecrete = '';
@@ -48,8 +48,15 @@ if (!empty($_POST['serie']) && !empty($_POST['question']) && !empty($_POST['repo
 			if ($question === $questionSecrete && password_verify($reponse, $reponseSecrete)) {
 				$_SESSION['digiflashcards'][$serie]['reponse'] = $reponseSecrete;
 				$type = $_POST['type'];
-				if ($type === 'api' && !isset($_SESSION['digiflashcards'][$serie]['digidrive'])) {
-					$_SESSION['digiflashcards'][$serie]['digidrive'] = 1;
+				if ($type === 'api') {
+					if (!isset($_SESSION['digiflashcards'][$serie]['digidrive'])) {
+						$_SESSION['digiflashcards'][$serie]['digidrive'] = 1;
+					}
+					if ($resultat[0]['digidrive'] === 0) {
+						$digidrive = 1;
+						$stmt = $db->prepare('UPDATE digiflashcards_series SET digidrive = :digidrive WHERE url = :url');
+						$stmt->execute(array('digidrive' => $digidrive, 'url' => $serie));
+					}
 				}
 				echo 'serie_debloquee';
 			} else {
