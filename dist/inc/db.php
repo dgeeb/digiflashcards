@@ -13,7 +13,8 @@ if (!file_exists(dirname(__FILE__) . '/digiflashcards.db')) {
         donnees TEXT NOT NULL,
         date TEXT NOT NULL,
         vues INTEGER NOT NULL,
-        derniere_visite TEXT NOT NULL
+        derniere_visite TEXT NOT NULL,
+        digidrive INTEGER NOT NULL
     )";
     $db->exec($table);
 } else {
@@ -27,6 +28,9 @@ if (!file_exists(dirname(__FILE__) . '/digiflashcards.db')) {
             $colonne = "ALTER TABLE digiflashcards_series ADD vues INTEGER NOT NULL DEFAULT 0";
             $db->exec($colonne);
             $colonne = "ALTER TABLE digiflashcards_series ADD derniere_visite TEXT NOT NULL DEFAULT ''";
+            $db->exec($colonne);
+        } else if (count($tables) === 9) {
+            $colonne = "ALTER TABLE digiflashcards_series ADD digidrive INTEGER NOT NULL DEFAULT 0";
             $db->exec($colonne);
         }
     }

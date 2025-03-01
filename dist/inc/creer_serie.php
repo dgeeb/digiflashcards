@@ -13,8 +13,9 @@ if (!empty($_POST['nom']) && !empty($_POST['question']) && !empty($_POST['repons
 	$donnees = '';
 	$date = date('Y-m-d H:i:s');
 	$vues = 0;
-	$stmt = $db->prepare('INSERT INTO digiflashcards_series (url, nom, question, reponse, donnees, date, vues, derniere_visite) VALUES (:url, :nom, :question, :reponse, :donnees, :date, :vues, :derniere_visite)');
-	if ($stmt->execute(array('url' => $serie, 'nom' => $nom, 'question' => $question, 'reponse' => $reponse, 'donnees' => $donnees, 'date' => $date, 'vues' => $vues, 'derniere_visite' => $date))) {
+	$digidrive = 0;
+	$stmt = $db->prepare('INSERT INTO digiflashcards_series (url, nom, question, reponse, donnees, date, vues, derniere_visite, digidrive) VALUES (:url, :nom, :question, :reponse, :donnees, :date, :vues, :derniere_visite, :digidrive)');
+	if ($stmt->execute(array('url' => $serie, 'nom' => $nom, 'question' => $question, 'reponse' => $reponse, 'donnees' => $donnees, 'date' => $date, 'vues' => $vues, 'derniere_visite' => $date, 'digidrive' => $digidrive))) {
 		$_SESSION['digiflashcards'][$serie]['reponse'] = $reponse;
 		echo $serie;
 	} else {
