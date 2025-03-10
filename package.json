@@ -1,6 +1,6 @@
 {
   "name": "digiflashcards",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "homepage": "https://ladigitale.dev/digiflashcards/",
   "repository": {
     "type": "git",
@@ -29,20 +29,20 @@
     "jszip": "^3.10.1",
     "lamejs": "github:zhuker/lamejs",
     "papaparse": "^5.4.1",
-    "voca": "^1.4.0",
-    "vue": "^3.4.38",
+    "voca": "^1.4.1",
+    "vue": "^3.5.13",
     "vue-draggable-next": "^2.2.1",
-    "vue-i18n": "^9.14.0",
-    "vue-router": "^4.4.3"
+    "vue-i18n": "^10.0.6",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.10.4",
-    "@vitejs/plugin-vue": "^5.1.2",
-    "@vue/eslint-config-prettier": "^9.0.0",
-    "eslint": "^9.9.0",
-    "eslint-plugin-vue": "^9.17.0",
-    "prettier": "^3.3.3",
-    "vite": "^5.4.2",
-    "vite-plugin-static-copy": "^1.0.6"
+    "@rushstack/eslint-patch": "^1.10.5",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "eslint": "^9.22.0",
+    "eslint-plugin-vue": "^10.0.0",
+    "prettier": "^3.5.3",
+    "vite": "^6.2.1",
+    "vite-plugin-static-copy": "^2.3.0"
   }
 }
