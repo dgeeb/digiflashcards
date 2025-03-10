@@ -1,8 +1,8 @@
 @font-face {
-	font-family: 'HKGrotesk-Black';
-	src: url('@/assets/fonts/HKGrotesk-Black.woff2') format('woff2');
-	font-weight: normal;
-	font-style: normal;
+	font-family: 'Mona Sans Expanded';
+	src: url('@/assets/fonts/MonaSansExpanded-Black.woff2') format('woff2');
+	font-weight: 900;
+	font-display: swap;
 }
 
 @font-face {
@@ -94,10 +94,6 @@ img {
 	max-height: 100%;
 	height: auto;
 	width: auto;
-}
-
-[v-cloak] {
-	display: none;
 }
 
 #app,
