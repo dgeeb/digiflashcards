@@ -125,5 +125,7 @@
 	"seConnecter": "Login",
 	"parametres": "Settings",
 	"connexion": "Login",
-	"connexionReussie": "Login successful."
+	"connexionReussie": "Login successful.",
+	"masquer": "Hide",
+	"afficher": "Display"
 }

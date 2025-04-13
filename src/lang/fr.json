@@ -125,5 +125,7 @@
 	"seConnecter": "Se connecter",
 	"parametres": "Paramètres",
 	"connexion": "Connexion",
-	"connexionReussie": "Connexion réussie."
+	"connexionReussie": "Connexion réussie.",
+	"masquer": "Masquer",
+	"afficher": "Afficher"
 }

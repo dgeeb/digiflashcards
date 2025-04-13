@@ -81,14 +81,16 @@
 					</div>
 				</div>
 
-				<draggable id="cartes" class="admin" v-model="cartes" :animation="250" :sort="true" :swap-threshold="0.5" handle=".statique" filter=".supprimer" :preventOnFilter="true" draggable=".carte" v-if="cartes.length > 0 && vue === 'editeur'" @end="modifierPositionCarte">
-					<article :id="'carte' + index" class="carte" v-for="(item, index) in cartes" :key="'carte_' + index">
+				<draggable id="cartes" class="admin" v-model="cartes" :animation="250" :sort="true" :swap-threshold="0.5" handle=".statique" filter=".supprimer,.masquer" :preventOnFilter="true" draggable=".carte" v-if="cartes.length > 0 && vue === 'editeur'" @end="modifierPositionCarte">
+					<article :id="'carte' + index" class="carte" :class="{'masque': item.hasOwnProperty('masque') && item.masque === true}" v-for="(item, index) in cartes" :key="'carte_' + index">
 						<div class="actions statique">
 							<div class="gauche">
 								{{ index + 1 }}
 							</div>
 							<div class="droite">
 								<span><i class="material-icons">drag_handle</i></span>
+								<span class="masquer" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="masquerCarte(index)" @keydown.enter="masquerCarte(index)" :title="$t('masquer')" v-if="!item.hasOwnProperty('masque') || item.hasOwnProperty('masque') && item.masque === false"><i class="material-icons">visibility</i></span>
+								<span class="masquer" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="afficherCarte(index)" @keydown.enter="afficherCarte(index)" :title="$t('afficher')" v-else><i class="material-icons">visibility_off</i></span>
 								<span class="supprimer" :class="{'desactive': cartes.length < 3}" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="afficherSupprimerCarte(index)" @keydown.enter="afficherSupprimerCarte(index)" :title="$t('supprimer')"><i class="material-icons">delete</i></span>
 							</div>
 						</div>
@@ -151,8 +153,11 @@
 									<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'lecture': lecture}" @click="lireAudio($event, definirLienMedia(item.recto.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(item.recto.audio, ''))"><i class="material-icons">volume_up</i></span>
 								</div>
 							</div>
-							<div class="conteneur-texte" v-if="item.recto.texte !== ''">
-								<span class="texte" v-html="item.recto.texte" />
+							<div class="conteneur-texte" v-if="item.recto.texte !== '' && !item.recto.texte.includes('|')">
+								<span class="texte" v-html="definirHTML(item.recto.texte)" />
+							</div>
+							<div class="conteneur-texte" v-else-if="item.recto.texte !== '' && item.recto.texte.includes('|')">
+								<span class="texte multi" v-html="definirItemTexte(item.recto.texte)" />
 							</div>
 						</div>
 
@@ -166,8 +171,11 @@
 									<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @click="lireAudio($event, definirLienMedia(item.verso.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(item.verso.audio, ''))" :class="{'lecture': lecture}"><i class="material-icons">volume_up</i></span>
 								</div>
 							</div>
-							<div class="conteneur-texte" v-if="item.verso.texte !== ''">
-								<span class="texte" v-html="item.verso.texte" />
+							<div class="conteneur-texte" v-if="item.verso.texte !== ''  && !item.verso.texte.includes('|')">
+								<span class="texte" v-html="definirHTML(item.verso.texte)" />
+							</div>
+							<div class="conteneur-texte" v-else-if="item.verso.texte !== '' && item.verso.texte.includes('|')">
+								<span class="texte multi" v-html="definirItemTexte(item.verso.texte)" />
 							</div>
 						</div>
 					</article>
@@ -193,12 +201,12 @@
 							<div class="question" v-if="options.quiz === 'definition' && itemQuestion.correct === true" :key="'question_quiz_definition_' + indexQuiz + '_' + indexQuestion">
 								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-audio': itemQuestion.recto.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.recto.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemQuestion.recto.image, ''))" v-if="itemQuestion.recto.image !== ''"><img :src="definirLienMedia(itemQuestion.recto.image, '')" :alt="itemQuestion.recto.image"></span>
 								<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-image': itemQuestion.recto.image !== '', 'lecture': lecture}" @click="lireAudio($event, definirLienMedia(itemQuestion.recto.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(itemQuestion.recto.audio, ''))" v-if="itemQuestion.recto.audio !== ''"><i class="material-icons">volume_up</i></span>
-								<span class="texte" v-if="itemQuestion.recto.texte !== ''" v-html="itemQuestion.recto.texte" />
+								<span class="texte" v-if="itemQuestion.recto.texte !== ''" v-html="definirHTML(itemQuestion.recto.texte)" />
 							</div>
 							<div class="question" v-else-if="options.quiz === 'terme' && itemQuestion.correct === true" :key="'question_quiz_terme_' + indexQuiz + '_' + indexQuestion">
 								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-audio': itemQuestion.verso.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.verso.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemQuestion.verso.image, ''))" v-if="itemQuestion.verso.image !== ''"><img :src="definirLienMedia(itemQuestion.verso.image, '')" :alt="itemQuestion.verso.image"></span>
 								<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-image': itemQuestion.verso.image !== '', 'lecture': lecture}" @click="lireAudio($event, definirLienMedia(itemQuestion.verso.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(itemQuestion.verso.audio, ''))" v-if="itemQuestion.verso.audio !== ''"><i class="material-icons">volume_up</i></span>
-								<span class="texte" v-if="itemQuestion.verso.texte !== ''" v-html="itemQuestion.verso.texte" />
+								<span class="texte" v-if="itemQuestion.verso.texte !== ''" v-html="definirHTML(itemQuestion.verso.texte)" />
 							</div>
 						</template>
 
@@ -209,14 +217,14 @@
 									<span class="radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('reponse_quiz_' + indexQuiz + '_' + indexReponse)" />
 									<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.verso.texte !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemReponse.verso.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemReponse.verso.image, ''))" v-if="itemReponse.verso.image !== ''"><img :src="definirLienMedia(itemReponse.verso.image, '')" :alt="itemReponse.verso.image"></span>
 									<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.verso.texte !== '', 'avec-image': itemReponse.verso.image !== '', 'lecture': lectureQuiz === indexReponse}" @click="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.verso.audio, ''))" @keydown.enter="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.verso.audio, ''))" v-if="itemReponse.verso.audio !== ''"><i class="material-icons">volume_up</i></span>
-									<span class="texte" v-if="itemReponse.verso.texte !== ''" v-html="itemReponse.verso.texte" />
+									<span class="texte" v-if="itemReponse.verso.texte !== ''" v-html="definirHTML(itemReponse.verso.texte)" />
 								</label>
 								<label class="conteneur-coche" :class="{'correct': itemReponse.reponse && itemReponse.correct, 'incorrect': itemReponse.reponse && !itemReponse.correct}" v-else>
 									<input :id="'reponse_quiz_' + indexQuiz + '_' + indexReponse" type="radio" :checked="itemReponse.reponse" :disabled="itemReponse.repondu" :value="itemReponse.correct" :name="'reponse_quiz_' + indexQuiz" :data-index="indexReponse">
 									<span class="radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('reponse_quiz_' + indexQuiz + '_' + indexReponse)" />
 									<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.recto.texte !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemReponse.recto.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemReponse.recto.image, ''))" v-if="itemReponse.recto.image !== ''"><img :src="definirLienMedia(itemReponse.recto.image, '')" :alt="itemReponse.recto.image"></span>
 									<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemReponse.recto.texte !== '', 'avec-image': itemReponse.recto.image !== '', 'lecture': lectureQuiz === indexReponse}" @click="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.recto.audio, ''))" @keydown.enter="lireAudioQuiz($event, indexReponse, definirLienMedia(itemReponse.recto.audio, ''))" v-if="itemReponse.recto.audio !== ''"><i class="material-icons">volume_up</i></span>
-									<span class="texte" v-if="itemReponse.recto.texte !== ''" v-html="itemReponse.recto.texte" />
+									<span class="texte" v-if="itemReponse.recto.texte !== ''" v-html="definirHTML(itemReponse.recto.texte)" />
 								</label>
 							</div>
 						</div>
@@ -245,12 +253,12 @@
 							<template v-if="options.ecrire === 'definition' && (itemEcrire.recto.image !== '' || itemEcrire.recto.audio !== '' || itemEcrire.recto.texte !== '') && itemEcrire.verso.texte !== ''">
 								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemEcrire.recto.texte !== '', 'avec-audio': itemEcrire.recto.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.recto.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemEcrire.recto.image, ''))" v-if="itemEcrire.recto.image !== ''"><img :src="definirLienMedia(itemEcrire.recto.image, '')" :alt="itemEcrire.recto.image"></span>
 								<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemEcrire.recto.texte !== '', 'avec-image': itemEcrire.recto.image !== '', 'lecture': lecture}" @click="lireAudio($event, definirLienMedia(itemEcrire.recto.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(itemEcrire.recto.audio, ''))" v-if="itemEcrire.recto.audio !== ''"><i class="material-icons">volume_up</i></span>
-								<span class="texte" v-if="itemEcrire.recto.texte !== ''" v-html="itemEcrire.recto.texte" />
+								<span class="texte" v-if="itemEcrire.recto.texte !== ''" v-html="definirHTML(itemEcrire.recto.texte)" />
 							</template>
 							<template v-else-if="options.ecrire === 'terme' && (itemEcrire.verso.image !== '' || itemEcrire.verso.audio !== '' || itemEcrire.verso.texte !== '') && itemEcrire.recto.texte !== ''">
 								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemEcrire.verso.texte !== '', 'avec-audio': itemEcrire.verso.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.verso.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemEcrire.verso.image, ''))" v-if="itemEcrire.verso.image !== ''"><img :src="definirLienMedia(itemEcrire.verso.image, '')" :alt="itemEcrire.verso.image"></span>
 								<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemEcrire.verso.texte !== '', 'avec-image': itemEcrire.verso.image !== '', 'lecture': lecture}" @click="lireAudio($event, definirLienMedia(itemEcrire.verso.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(itemEcrire.verso.audio, ''))" v-if="itemEcrire.verso.audio !== ''"><i class="material-icons">volume_up</i></span>
-								<span class="texte" v-if="itemEcrire.verso.texte !== ''" v-html="itemEcrire.verso.texte" />
+								<span class="texte" v-if="itemEcrire.verso.texte !== ''" v-html="definirHTML(itemEcrire.verso.texte)" />
 							</template>
 						</div>
 						
@@ -602,6 +610,7 @@ import fitty from 'fitty'
 import Papa from 'papaparse'
 import fscreen from 'fscreen'
 import lamejs from 'lamejs'
+import DOMPurify from 'dompurify'
 import { VueDraggableNext } from 'vue-draggable-next'
 
 export default {
@@ -773,7 +782,7 @@ export default {
 
 				if (this.vue === 'apprenant') {
 					this.cartes = this.cartes.filter(function (carte) {
-						return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '')
+						return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '') && (!carte.hasOwnProperty('masque') || (carte.hasOwnProperty('masque') && carte.masque === false))
 					}.bind(this))
 					if (this.cartes.length > 0) {
 						const tailleFonte = this.tailleFonte
@@ -799,12 +808,14 @@ export default {
 						if (this.cartesMemorisees.length > 0) {
 							const cartes = JSON.parse(JSON.stringify(this.cartes))
 							const cartesMemorisees = []
-							cartes.forEach(function (carte, index) {
-								if (carte.hasOwnProperty('id') && this.cartesMemorisees.includes(carte.id)) {
-									cartesMemorisees.push(carte)
-									cartes.splice(index, 1)
-								}
-							}.bind(this))
+							this.cartesMemorisees.forEach(function (carteMemorisee) {
+								cartes.forEach(function (carte, index) {
+									if (carte.hasOwnProperty('id') && carteMemorisee === carte.id) {
+										cartesMemorisees.push(carte)
+										cartes.splice(index, 1)
+									}
+								})
+							})
 							cartes.push(...cartesMemorisees)
 							this.cartes = cartes
 						}
@@ -1171,6 +1182,17 @@ export default {
 		fermerModale () {
 			this.modale = ''
 			this.gererFocus()
+		},
+		definirHTML (html) {
+			return DOMPurify.sanitize(html)
+		},
+		definirItemTexte (texte) {
+			let html = ''
+			const items = texte.split('|')
+			items.forEach(function (item) {
+				html += '- ' + DOMPurify.sanitize(item.trim()) + '<br>'
+			})
+			return html
 		},
 		supprimerDonneesExercices () {
 			if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
@@ -1812,6 +1834,58 @@ export default {
 				xhr.send(JSON.stringify(json))
 			}
 		},
+		masquerCarte (index) {
+			if (this.cartes.length > 1) {
+				this.cartes[index].masque = true
+				this.$parent.$parent.chargementTransparent = true
+				const xhr = new XMLHttpRequest()
+				xhr.onload = function () {
+					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+						this.$parent.$parent.chargementTransparent = false
+						if (xhr.responseText === 'contenu_inexistant') {
+							document.title = 'Digiflashcards by La Digitale'
+							this.$router.push('/')
+						} else if (xhr.responseText === 'erreur') {
+							this.$parent.$parent.message = this.$t('erreurServeur')
+						} else if (xhr.responseText === 'non_autorise') {
+							this.$parent.$parent.message = this.$t('actionNonAutorisee')
+						}
+					} else {
+						this.$parent.$parent.chargementTransparent = false
+						this.$parent.$parent.message = this.$t('erreurServeur')
+					}
+				}.bind(this)
+				xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
+				xhr.setRequestHeader('Content-type', 'application/json')
+				const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
+				xhr.send(JSON.stringify(json))
+			}
+		},
+		afficherCarte (index) {
+			this.cartes[index].masque = false
+			this.$parent.$parent.chargementTransparent = true
+				const xhr = new XMLHttpRequest()
+				xhr.onload = function () {
+					if (xhr.readyState === xhr.DONE && xhr.status === 200) {
+						this.$parent.$parent.chargementTransparent = false
+						if (xhr.responseText === 'contenu_inexistant') {
+							document.title = 'Digiflashcards by La Digitale'
+							this.$router.push('/')
+						} else if (xhr.responseText === 'erreur') {
+							this.$parent.$parent.message = this.$t('erreurServeur')
+						} else if (xhr.responseText === 'non_autorise') {
+							this.$parent.$parent.message = this.$t('actionNonAutorisee')
+						}
+					} else {
+						this.$parent.$parent.chargementTransparent = false
+						this.$parent.$parent.message = this.$t('erreurServeur')
+					}
+				}.bind(this)
+				xhr.open('POST', this.$parent.$parent.hote + 'inc/modifier_serie.php', true)
+				xhr.setRequestHeader('Content-type', 'application/json')
+				const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
+				xhr.send(JSON.stringify(json))
+		},
 		afficherSupprimerCarte (index) {
 			if (this.cartes.length > 2) {
 				this.carteIndex = index
@@ -1901,6 +1975,12 @@ export default {
 			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
 			copieCartes.forEach(function (item) {
 				if ((item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio')) && (item.recto.texte.trim() !== '' || item.recto.image.trim() !== '' || item.recto.audio.trim() !== '') && (item.verso.texte.trim() !== '' || item.verso.image.trim() !== '' || item.verso.audio.trim() !== '')) {
+					if (item.recto.texte.includes('|')) {
+						item.recto.texte = item.recto.texte.split('|')[Math.floor(Math.random() * item.recto.texte.split('|').length)]
+					}
+					if (item.verso.texte.includes('|')) {
+						item.verso.texte = item.verso.texte.split('|')[Math.floor(Math.random() * item.verso.texte.split('|').length)]
+					}
 					cartes.push(item)
 				}
 			})
@@ -1909,7 +1989,7 @@ export default {
 			cartesExercice.forEach(function (item) {
 				let indexItem = ''
 				let cartesSansItem = []
-				const copieCartesSansItem = JSON.parse(JSON.stringify(this.cartes))
+				const copieCartesSansItem = JSON.parse(JSON.stringify(cartes))
 				copieCartesSansItem.forEach(function (item) {
 					if ((item.recto.texte.trim() !== '' || item.recto.image.trim() !== '' || item.recto.audio.trim() !== '') && (item.verso.texte.trim() !== '' || item.verso.image.trim() !== '' || item.verso.audio.trim() !== '')) {
 						cartesSansItem.push(item)
@@ -2074,11 +2154,17 @@ export default {
 			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
 			copieCartes.forEach(function (item) {
 				if (item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio') && this.options.ecrire === 'definition' && (item.verso.texte.trim() !== '' && !item.verso.texte.includes('$$') && (item.recto.texte.trim() !== '' || item.recto.image.trim() !== '' || item.recto.audio.trim() !== ''))) {
+					if (item.recto.texte.includes('|')) {
+						item.recto.texte = item.recto.texte.split('|')[Math.floor(Math.random() * item.recto.texte.split('|').length)].trim()
+					}
 					item.correct = ''
 					item.reponse = ''
 					item.valide = false
 					cartes.push(item)
 				} else if (item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio') && this.options.ecrire === 'terme' && (item.recto.texte.trim() !== '' && !item.recto.texte.includes('$$') && (item.verso.texte.trim() !== '' || item.verso.image.trim() !== '' || item.verso.audio.trim() !== ''))) {
+					if (item.verso.texte.includes('|')) {
+						item.verso.texte = item.verso.texte.split('|')[Math.floor(Math.random() * item.verso.texte.split('|').length)].trim()
+					}
 					item.correct = ''
 					item.reponse = ''
 					item.valide = false
@@ -2140,17 +2226,30 @@ export default {
 			const reponse = document.querySelector('#champ_' + this.navigationEcrire).value
 			let reponseFormatee = reponse.trim().replace(/\s+/g, ' ')
 			const exercicesEcrire = JSON.parse(JSON.stringify(this.exercicesEcrire))
-			let texteRecto, texteVerso
+			const texteRecto = []
+			const texteVerso = []
 			if (reponseFormatee !== '') {
 				if (this.options.casse === false) {
 					reponseFormatee = reponseFormatee.toLowerCase()
-					texteRecto = stripTags(exercicesEcrire[this.navigationEcrire].recto.texte.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, '').toLowerCase())
-					texteVerso = stripTags(exercicesEcrire[this.navigationEcrire].verso.texte.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, '').toLowerCase())
+					const itemsRecto = exercicesEcrire[this.navigationEcrire].recto.texte.split('|')
+					itemsRecto.forEach(function (item) {
+						texteRecto.push(stripTags(item.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, '').toLowerCase().trim()))
+					})
+					const itemsVerso = exercicesEcrire[this.navigationEcrire].verso.texte.split('|')
+					itemsVerso.forEach(function (item) {
+						texteVerso.push(stripTags(item.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, '').toLowerCase().trim()))
+					})
 				} else {
-					texteRecto = stripTags(exercicesEcrire[this.navigationEcrire].recto.texte.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, ''))
-					texteVerso = stripTags(exercicesEcrire[this.navigationEcrire].verso.texte.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, ''))
+					const itemsRecto = exercicesEcrire[this.navigationEcrire].recto.texte.split('|')
+					itemsRecto.forEach(function (item) {
+						texteRecto.push(stripTags(item.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, '').trim()))
+					})
+					const itemsVerso = exercicesEcrire[this.navigationEcrire].verso.texte.split('|')
+					itemsVerso.forEach(function (item) {
+						texteVerso.push(stripTags(item.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, '').trim()))
+					})
 				}
-				if ((this.options.ecrire === 'definition' && reponseFormatee === texteVerso) || (this.options.ecrire === 'terme' && reponseFormatee === texteRecto)) {
+				if ((this.options.ecrire === 'definition' && texteVerso.includes(reponseFormatee)) || (this.options.ecrire === 'terme' && texteRecto.includes(reponseFormatee))) {
 					this.exercicesEcrire[this.navigationEcrire].correct = true
 					const correct = new Audio('./static/fx/correct.mp3')
 					correct.play()
@@ -2472,7 +2571,7 @@ export default {
 							donnees = JSON.parse(donnees)
 							let indexFichier = 0
 							const fichiers = []
-							donnees.cartes.forEach(function (carte) {
+							donnees.cartes.forEach(function (carte, index) {
 								if (carte.recto.image !== '' && this.verifierLien(carte.recto.image) === false) {
 									fichiers.push(carte.recto.image)
 								}
@@ -2484,6 +2583,10 @@ export default {
 								}
 								if (carte.verso.audio !== '' && this.verifierLien(carte.verso.audio) === false) {
 									fichiers.push(carte.verso.audio)
+								}
+								if (!carte.hasOwnProperty('id')) {
+									const id = 'carte-' + (new Date()).getTime() + Math.random().toString(16).slice(12)
+									donnees.cartes[index].id = id
 								}
 							}.bind(this))
 							if (fichiers.length === 0 && this.parametreImport === 'remplacer') {
@@ -2695,7 +2798,8 @@ export default {
 						}
 						donnees.forEach(function (item) {
 							if ((item.recto_texte !== '' || item.recto_image !== '' || item.recto_audio !== '') && (item.verso_texte !== '' || item.verso_image !== '' || item.verso_audio !== '')) {
-								cartes.push({ recto: { texte: item.recto_texte, image: item.recto_image, audio: item.recto_audio }, verso: { texte: item.verso_texte, image: item.verso_image, audio: item.verso_audio } })
+								const id = 'carte-' + (new Date()).getTime() + Math.random().toString(16).slice(12)
+								cartes.push({ id: id, recto: { texte: item.recto_texte, image: item.recto_image, audio: item.recto_audio }, verso: { texte: item.verso_texte, image: item.verso_image, audio: item.verso_audio } })
 							}
 						})
 						cartes = cartes.filter(function (carte) {
@@ -3249,6 +3353,11 @@ export default {
 	background: #eee;
 }
 
+#cartes.admin .carte.masque {
+	opacity: 0.5;
+	background: #f5f5f5;
+}
+
 #cartes.apprenant .carte {
 	position: relative;
     display: flex;
@@ -3336,6 +3445,10 @@ export default {
 #cartes.apprenant .carte .texte {
 	margin: auto 0;
 	line-height: 1.35;
+}
+
+#cartes.apprenant .carte .texte.multi {
+	text-align: left;
 }
 
 #cartes.apprenant .carte .texte + .image {
@@ -3510,8 +3623,13 @@ export default {
 	align-items: center;
 }
 
-#cartes.admin .carte .actions .droite span:last-child {
+#cartes.admin .carte .actions .droite span.supprimer {
 	color: #ff6259;
+	margin-left: 15px;
+	cursor: pointer;
+}
+
+#cartes.admin .carte .actions .droite span.masquer {
 	margin-left: 15px;
 	cursor: pointer;
 }
