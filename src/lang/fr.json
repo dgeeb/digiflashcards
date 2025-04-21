@@ -127,5 +127,9 @@
 	"connexion": "Connexion",
 	"connexionReussie": "Connexion réussie.",
 	"masquer": "Masquer",
-	"afficher": "Afficher"
+	"afficher": "Afficher",
+	"afficherAppariement": "Afficher Appariement",
+	"reponsesAppariement": "Réponses pour <i>Appariement<\/i>",
+	"consigneAppariement": "Associez les éléments de la colonne de gauche à ceux de la colonne de droite.",
+	"consigneQuiz": "Cochez la bonne réponse."
 }

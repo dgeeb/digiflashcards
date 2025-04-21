@@ -127,5 +127,9 @@
 	"connexion": "Login",
 	"connexionReussie": "Login successful.",
 	"masquer": "Hide",
-	"afficher": "Display"
+	"afficher": "Display",
+	"afficherAppariement": "Show Matching",
+	"reponsesAppariement": "Answers for <i>Matching<\/i>",
+	"consigneAppariement": "Match the items in the left-hand column with those on the right.",
+	"consigneQuiz": "Tick the right answer."
 }

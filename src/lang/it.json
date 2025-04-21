@@ -127,5 +127,9 @@
 	"connexion": "Connessione",
 	"connexionReussie": "Connessione riuscita.",
 	"masquer": "Nascondi",
-	"afficher": "Vista"
+	"afficher": "Vista",
+	"afficherAppariement": "Mostra Abbinamento",
+	"reponsesAppariement": "Risposte al <i>Abbinamento<\/i>",
+	"consigneAppariement": "Abbinate gli elementi della colonna di sinistra con quelli della colonna di destra.",
+	"consigneQuiz": "Seleziona la risposta giusta."
 }
