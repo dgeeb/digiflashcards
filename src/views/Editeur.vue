@@ -23,6 +23,7 @@
 				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'cartes'}" :title="$t('afficherCartes')" @click="definirOnglet('cartes')" @keydown.enter="definirOnglet('cartes')"><i class="material-icons">style</i></span>
 				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'quiz'}" :title="$t('afficherQuiz')" @click="definirOnglet('quiz')" @keydown.enter="definirOnglet('quiz')" v-if="exercicesQuiz.length > 4"><i class="material-icons">help_center</i></span>
 				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'ecrire'}" :title="$t('afficherEcrire')" @click="definirOnglet('ecrire')" @keydown.enter="definirOnglet('ecrire')" v-if="exercicesEcrire.length > 4"><i class="material-icons">edit</i></span>
+				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'appariement'}" :title="$t('afficherAppariement')" @click="definirOnglet('appariement')" @keydown.enter="definirOnglet('appariement')" v-if="exercicesAppariement.gauche.length > 4"><i class="material-icons">view_comfy_alt</i></span>
 			</div>
 
 			<div id="conteneur">
@@ -76,6 +77,17 @@
 						</label>
 						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-casse-non')">{{ $t('non') }}
 							<input id="option-casse-non" type="radio" name="casse" :checked="options.casse === false" @change="modifierOptions('casse', false)">
+							<span class="coche" />
+						</label>
+					</div>
+					<div class="option" v-if="options.exercices === true">
+						<h3 v-html="$t('reponsesAppariement')" />
+						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-appariement-terme')">{{ $t('terme') }}
+							<input id="option-appariement-terme" type="radio" name="appariement" :checked="options.appariement === 'terme'" @change="modifierOptions('appariement', 'terme')">
+							<span class="coche" />
+						</label>
+						<label class="bouton-radio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" @keydown.enter="activerInput('option-appariement-definition')">{{ $t('definition') }}
+							<input id="option-appariement-definition" type="radio" name="appariement" :checked="options.appariement === 'definition'" @change="modifierOptions('appariement', 'definition')">
 							<span class="coche" />
 						</label>
 					</div>
@@ -196,14 +208,16 @@
 				</div>
 
 				<div id="exercices" v-else-if="exercicesQuiz.length > 0 && vue === 'apprenant' && onglet === 'quiz'">
-					<article class="exercice" v-show="navigationQuiz === indexQuiz" v-for="(itemQuiz, indexQuiz) in exercicesQuiz" :key="'exercice_quiz_' + indexQuiz">
+					<article class="exercice quiz" v-show="navigationQuiz === indexQuiz" v-for="(itemQuiz, indexQuiz) in exercicesQuiz" :key="'exercice_quiz_' + indexQuiz">
 						<template v-for="(itemQuestion, indexQuestion) in itemQuiz">
 							<div class="question" v-if="options.quiz === 'definition' && itemQuestion.correct === true" :key="'question_quiz_definition_' + indexQuiz + '_' + indexQuestion">
+								<span class="texte consigne">{{ $t('consigneQuiz') }}</span>
 								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-audio': itemQuestion.recto.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.recto.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemQuestion.recto.image, ''))" v-if="itemQuestion.recto.image !== ''"><img :src="definirLienMedia(itemQuestion.recto.image, '')" :alt="itemQuestion.recto.image"></span>
 								<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.recto.texte !== '', 'avec-image': itemQuestion.recto.image !== '', 'lecture': lecture}" @click="lireAudio($event, definirLienMedia(itemQuestion.recto.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(itemQuestion.recto.audio, ''))" v-if="itemQuestion.recto.audio !== ''"><i class="material-icons">volume_up</i></span>
 								<span class="texte" v-if="itemQuestion.recto.texte !== ''" v-html="definirHTML(itemQuestion.recto.texte)" />
 							</div>
 							<div class="question" v-else-if="options.quiz === 'terme' && itemQuestion.correct === true" :key="'question_quiz_terme_' + indexQuiz + '_' + indexQuestion">
+								<span class="texte consigne">{{ $t('consigneQuiz') }}</span>
 								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-audio': itemQuestion.verso.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemQuestion.verso.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemQuestion.verso.image, ''))" v-if="itemQuestion.verso.image !== ''"><img :src="definirLienMedia(itemQuestion.verso.image, '')" :alt="itemQuestion.verso.image"></span>
 								<span class="audio" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemQuestion.verso.texte !== '', 'avec-image': itemQuestion.verso.image !== '', 'lecture': lecture}" @click="lireAudio($event, definirLienMedia(itemQuestion.verso.audio, ''))" @keydown.enter="lireAudio($event, definirLienMedia(itemQuestion.verso.audio, ''))" v-if="itemQuestion.verso.audio !== ''"><i class="material-icons">volume_up</i></span>
 								<span class="texte" v-if="itemQuestion.verso.texte !== ''" v-html="definirHTML(itemQuestion.verso.texte)" />
@@ -248,7 +262,7 @@
 				</div>
 
 				<div id="exercices" v-else-if="exercicesEcrire.length > 0 && vue === 'apprenant' && onglet === 'ecrire'">
-					<article class="exercice" v-show="navigationEcrire === indexEcrire" v-for="(itemEcrire, indexEcrire) in exercicesEcrire" :key="'exercice_ecrire_' + indexEcrire">
+					<article class="exercice ecrire" v-show="navigationEcrire === indexEcrire" v-for="(itemEcrire, indexEcrire) in exercicesEcrire" :key="'exercice_ecrire_' + indexEcrire">
 						<div class="question">
 							<template v-if="options.ecrire === 'definition' && (itemEcrire.recto.image !== '' || itemEcrire.recto.audio !== '' || itemEcrire.recto.texte !== '') && itemEcrire.verso.texte !== ''">
 								<span class="image" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'avec-texte': itemEcrire.recto.texte !== '', 'avec-audio': itemEcrire.recto.audio !== ''}" @click="afficherZoomImage($event, definirLienMedia(itemEcrire.recto.image, ''))" @keydown.enter="afficherZoomImage($event, definirLienMedia(itemEcrire.recto.image, ''))" v-if="itemEcrire.recto.image !== ''"><img :src="definirLienMedia(itemEcrire.recto.image, '')" :alt="itemEcrire.recto.image"></span>
@@ -281,6 +295,74 @@
 							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span>
 						</span>
 						<span class="suivant" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherQuestionSuivante')" @click="afficherQuestionEcrireSuivante" @keydown.enter="afficherQuestionEcrireSuivante"><i class="material-icons">arrow_forward</i></span>
+					</div>
+				</div>
+
+				<div id="exercices" v-else-if="exercicesAppariement.gauche.length > 0 && vue === 'apprenant' && onglet === 'appariement'">
+					<article class="exercice appariement">
+						<div class="question"><span class="texte consigne">{{ $t('consigneAppariement') }}</span></div>
+						<div class="items reponses" v-if="exercicesAppariement.reponse.length > 0">
+							<ul class="paires">
+								<li :class="{'correct': itemReponse[0] === itemReponse[1]}" v-for="(itemReponse, indexReponse) in exercicesAppariement.reponse" :key="'paire_' + indexReponse">
+									<div class="gauche">
+										<div class="image" v-if="exercicesAppariement.gauche.filter(function (e) { return e.image !== '' && e.id === itemReponse[0] }).length === 1">
+											<img :src="definirLienMedia(exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] })[0].image, '')" :alt="exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] }).image">
+										</div>
+										<div class="audio" v-if="exercicesAppariement.gauche.filter(function (e) { return e.audio !== '' && e.id === itemReponse[0] }).length === 1" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'lecture': lectureAppariement === itemReponse[0]}" @click="lireAudioAppariement($event, itemReponse[0], definirLienMedia(exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] })[0].audio, ''))" @keydown.enter="lireAudioAppariement($event, itemReponse[0], definirLienMedia(exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] })[0].audio, ''))"><i class="material-icons">volume_up</i></div>
+										<div class="texte" v-if="exercicesAppariement.gauche.filter(function (e) { return e.texte !== '' && e.id === itemReponse[0] }).length === 1">
+											{{ exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] })[0].texte }}
+										</div>
+									</div>
+									<div class="droite">
+										<div class="image" v-if="exercicesAppariement.droite.filter(function (e) { return e.image !== '' && e.id === itemReponse[1] }).length === 1">
+											<img :src="definirLienMedia(exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].image, '')" :alt="exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].image">
+										</div>
+										<div class="audio" v-if="exercicesAppariement.droite.filter(function (e) { return e.audio !== '' && e.id === itemReponse[1] }).length === 1" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'lecture': lectureAppariement === itemReponse[1]}" @click="lireAudioAppariement($event, itemReponse[1], definirLienMedia(exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].audio, ''))" @keydown.enter="lireAudioAppariement($event, itemReponse[1], definirLienMedia(exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].audio, ''))"><i class="material-icons">volume_up</i></div>
+										<div class="texte" v-if="exercicesAppariement.droite.filter(function (e) { return e.texte !== '' && e.id === itemReponse[1] }).length === 1">
+											{{ exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].texte }}
+										</div>
+									</div>
+									<span class="supprimer" role="button" @click="supprimerPaire(indexReponse)" v-if="itemReponse[0] !== itemReponse[1]"><i class="material-icons">close</i></span>
+								</li>
+							</ul>
+						</div>
+						<div class="items" v-if="exercicesAppariement.reponse.length !== exercicesAppariement.gauche.length">
+							<ul class="gauche">
+								<template v-for="(itemGauche, indexItemGauche) in exercicesAppariement.gauche" :key="'gauche_' + indexItemGauche">
+									<li class="item" role="button" :class="{'selectionne': indexAppariement === indexItemGauche}" @click="selectionnerItemAppariement(indexItemGauche)" v-if="!exercicesAppariement.reponse.map(function (e) { return e[0] }).includes(itemGauche.id)">
+										<div class="image" v-if="itemGauche.image !== ''">
+											<img :src="definirLienMedia(itemGauche.image, '')" :alt="itemGauche.image">
+										</div>
+										<div class="audio" v-if="itemGauche.audio !== ''" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'lecture': lectureAppariement === itemGauche.id}" @click="lireAudioAppariement($event, itemGauche.id, definirLienMedia(itemGauche.audio, ''))" @keydown.enter="lireAudioAppariement($event, itemGauche.id, definirLienMedia(itemGauche.audio, ''))"><i class="material-icons">volume_up</i></div>
+										<div class="texte" v-if="itemGauche.texte !== ''">
+											{{ itemGauche.texte }}
+										</div>
+									</li>
+								</template>
+							</ul>
+							<ul class="droite">
+								<template v-for="(itemDroite, indexItemDroite) in exercicesAppariement.droite" :key="'droite_' + indexItemDroite">
+									<li class="item" role="button" :class="{'selectionne': indexAppariement !== -1}" @click="envoyerReponseAppariement(itemDroite.id)" v-if="!exercicesAppariement.reponse.map(function (e) { return e[1] }).includes(itemDroite.id)">
+										<div class="image" v-if="itemDroite.image !== ''">
+											<img :src="definirLienMedia(itemDroite.image, '')" :alt="itemDroite.image">
+										</div>
+										<div class="audio" v-if="itemDroite.audio !== ''" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'lecture': lectureAppariement === itemDroite.id}" @click="lireAudioAppariement($event, itemDroite.id, definirLienMedia(itemDroite.audio, ''))" @keydown.enter="lireAudioAppariement($event, itemDroite.id, definirLienMedia(itemDroite.audio, ''))"><i class="material-icons">volume_up</i></div>
+										<div class="texte" v-if="itemDroite.texte !== ''">
+											{{ itemDroite.texte }}
+										</div>
+									</li>
+								</template>
+							</ul>
+						</div>
+					</article>
+
+					<div class="navigation appariement">
+						<span class="actions">
+							<span class="reinitialiser" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('reinitialiser')" @click="reinitialiserAppariement" @keydown.enter="reinitialiserAppariement"><i class="material-icons">autorenew</i></span>
+							<span class="score" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherScore')" @click="afficherScoreAppariement" @keydown.enter="afficherScoreAppariement" v-if="verifierReponsesAppariement() === exercicesAppariement.gauche.length"><i class="material-icons">emoji_events</i></span>
+							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span>
+							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span>
+						</span>
 					</div>
 				</div>
 
@@ -583,6 +665,13 @@
 			</div>
 		</div>
 
+		<div class="conteneur-modale score" v-else-if="modale === 'score-appariement'" @click="fermerModale">
+			<div class="conteneur" role="dialog">
+				<span class="icone"><i class="material-icons">emoji_events</i></span>
+				<span class="score" :tabindex="$parent.$parent.message === '' ? 0 : -1" @keydown.enter="fermerModale">{{ definirScoreAppariement() }} %</span>
+			</div>
+		</div>
+
 		<div class="conteneur-modale" v-else-if="modale === 'code-qr'">
 			<div id="codeqr" class="modale" role="dialog">
 				<header>
@@ -628,7 +717,7 @@ export default {
 			questions: ['motPrefere', 'filmPrefere', 'chansonPreferee', 'prenomMere', 'prenomPere', 'nomRue', 'nomEmployeur', 'nomAnimal'],
 			reponse: '',
 			nom: '',
-			options: { exercices: true, quiz: 'definition', ecrire: 'definition', casse: false },
+			options: { exercices: true, quiz: 'definition', ecrire: 'definition', appariement: 'definition', casse: false },
 			cartes: [{ recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }],
 			carteIndex: '',
 			carteType: '',
@@ -652,6 +741,8 @@ export default {
 			exercicesQuiz: [],
 			navigationEcrire: 0,
 			exercicesEcrire: [],
+			indexAppariement: -1,
+			exercicesAppariement: [],
 			chargementImage: false,
 			image: '',
 			audio: '',
@@ -662,6 +753,7 @@ export default {
 			contexte: '',
 			lecture: false,
 			lectureQuiz: '',
+			lectureAppariement: '',
 			intervalle: '',
 			enregistrement: false,
 			dureeEnregistrement: '00 : 00',
@@ -776,6 +868,9 @@ export default {
 					if (!this.options.hasOwnProperty('ecrire')) {
 						this.options.ecrire = 'definition'
 					}
+					if (!this.options.hasOwnProperty('appariement')) {
+						this.options.appariement = 'definition'
+					}
 					this.verifierCartes()
 				}
 				this.digidrive = Boolean(reponse.digidrive)
@@ -829,6 +924,11 @@ export default {
 						this.exercicesEcrire = JSON.parse(localStorage.getItem('digiflashcards_ecrire_' + this.id))
 					} else if (this.cartes.length > 4 && this.options.exercices === true) {
 						this.definirExercicesEcrire()
+					}
+					if (localStorage.getItem('digiflashcards_appariement_' + this.id)) {
+						this.exercicesAppariement = JSON.parse(localStorage.getItem('digiflashcards_appariement_' + this.id))
+					} else if (this.cartes.length > 4 && this.options.exercices === true) {
+						this.definirExercicesAppariement()
 					}
 					document.querySelector('#app').classList.add('apprenant')
 
@@ -977,6 +1077,11 @@ export default {
 					canvas.width = largeur
 				})
 			}
+			if (this.onglet === 'appariement') {
+				this.$nextTick(function () {
+					this.redimensionnerAppariement()
+				}.bind(this))
+			}
 		}.bind(this))
 
 		document.addEventListener('keydown', this.gererClavier, false)
@@ -1025,6 +1130,11 @@ export default {
 					document.querySelector('#champ_' + this.navigationEcrire).focus()
 					window.MathJax.typeset()
 				}.bind(this))
+			} else if (onglet === 'appariement') {
+				this.$nextTick(function () {
+					this.redimensionnerAppariement()
+					window.MathJax.typeset()
+				}.bind(this))
 			} else {
 				this.$nextTick(function () {
 					window.MathJax.typeset()
@@ -1055,12 +1165,26 @@ export default {
 			xhr.setRequestHeader('Content-type', 'application/json')
 			const json = { serie: this.id, donnees: JSON.stringify({ cartes: this.cartes, options: this.options }) }
 			xhr.send(JSON.stringify(json))
-			if (type === 'ecrire') {
+			if (type === 'quiz') {
+				if (localStorage.getItem('digiflashcards_quiz_' + this.id)) {
+					localStorage.removeItem('digiflashcards_quiz_' + this.id)
+				}
+				if (this.cartes.length > 4) {
+					this.definirExercicesQuiz()
+				}
+			} else if (type === 'ecrire') {
 				if (localStorage.getItem('digiflashcards_ecrire_' + this.id)) {
 					localStorage.removeItem('digiflashcards_ecrire_' + this.id)
 				}
 				if (this.cartes.length > 4) {
 					this.definirExercicesEcrire()
+				}
+			} else if (type === 'appariement') {
+				if (localStorage.getItem('digiflashcards_appariement_' + this.id)) {
+					localStorage.removeItem('digiflashcards_appariement_' + this.id)
+				}
+				if (this.cartes.length > 4) {
+					this.definirExercicesAppariement()
 				}
 			}
 		},
@@ -1200,6 +1324,9 @@ export default {
 			}
 			if (localStorage.getItem('digiflashcards_ecrire_' + this.id)) {
 				localStorage.removeItem('digiflashcards_ecrire_' + this.id)
+			}
+			if (localStorage.getItem('digiflashcards_appariement_' + this.id)) {
+				localStorage.removeItem('digiflashcards_appariement_' + this.id)
 			}
 		},
 		afficherCartePrecedente () {
@@ -2304,6 +2431,157 @@ export default {
 				this.$parent.$parent.chargement = false
 			}.bind(this), 200)
 		},
+		definirExercicesAppariement () {
+			const cartes = {}
+			cartes.gauche = []
+			cartes.droite = []
+			cartes.reponse = []
+			const copieCartes = JSON.parse(JSON.stringify(this.cartes))
+			copieCartes.forEach(function (item) {
+				if ((item.recto.hasOwnProperty('texte') && item.recto.hasOwnProperty('image') && item.recto.hasOwnProperty('audio') && item.verso.hasOwnProperty('texte') && item.verso.hasOwnProperty('image') && item.verso.hasOwnProperty('audio')) && (item.recto.texte.trim() !== '' || item.recto.image.trim() !== '' || item.recto.audio.trim() !== '') && (item.verso.texte.trim() !== '' || item.verso.image.trim() !== '' || item.verso.audio.trim() !== '')) {
+					if (item.recto.texte.includes('|')) {
+						const texteRecto = item.recto.texte.split('|')[Math.floor(Math.random() * item.recto.texte.split('|').length)]
+						item.recto.texte = stripTags(texteRecto.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, '').trim())
+					}
+					if (item.verso.texte.includes('|')) {
+						const texteVerso = item.verso.texte.split('|')[Math.floor(Math.random() * item.verso.texte.split('|').length)]
+						item.verso.texte = stripTags(texteVerso.replace(/\s+/g, ' ').replace(/\r?\n|\r/g, '').trim())
+					}
+					item.recto.id = item.id
+					item.verso.id = item.id
+					if (this.options.appariement === 'definition') {
+						cartes.gauche.push(item.recto)
+						cartes.droite.push(item.verso)
+					} else {
+						cartes.gauche.push(item.verso)
+						cartes.droite.push(item.recto)
+					}
+				}
+			}.bind(this))
+			if (cartes.gauche.length > 20) {
+				cartes.gauche = cartes.gauche.slice(0, -(cartes.gauche.length - 20))
+				cartes.droite = cartes.droite.slice(0, -(cartes.droite.length - 20))
+				cartes.droite = this.melangerEntrees(cartes.droite)
+				this.exercicesAppariement = cartes
+				localStorage.setItem('digiflashcards_appariement_' + this.id, JSON.stringify(cartes))
+			} else if (cartes.gauche.length > 4) {
+				cartes.droite = this.melangerEntrees(cartes.droite)
+				this.exercicesAppariement = cartes
+				localStorage.setItem('digiflashcards_appariement_' + this.id, JSON.stringify(cartes))
+			}
+		},
+		supprimerPaire (index) {
+			this.exercicesAppariement.reponse.splice(index, 1)
+			this.$nextTick(function () {
+				this.redimensionnerAppariement()
+				window.MathJax.typeset()
+				localStorage.setItem('digiflashcards_appariement_' + this.id, JSON.stringify(this.exercicesAppariement))
+			}.bind(this))
+		},
+		selectionnerItemAppariement (index) {
+			this.indexAppariement = index
+		},
+		envoyerReponseAppariement (id) {
+			if (this.indexAppariement !== -1) {
+				this.exercicesAppariement.reponse.push([this.exercicesAppariement.gauche[this.indexAppariement].id, id])
+				this.indexAppariement = -1
+				this.$nextTick(function () {
+					this.redimensionnerAppariement()
+					window.MathJax.typeset()
+					localStorage.setItem('digiflashcards_appariement_' + this.id, JSON.stringify(this.exercicesAppariement))
+					const total = this.exercicesAppariement.gauche.length
+					let reponses = 0
+					this.exercicesAppariement.reponse.forEach(function (reponse) {
+						if (reponse[0] === reponse[1]) {
+							reponses++
+						}
+					})
+					if (reponses === total) {
+						this.afficherScoreAppariement()
+						if (this.definirScoreAppariement() > 79) {
+							this.lancerConfettis()
+						}
+					}
+				}.bind(this))
+			}
+		},
+		afficherScoreAppariement () {
+			this.elementPrecedent = (document.activeElement || document.body)
+			this.modale = 'score-appariement'
+			this.$nextTick(function () {
+				document.querySelector('.conteneur-modale.score .score').focus()
+			})
+		},
+		lireAudioAppariement (event, index, audio) {
+			event.preventDefault()
+			event.stopPropagation()
+			if (this.audio !== '' && this.lectureAppariement === index && this.audio.paused) {
+				this.audio.play()
+				this.lectureAppariement = index
+			} else if (this.audio !== '' && this.lectureAppariement === index && !this.audio.paused) {
+				this.audio.pause()
+				this.lectureAppariement = ''
+			} else {
+				this.lectureAppariement = index
+				this.audio = new Audio(audio)
+				this.audio.play()
+				this.audio.onended = function() {
+					this.lectureAppariement = ''
+					this.audio = ''
+				}.bind(this)
+			}
+		},
+		verifierReponsesAppariement () {
+			let reponses = 0
+			this.exercicesAppariement.reponse.forEach(function () {
+				reponses++
+			})
+			return reponses
+		},
+		definirScoreAppariement () {
+			let correct = 0
+			this.exercicesAppariement.reponse.forEach(function (reponse) {
+				if (reponse[0] === reponse[1]) {
+					correct++
+				}
+			})
+			return Math.round((correct / this.exercicesAppariement.gauche.length) * 100)
+		},
+		reinitialiserAppariement () {
+			this.$parent.$parent.chargement = true
+			if (localStorage.getItem('digiflashcards_appariement_' + this.id)) {
+				localStorage.removeItem('digiflashcards_appariement_' + this.id)
+				this.indexAppariement = -1
+				this.definirExercicesAppariement()
+				this.$nextTick(function () {
+					this.redimensionnerAppariement()
+				}.bind(this))
+			}
+			setTimeout(function () {
+				this.$parent.$parent.chargement = false
+			}.bind(this), 200)
+		},
+		definirHauteurPaires () {
+			const items = document.querySelectorAll('.appariement li.item')
+			const heights = []
+			items.forEach(function (item) {
+				const height = item.clientHeight
+				heights.push(height)
+			})
+			const height = Math.max.apply(Math, heights)
+			items.forEach(function (item) {
+				item.style.height = height + 'px'
+			})
+		},
+		redimensionnerAppariement () {
+			const items = document.querySelectorAll('.appariement li.item')
+			items.forEach(function (item) {
+				if (item.hasAttribute('style')) {
+					item.removeAttribute('style')
+				}
+			})
+			this.definirHauteurPaires()
+		},
 		ouvrirModaleSerie () {
 			this.elementPrecedent = (document.activeElement || document.body)
 			this.modale = 'serie'
@@ -2982,6 +3260,7 @@ export default {
 				if (this.cartes.length > 4) {
 					this.definirExercicesEcrire()
 					this.definirExercicesQuiz()
+					this.definirExercicesAppariement()
 				}
 				this.$parent.$parent.notification = this.$t('cartesInversees')
 				this.$parent.$parent.chargement = false
@@ -3582,6 +3861,14 @@ export default {
 	margin-left: 15px;
 }
 
+#exercices .navigation.appariement {
+	justify-content: center;
+}
+
+#exercices .navigation.appariement .reinitialiser {
+	margin-left: 0;
+}
+
 #cartes .navigation .memorise.actif {
 	color: #00b894;
 }
@@ -3781,6 +4068,10 @@ export default {
 	flex-wrap: wrap;
 }
 
+#exercices .exercice.appariement .question {
+	margin-bottom: 20px;
+}
+
 #exercices .question .image {
 	font-size: 0;
 }
@@ -3794,6 +4085,16 @@ export default {
 	font-size: 24px;
 	text-align: center;
 	line-height: 1.5;
+}
+
+#exercices .question .texte.consigne {
+	display: block;
+	width: 100%;
+	color: #999;
+}
+
+#exercices .quiz .question .texte.consigne {
+	margin-bottom: 20px;
 }
 
 #exercices .question .image.avec-texte {
@@ -3854,11 +4155,7 @@ export default {
 }
 
 #exercices .reponses .reponse {
-	margin-right: 30px;
-}
-
-#exercices .reponses .reponse:last-child {
-	margin-right: 0;
+	width: 100%;
 }
 
 #exercices .conteneur-coche {
@@ -3921,6 +4218,7 @@ export default {
 #exercices .conteneur-coche .image img {
 	max-width: 120px;
 	max-height: 120px;
+	cursor: zoom-in;
 }
 
 #exercices .conteneur-coche .image.avec-texte {
@@ -4052,6 +4350,161 @@ export default {
 	background-color: #777!important;
 }
 
+#exercices .appariement .items {
+	display: flex;
+    justify-content: space-between;
+	align-items: center;
+	width: 100%;
+}
+
+#exercices .appariement .items.reponses {
+	margin-bottom: 20px;
+}
+
+#exercices .appariement ul {
+	width: 100%;
+	padding: 0;
+	margin: 0;
+}
+
+#exercices .appariement ul.paires .gauche,
+#exercices .appariement ul.paires .droite,
+#exercices .appariement ul:not(.paires) {
+	width: 50%;
+}
+
+#exercices .appariement ul li {
+	position: relative;
+	display: flex;
+	align-items: center;
+	border: 2px solid #ddd;
+	background: rgba(255, 255, 255, 0.5);
+	margin-bottom: 20px;
+	cursor: pointer;
+}
+
+#exercices .appariement ul.paires .gauche {
+	align-items: center;
+	flex-wrap: wrap;
+	padding-left: 10px;
+	padding-top: 1%;
+	padding-bottom: 10px;
+	padding-right: 0;
+}
+
+#exercices .appariement ul.paires .droite {
+	align-items: center;
+	flex-wrap: wrap;
+	padding-left: 0;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-right: 10px;
+}
+
+#exercices .appariement ul.droite li,
+#exercices .appariement ul.gauche li {
+	padding: 10px;
+}
+
+#exercices .appariement ul.gauche li {
+	margin-right: 10px;
+}
+
+#exercices .appariement ul.droite li {
+	margin-left: 10px;
+	cursor: default;
+}
+
+#exercices .appariement ul li.selectionne {
+	border: 2px solid #001d1d;
+	background: rgba(0, 0, 0, 0.04);
+	cursor: pointer;
+}
+
+#exercices .appariement ul.paires .gauche,
+#exercices .appariement ul.gauche li {
+	display: flex;
+	justify-content: flex-start;
+	flex-wrap: wrap;
+	text-align: left;
+}
+
+#exercices .appariement ul.paires .droite,
+#exercices .appariement ul.droite li {
+	display: flex;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+	text-align: right;
+}
+
+#exercices .appariement ul li:last-child {
+	margin-bottom: 0;
+}
+
+#exercices .appariement ul.paires li {
+    justify-content: space-between;
+	border: 2px solid #001d1d;
+	background: rgba(0, 0, 0, 0.04);
+	z-index: 1;
+}
+
+#exercices .appariement ul.paires li.correct {
+	border: 2px solid #00b894;
+	cursor: default;
+}
+
+#exercices .appariement .items.reponses .gauche,
+#exercices .appariement .items.reponses .droite {
+	width: calc(50% - 38px);
+}
+
+#exercices .appariement ul.paires li span.supprimer {
+	display: flex;
+	justify-content: center;
+	align-self: stretch;
+	align-items: center;
+	width: 76px;
+	font-size: 36px;
+	border-left: 2px solid #001d1d;
+	color: #001d1d;
+	cursor: pointer;
+	user-select: none;
+}
+
+#exercices .appariement ul li .texte {
+	margin: 10px;
+	font-size: 24px;
+	line-height: 1.25;
+}
+
+#exercices .appariement ul li .image {
+	margin: 10px;
+	font-size: 0;
+}
+
+#exercices .appariement ul li .audio {
+	font-size: 96px;
+	max-width: 96px;
+	margin: 10px;
+	cursor: pointer;
+}
+
+#exercices .appariement ul li .audio.lecture {
+	color: #fe68b2;
+	text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.4);
+}
+
+#exercices .appariement ul li .image + .audio,
+#exercices .appariement ul li .audio:has(+ .texte) {
+	font-size: 72px;
+	max-width: 72px;
+}
+
+#exercices .appariement ul li .image img {
+	max-height: 175px;
+	margin: 0!important;
+}
+
 #actions span.bouton i,
 #actions > a i {
 	font-size: 24px;
@@ -4143,8 +4596,8 @@ export default {
 #credits {
 	width: 100%;
 	max-width: 75em;
-	margin: 30px auto;
-	padding: 30px 20px 0 20px;
+	margin: 30px auto 0;
+	padding: 30px 20px;
 	border-top: 1px solid #ddd;
 }
 
@@ -4438,6 +4891,57 @@ export default {
 	transform: rotateX(0deg);
 }
 
+@media screen and (max-width: 374px) {
+	#exercices .appariement .items.reponses {
+		margin-bottom: 10px;
+	}
+
+	#exercices .appariement ul li {
+		margin-bottom: 10px;
+	}
+
+	#exercices .appariement ul.paires .gauche {
+		padding-left: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+		padding-right: 0;
+	}
+
+	#exercices .appariement ul.paires .droite {
+		padding-left: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+		padding-right: 0;
+	}
+
+	#exercices .appariement ul.droite li,
+	#exercices .appariement ul.gauche li {
+		padding: 0;
+	}
+
+	#exercices .appariement ul.gauche li {
+		margin-right: 5px;
+	}
+
+	#exercices .appariement ul.droite li {
+		margin-left: 5px;
+	}
+
+	#exercices .appariement .items.reponses .gauche,
+	#exercices .appariement .items.reponses .droite {
+		width: calc(50% - 22px);
+	}
+
+	#exercices .appariement ul.paires li span.supprimer {
+		width: 44px;
+		font-size: 24px;
+	}
+
+	#exercices .appariement ul li .image img {
+		max-height: 125px;
+	}
+}
+
 @media screen and (max-width: 399px) {
 	#actions > a span {
 		display: none;
@@ -4456,6 +4960,7 @@ export default {
 		margin-right: 0;
 	}
 
+	#exercices .appariement ul li .texte,
 	#exercices .conteneur-coche .audio.avec-texte.avec-image + .texte {
 		font-size: 16px!important;
 	}
@@ -4495,6 +5000,57 @@ export default {
 
 	#actions #importer-csv i {
 		display: none;
+	}
+}
+
+@media screen and (min-width: 375px) and (max-width: 599px) {
+	#exercices .appariement .items.reponses {
+		margin-bottom: 10px;
+	}
+
+	#exercices .appariement ul li {
+		margin-bottom: 10px;
+	}
+
+	#exercices .appariement ul.paires .gauche {
+		padding-left: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+		padding-right: 0;
+	}
+
+	#exercices .appariement ul.paires .droite {
+		padding-left: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+		padding-right: 0;
+	}
+
+	#exercices .appariement ul.droite li,
+	#exercices .appariement ul.gauche li {
+		padding: 0;
+	}
+
+	#exercices .appariement ul.gauche li {
+		margin-right: 5px;
+	}
+
+	#exercices .appariement ul.droite li {
+		margin-left: 5px;
+	}
+
+	#exercices .appariement .items.reponses .gauche,
+	#exercices .appariement .items.reponses .droite {
+		width: calc(50% - 22px);
+	}
+
+	#exercices .appariement ul.paires li span.supprimer {
+		width: 44px;
+		font-size: 24px;
+	}
+
+	#exercices .appariement ul li .image img {
+		max-height: 125px;
 	}
 }
 
@@ -4579,6 +5135,7 @@ export default {
 		margin-right: 23px;
 	}
 
+	#exercices .appariement ul li .texte,
 	#exercices .champ input[type="text"],
 	#exercices .conteneur-coche .texte,
 	#exercices .question .texte {
@@ -4621,7 +5178,24 @@ export default {
 	}
 }
 
+@media screen and (min-width: 480px) and (max-width: 767px) {
+	#exercices .appariement .items.reponses .gauche,
+	#exercices .appariement .items.reponses .droite {
+		width: calc(50% - 32px);
+	}
+
+	#exercices .appariement ul.paires li span.supprimer {
+		width: 64px;
+		font-size: 24px;
+	}
+
+	#exercices .appariement ul li .image img {
+		max-height: 150px;
+	}
+}
+
 @media screen and (max-width: 767px) {
+	#exercices .appariement ul li .texte,
 	#exercices .champ input[type="text"],
 	#exercices .conteneur-coche .texte,
 	#exercices .question .texte {
