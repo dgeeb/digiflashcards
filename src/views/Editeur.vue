@@ -23,7 +23,7 @@
 				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'cartes'}" :title="$t('afficherCartes')" @click="definirOnglet('cartes')" @keydown.enter="definirOnglet('cartes')"><i class="material-icons">style</i></span>
 				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'quiz'}" :title="$t('afficherQuiz')" @click="definirOnglet('quiz')" @keydown.enter="definirOnglet('quiz')" v-if="exercicesQuiz.length > 4"><i class="material-icons">help_center</i></span>
 				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'ecrire'}" :title="$t('afficherEcrire')" @click="definirOnglet('ecrire')" @keydown.enter="definirOnglet('ecrire')" v-if="exercicesEcrire.length > 4"><i class="material-icons">edit</i></span>
-				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'appariement'}" :title="$t('afficherAppariement')" @click="definirOnglet('appariement')" @keydown.enter="definirOnglet('appariement')" v-if="exercicesAppariement.gauche.length > 4"><i class="material-icons">view_comfy_alt</i></span>
+				<span class="onglet" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'selectionne': onglet === 'appariement'}" :title="$t('afficherAppariement')" @click="definirOnglet('appariement')" @keydown.enter="definirOnglet('appariement')" v-if="exercicesAppariement.hasOwnProperty('gauche') && exercicesAppariement.gauche.length > 4"><i class="material-icons">view_comfy_alt</i></span>
 			</div>
 
 			<div id="conteneur">
@@ -298,7 +298,7 @@
 					</div>
 				</div>
 
-				<div id="exercices" v-else-if="exercicesAppariement.gauche.length > 0 && vue === 'apprenant' && onglet === 'appariement'">
+				<div id="exercices" v-else-if="exercicesAppariement.hasOwnProperty('gauche') && exercicesAppariement.gauche.length > 0 && vue === 'apprenant' && onglet === 'appariement'">
 					<article class="exercice appariement">
 						<div class="question"><span class="texte consigne">{{ $t('consigneAppariement') }}</span></div>
 						<div class="items reponses" v-if="exercicesAppariement.reponse.length > 0">
