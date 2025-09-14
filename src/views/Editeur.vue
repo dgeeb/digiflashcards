@@ -719,6 +719,7 @@ export default {
 			nom: '',
 			options: { exercices: true, quiz: 'definition', ecrire: 'definition', appariement: 'definition', casse: false },
 			cartes: [{ recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }, { recto: { texte: '', image: '', audio: '' }, verso: { texte: '', image: '', audio: '' } }],
+			cartesOriginales: [],
 			carteIndex: '',
 			carteType: '',
 			nouveaunom: '',
@@ -760,7 +761,6 @@ export default {
 			titreAjouterAudio: '',
 			pleinEcran: false,
 			cartesInversees: false,
-			copieCartes: [],
 			parametreImport: 'ajouter',
 			digidrive: false,
 			boutonRetour: false,
@@ -877,7 +877,11 @@ export default {
 
 				if (this.vue === 'apprenant') {
 					this.cartes = this.cartes.filter(function (carte) {
-						return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '') && (!carte.hasOwnProperty('masque') || (carte.hasOwnProperty('masque') && carte.masque === false))
+						return (carte.recto.texte !== '' || carte.recto.image !== '' || carte.recto.audio !== '') && (carte.verso.texte !== '' || carte.verso.image !== '' || carte.verso.audio !== '')
+					}.bind(this))
+					this.cartesOriginales = JSON.parse(JSON.stringify(this.cartes))
+					this.cartes = this.cartes.filter(function (carte) {
+						return !carte.hasOwnProperty('masque') || (carte.hasOwnProperty('masque') && carte.masque === false)
 					}.bind(this))
 					if (this.cartes.length > 0) {
 						const tailleFonte = this.tailleFonte
@@ -1964,6 +1968,7 @@ export default {
 		masquerCarte (index) {
 			if (this.cartes.length > 1) {
 				this.cartes[index].masque = true
+				this.cartesOriginales = JSON.parse(JSON.stringify(this.cartes))
 				this.$parent.$parent.chargementTransparent = true
 				const xhr = new XMLHttpRequest()
 				xhr.onload = function () {
@@ -2734,11 +2739,13 @@ export default {
 							}
 							if (this.cartesInversees === true) {
 								this.cartesInversees = false
-								this.cartes = this.copieCartes
-								this.copieCartes = []
+								this.cartes = this.cartesOriginales
+							} else if (this.cartesOriginales.length > 0) {
+								this.cartes = this.cartesOriginales
 							}
 							this.verifierCartes()
 							document.querySelector('#app').classList.remove('apprenant')
+							window.history.replaceState({}, document.title, window.location.href.split('?')[0])
 						}
 					} else {
 						this.$parent.$parent.chargement = false
@@ -2951,7 +2958,7 @@ export default {
 												this.cartes = donnees.cartes
 											}
 											this.cartesInversees = false
-											this.copieCartes = []
+											this.cartesOriginales = []
 											this.verifierCartes()
 											this.$parent.$parent.notification = this.$t('serieImportee')
 											document.querySelector('#app').classList.remove('apprenant')
@@ -3096,8 +3103,8 @@ export default {
 									that.$parent.$parent.message = that.$t('actionNonAutorisee')
 								} else if (xhr.responseText === 'serie_modifiee') {
 									that.cartes = cartes
+									that.cartesOriginales = []
 									that.cartesInversees = false
-									that.copieCartes = []
 									that.$parent.$parent.notification = that.$t('cartesImportees')
 									that.gererFocus()
 									if (that.parametreImport === 'remplacer') {
@@ -3235,10 +3242,8 @@ export default {
 				const cartes = JSON.parse(JSON.stringify(this.cartes))
 				if (this.cartesInversees === false) {
 					this.cartesInversees = true
-					this.copieCartes = JSON.parse(JSON.stringify(this.cartes))
 				} else {
 					this.cartesInversees = false
-					this.copieCartes = []
 				}
 				for (let i = 0; i < cartes.length; i++) {
 					const recto = cartes[i].recto
