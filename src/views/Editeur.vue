@@ -309,18 +309,14 @@
 											<img :src="definirLienMedia(exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] })[0].image, '')" :alt="exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] }).image">
 										</div>
 										<div class="audio" v-if="exercicesAppariement.gauche.filter(function (e) { return e.audio !== '' && e.id === itemReponse[0] }).length === 1" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'lecture': lectureAppariement === itemReponse[0]}" @click="lireAudioAppariement($event, itemReponse[0], definirLienMedia(exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] })[0].audio, ''))" @keydown.enter="lireAudioAppariement($event, itemReponse[0], definirLienMedia(exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] })[0].audio, ''))"><i class="material-icons">volume_up</i></div>
-										<div class="texte" v-if="exercicesAppariement.gauche.filter(function (e) { return e.texte !== '' && e.id === itemReponse[0] }).length === 1">
-											{{ exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] })[0].texte }}
-										</div>
+										<div class="texte" v-if="exercicesAppariement.gauche.filter(function (e) { return e.texte !== '' && e.id === itemReponse[0] }).length === 1" v-html="exercicesAppariement.gauche.filter(function (e) { return e.id === itemReponse[0] })[0].texte" />
 									</div>
 									<div class="droite">
 										<div class="image" v-if="exercicesAppariement.droite.filter(function (e) { return e.image !== '' && e.id === itemReponse[1] }).length === 1">
 											<img :src="definirLienMedia(exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].image, '')" :alt="exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].image">
 										</div>
 										<div class="audio" v-if="exercicesAppariement.droite.filter(function (e) { return e.audio !== '' && e.id === itemReponse[1] }).length === 1" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'lecture': lectureAppariement === itemReponse[1]}" @click="lireAudioAppariement($event, itemReponse[1], definirLienMedia(exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].audio, ''))" @keydown.enter="lireAudioAppariement($event, itemReponse[1], definirLienMedia(exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].audio, ''))"><i class="material-icons">volume_up</i></div>
-										<div class="texte" v-if="exercicesAppariement.droite.filter(function (e) { return e.texte !== '' && e.id === itemReponse[1] }).length === 1">
-											{{ exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].texte }}
-										</div>
+										<div class="texte" v-if="exercicesAppariement.droite.filter(function (e) { return e.texte !== '' && e.id === itemReponse[1] }).length === 1" v-html="exercicesAppariement.droite.filter(function (e) { return e.id === itemReponse[1] })[0].texte" />
 									</div>
 									<span class="supprimer" role="button" @click="supprimerPaire(indexReponse)" v-if="itemReponse[0] !== itemReponse[1]"><i class="material-icons">close</i></span>
 								</li>
@@ -334,9 +330,7 @@
 											<img :src="definirLienMedia(itemGauche.image, '')" :alt="itemGauche.image">
 										</div>
 										<div class="audio" v-if="itemGauche.audio !== ''" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'lecture': lectureAppariement === itemGauche.id}" @click="lireAudioAppariement($event, itemGauche.id, definirLienMedia(itemGauche.audio, ''))" @keydown.enter="lireAudioAppariement($event, itemGauche.id, definirLienMedia(itemGauche.audio, ''))"><i class="material-icons">volume_up</i></div>
-										<div class="texte" v-if="itemGauche.texte !== ''">
-											{{ itemGauche.texte }}
-										</div>
+										<div class="texte" v-if="itemGauche.texte !== ''" v-html="itemGauche.texte" />
 									</li>
 								</template>
 							</ul>
@@ -347,9 +341,7 @@
 											<img :src="definirLienMedia(itemDroite.image, '')" :alt="itemDroite.image">
 										</div>
 										<div class="audio" v-if="itemDroite.audio !== ''" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :class="{'lecture': lectureAppariement === itemDroite.id}" @click="lireAudioAppariement($event, itemDroite.id, definirLienMedia(itemDroite.audio, ''))" @keydown.enter="lireAudioAppariement($event, itemDroite.id, definirLienMedia(itemDroite.audio, ''))"><i class="material-icons">volume_up</i></div>
-										<div class="texte" v-if="itemDroite.texte !== ''">
-											{{ itemDroite.texte }}
-										</div>
+										<div class="texte" v-if="itemDroite.texte !== ''" v-html="itemDroite.texte" />
 									</li>
 								</template>
 							</ul>
@@ -3010,6 +3002,7 @@ export default {
 						}
 						this.$parent.$parent.notification = this.$t('sessionTerminee')
 						document.querySelector('#app').classList.add('apprenant')
+						window.history.replaceState({}, document.title, window.location.href.split('?')[0])
 					}
 				} else {
 					this.$parent.$parent.chargement = false
