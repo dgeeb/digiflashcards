@@ -2456,8 +2456,17 @@ export default {
 				}
 			}.bind(this))
 			if (cartes.gauche.length > 20) {
-				cartes.gauche = cartes.gauche.slice(0, -(cartes.gauche.length - 20))
+				cartes.droite = this.melangerEntrees(cartes.droite)
 				cartes.droite = cartes.droite.slice(0, -(cartes.droite.length - 20))
+				const cartesGauches = []
+				cartes.droite.forEach(function (itemDroite) {
+					cartes.gauche.forEach(function (itemGauche) {
+						if (itemDroite.id === itemGauche.id) {
+							cartesGauches.push(itemGauche)
+						}
+					})
+				})
+				cartes.gauche = cartesGauches
 				cartes.droite = this.melangerEntrees(cartes.droite)
 				this.exercicesAppariement = cartes
 				localStorage.setItem('digiflashcards_appariement_' + this.id, JSON.stringify(cartes))
