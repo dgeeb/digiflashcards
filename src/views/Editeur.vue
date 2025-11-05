@@ -192,10 +192,10 @@
 						</div>
 					</article>
 
-					<div class="navigation" v-if="!impressionPDF">
-						<span class="precedent" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherCartePrecedente')" @click="afficherCartePrecedente" @keydown.enter="afficherCartePrecedente"><i class="material-icons">arrow_back</i></span>
-						<span class="actions">
-							<span class="total">{{ navigationCartes + 1 }} / {{ cartes.length }}</span>
+                                        <div class="navigation" v-if="!impressionPDF">
+                                                <span class="precedent" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherCartePrecedente')" @click="afficherCartePrecedente" @keydown.enter="afficherCartePrecedente"><i class="material-icons">arrow_back</i></span>
+                                                <span class="actions">
+                                                        <span class="total">{{ navigationCartes + 1 }} / {{ cartes.length }}</span>
 							<span class="memorise" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('marquerMemorisee')" @click="modifierCartesMemorisees(cartes[navigationCartes].id)" @keydown.enter="modifierCartesMemorisees(cartes[navigationCartes].id)" v-if="cartes[navigationCartes].hasOwnProperty('id') && !cartesMemorisees.includes(cartes[navigationCartes].id)"><i class="material-icons">check_circle</i></span>
 							<span class="memorise actif" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('supprimerMemorisee')" @click="modifierCartesMemorisees(cartes[navigationCartes].id)" @keydown.enter="modifierCartesMemorisees(cartes[navigationCartes].id)" v-else-if="cartes[navigationCartes].hasOwnProperty('id') && cartesMemorisees.includes(cartes[navigationCartes].id)"><i class="material-icons">check_circle</i></span>
 							<span class="aleatoire" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('melangerCartes')" @click="melangerCartes" @keydown.enter="melangerCartes"><i class="material-icons">shuffle</i></span>
@@ -203,11 +203,20 @@
 							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('mettrePleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-if="!pleinEcran"><i class="material-icons">fullscreen</i></span>
 							<span class="ecran" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('sortirPleinEcran')" @click="gererPleinEcran" @keydown.enter="gererPleinEcran" v-else><i class="material-icons">close_fullscreen</i></span>
 						</span>
-						<span class="suivant" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherCarteSuivante')" @click="afficherCarteSuivante" @keydown.enter="afficherCarteSuivante"><i class="material-icons">arrow_forward</i></span>
-					</div>
-				</div>
+                                                <span class="suivant" role="button" :tabindex="modale === '' && menu === '' && $parent.$parent.message === '' ? 0 : -1" :title="$t('afficherCarteSuivante')" @click="afficherCarteSuivante" @keydown.enter="afficherCarteSuivante"><i class="material-icons">arrow_forward</i></span>
+                                        </div>
+                                        <div class="raccourcis-clavier" v-if="!impressionPDF">
+                                                <span class="titre">{{ $t('raccourcisClavierTitre') }}</span>
+                                                <ul>
+                                                        <li>{{ $t('raccourciCartePrecedente') }}</li>
+                                                        <li>{{ $t('raccourciCarteSuivante') }}</li>
+                                                        <li>{{ $t('raccourciRetournerCarte') }}</li>
+                                                        <li>{{ $t('raccourciJouerAudio') }}</li>
+                                                </ul>
+                                        </div>
+                                </div>
 
-				<div id="exercices" v-else-if="exercicesQuiz.length > 0 && vue === 'apprenant' && onglet === 'quiz'">
+                                <div id="exercices" v-else-if="exercicesQuiz.length > 0 && vue === 'apprenant' && onglet === 'quiz'">
 					<article class="exercice quiz" v-show="navigationQuiz === indexQuiz" v-for="(itemQuiz, indexQuiz) in exercicesQuiz" :key="'exercice_quiz_' + indexQuiz">
 						<template v-for="(itemQuestion, indexQuestion) in itemQuiz">
 							<div class="question" v-if="options.quiz === 'definition' && itemQuestion.correct === true" :key="'question_quiz_definition_' + indexQuiz + '_' + indexQuestion">
@@ -1834,30 +1843,56 @@ export default {
 				}
 			}
 		},
-		lireAudio (event, audio) {
-			event.preventDefault()
-			event.stopPropagation()
-			if (this.audio !== '' && this.lecture) {
-				this.audio.pause()
-				this.lecture = false
-			} else if (this.audio !== '' && !this.lecture) {
-				this.audio.play()
-				this.lecture = true
-			} else if (this.audio === '') {
-				this.lecture = true
-				this.audio = new Audio(audio)
-				this.audio.play()
-				this.audio.onended = function() {
-					this.lecture = false
-					this.audio = ''
-				}.bind(this)
-			}
-		},
-		afficherAudio (index, type, audio) {
-			this.carteIndex = index
-			this.carteType = type
-			this.elementPrecedent = (document.activeElement || document.body)
-			if (audio === '') {
+                lireAudio (event, audio) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                        if (this.audio !== '' && this.lecture) {
+                                this.audio.pause()
+                                this.lecture = false
+                        } else if (this.audio !== '' && !this.lecture) {
+                                this.audio.play()
+                                this.lecture = true
+                        } else if (this.audio === '') {
+                                this.lecture = true
+                                this.audio = new Audio(audio)
+                                this.audio.play()
+                                this.audio.onended = function() {
+                                        this.lecture = false
+                                        this.audio = ''
+                                }.bind(this)
+                        }
+                },
+                lireAudioDepuisClavier (audio) {
+                        const evenement = {
+                                preventDefault () {},
+                                stopPropagation () {}
+                        }
+                        this.lireAudio(evenement, audio)
+                },
+                recupererAudioCarteActive () {
+                        if (this.cartes.length === 0 || typeof this.navigationCartes !== 'number') {
+                                return ''
+                        }
+                        const carte = this.cartes[this.navigationCartes]
+                        if (!carte) {
+                                return ''
+                        }
+                        if (this.recto === true && carte.recto && carte.recto.audio !== '') {
+                                return this.definirLienMedia(carte.recto.audio, '')
+                        } else if (this.recto === false && carte.verso && carte.verso.audio !== '') {
+                                return this.definirLienMedia(carte.verso.audio, '')
+                        } else if (carte.recto && carte.recto.audio !== '') {
+                                return this.definirLienMedia(carte.recto.audio, '')
+                        } else if (carte.verso && carte.verso.audio !== '') {
+                                return this.definirLienMedia(carte.verso.audio, '')
+                        }
+                        return ''
+                },
+                afficherAudio (index, type, audio) {
+                        this.carteIndex = index
+                        this.carteType = type
+                        this.elementPrecedent = (document.activeElement || document.body)
+                        if (audio === '') {
 				this.titreAjouterAudio = this.$t('ajouterAudio')
 				this.modale = 'ajouter-audio'
 				this.$nextTick(function () {
@@ -3160,10 +3195,21 @@ export default {
 			} else if (event.key === 'Escape' && this.menu !== '') {
 				this.menu = ''
 				this.gererFocus()
-			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'ArrowLeft') {
-				this.afficherCartePrecedente()
-			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'ArrowRight') {
-				this.afficherCarteSuivante()
+                        } else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'ArrowLeft') {
+                                event.preventDefault()
+                                this.afficherCartePrecedente()
+                        } else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'ArrowRight') {
+                                event.preventDefault()
+                                this.afficherCarteSuivante()
+                        } else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'ArrowUp') {
+                                event.preventDefault()
+                                this.recto = !this.recto
+                        } else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'cartes' && event.key === 'ArrowDown') {
+                                const audio = this.recupererAudioCarteActive()
+                                if (audio !== '') {
+                                        event.preventDefault()
+                                        this.lireAudioDepuisClavier(audio)
+                                }
 			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'quiz' && event.key === 'ArrowLeft') {
 				this.afficherQuestionQuizPrecedente()
 			} else if (this.vue === 'apprenant' && this.modale === '' && this.onglet === 'quiz' && event.key === 'ArrowRight') {
@@ -3817,18 +3863,43 @@ export default {
 
 #exercices .navigation,
 #cartes.apprenant .navigation {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	width: 100%;
-	margin-top: 30px;
-	user-select: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-top: 30px;
+        user-select: none;
+}
+
+#cartes.apprenant .raccourcis-clavier {
+        margin-top: 20px;
+        padding: 15px 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #555;
+        line-height: 1.5;
+}
+
+#cartes.apprenant .raccourcis-clavier .titre {
+        font-weight: 700;
+        display: block;
+        margin-bottom: 10px;
+}
+
+#cartes.apprenant .raccourcis-clavier ul {
+        margin: 0;
+        padding-left: 20px;
+}
+
+#cartes.apprenant .raccourcis-clavier li {
+        margin-bottom: 4px;
 }
 
 #exercices .navigation {
-	background: #fff;
-	padding-top: 30px;
-	border-top: 1px solid #ddd;
+        background: #fff;
+        padding-top: 30px;
+        border-top: 1px solid #ddd;
 }
 
 #page.plein-ecran #cartes .navigation,
