@@ -1,5 +1,8 @@
 # Digiflashcards
 
+## NOTE
+This project is a modified version of Digiflashcards by La Digitale
+Original project: https://codeberg.org/ladigitale/digiflashcards
 Digiflashcards est une application simple pour créer des flashcards. 
 
 Elle est publiée sous licence GNU AGPLv3.
