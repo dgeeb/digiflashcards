@@ -13,11 +13,11 @@ export default defineConfig(({ mode }) => {
         const envPath = path.resolve(__dirname, env)
         const copyTargets = [
                 {
-                        src: path.resolve(__dirname, 'README.md'),
+                        src: 'README.md',
                         dest: './'
                 },
                 {
-                        src: path.resolve(__dirname, 'LICENSE'),
+                        src: 'LICENSE',
                         dest: './'
                 },
                 {

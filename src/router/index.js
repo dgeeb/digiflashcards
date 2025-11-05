@@ -47,6 +47,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/join/:shareCode',
+      name: 'JoinCourse',
+      component: () => import('../views/JoinCourse.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: { name: 'Dashboard' }
     }

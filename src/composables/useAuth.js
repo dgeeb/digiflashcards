@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { ensureCourseStructure, recalculateUserPoints } from '../utils/srs'
 import { createId } from '../utils/id'
+import { applySnapshotToStudentCourse, getSharedCourse, mapSnapshotToCourse, syncSharedCoursesForUser } from '../utils/share'
 
 const STORAGE_KEY = 'digisrs_users_v1'
 const SESSION_KEY = 'digisrs_session_v1'
@@ -31,16 +32,35 @@ function normaliseUser(user) {
   user.passwordHash = user.passwordHash || ''
   user.createdAt = user.createdAt || new Date().toISOString()
   user.lastLogin = user.lastLogin || null
+  user.preferences = user.preferences || {}
+  user.preferences.workspaceMode = user.preferences.workspaceMode || 'creator'
+  user.integrations = user.integrations || {}
+  const elevenLabs = user.integrations.elevenLabs || {}
+  user.integrations.elevenLabs = {
+    apiKey: elevenLabs.apiKey || '',
+    voiceId: elevenLabs.voiceId || '21m00Tcm4TlvDq8ikWAM',
+    modelId: elevenLabs.modelId || 'eleven_multilingual_v2',
+    outputFormat: elevenLabs.outputFormat || 'mp3_44100_128'
+  }
   user.courses = Array.isArray(user.courses) ? user.courses : []
   user.courses = user.courses.map(course => {
     const hydrated = ensureCourseStructure(course)
     hydrated.id = hydrated.id || createId()
+    hydrated.role = hydrated.role || 'creator'
     hydrated.title = hydrated.title || 'Untitled course'
     hydrated.description = hydrated.description || ''
     hydrated.createdAt = hydrated.createdAt || new Date().toISOString()
+    if (hydrated.role === 'student' && hydrated.sourceShareCode) {
+      const snapshot = getSharedCourse(hydrated.sourceShareCode)
+      if (snapshot && snapshot.updatedAt !== hydrated.lastSyncedAt) {
+        applySnapshotToStudentCourse(hydrated, snapshot)
+      }
+      return ensureCourseStructure(hydrated)
+    }
     return hydrated
   })
   recalculateUserPoints(user)
+  syncSharedCoursesForUser(user)
   return user
 }
 
@@ -208,6 +228,48 @@ export function useAuth() {
     return Boolean(currentUser.value)
   }
 
+  function setWorkspaceMode(mode) {
+    const allowed = ['creator', 'student']
+    updateCurrentUser(user => {
+      user.preferences.workspaceMode = allowed.includes(mode) ? mode : 'creator'
+    })
+  }
+
+  function saveElevenLabsSettings(settings) {
+    updateCurrentUser(user => {
+      user.integrations.elevenLabs = {
+        ...user.integrations.elevenLabs,
+        ...settings
+      }
+    })
+  }
+
+  function joinSharedCourse(shareCode) {
+    const trimmed = (shareCode || '').trim()
+    if (!trimmed) {
+      throw new Error('A course code or link is required.')
+    }
+    const codeMatch = trimmed.match(/([a-z0-9-]{6,})$/i)
+    const code = codeMatch ? codeMatch[1] : trimmed
+    const snapshot = getSharedCourse(code)
+    if (!snapshot) {
+      throw new Error('We could not find a shared course for this code.')
+    }
+    let joinedCourse = null
+    updateCurrentUser(user => {
+      const existing = user.courses.find(course => course.role === 'student' && course.sourceShareCode === snapshot.shareCode)
+      if (existing) {
+        applySnapshotToStudentCourse(existing, snapshot)
+        joinedCourse = existing
+        return
+      }
+      const mapped = mapSnapshotToCourse(snapshot)
+      user.courses.push(mapped)
+      joinedCourse = mapped
+    })
+    return joinedCourse
+  }
+
   return {
     currentUser,
     register,
@@ -218,7 +280,10 @@ export function useAuth() {
     updateCurrentUser,
     isAuthenticated,
     persistUsers,
-    secretQuestions: SECRET_QUESTIONS
+    secretQuestions: SECRET_QUESTIONS,
+    setWorkspaceMode,
+    saveElevenLabsSettings,
+    joinSharedCourse
   }
 }
 

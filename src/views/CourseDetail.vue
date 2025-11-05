@@ -14,9 +14,20 @@
           <span class="meta-label">Stages</span>
           <span class="meta-value">{{ course.stages.length }}</span>
         </div>
+        <div>
+          <span class="meta-label">Workspace</span>
+          <span class="meta-value">{{ isStudentCourse ? 'Student' : 'Creator' }}</span>
+        </div>
+      </div>
+      <div v-if="shareLink" class="course-detail__share">
+        <label :for="`share-${course.id}`">Share this course</label>
+        <div class="course-detail__share-actions">
+          <input :id="`share-${course.id}`" :value="shareLink" readonly />
+          <button class="button button--ghost" type="button" @click="copyShareLink">Copy</button>
+        </div>
       </div>
     </header>
-    <section class="course-detail__actions">
+    <section class="course-detail__actions" v-if="!isStudentCourse">
       <h2>Create a stage</h2>
       <form class="inline-form" @submit.prevent="createStage">
         <div class="form-grid">
@@ -32,6 +43,10 @@
         <p v-if="formError" class="form-error" role="alert">{{ formError }}</p>
         <button class="button button--success" type="submit">Add stage</button>
       </form>
+    </section>
+    <section v-else class="course-detail__actions course-detail__actions--student">
+      <h2>Training workspace</h2>
+      <p>You can review any stage below. Content updates from the course creator appear automatically.</p>
     </section>
     <section class="course-detail__stages">
       <h2>Stages</h2>
@@ -62,8 +77,16 @@
             </div>
           </dl>
           <footer class="stage-card__footer">
-            <button class="button button--ghost" type="button" @click="openStage(stage)">Start session</button>
-            <button class="button button--primary" type="button" @click="manageStage(stage)">Manage cards</button>
+            <button class="button button--ghost" type="button" @click="openStage(stage)">
+              {{ isStudentCourse ? 'Train now' : 'Start session' }}
+            </button>
+            <button
+              class="button button--primary"
+              type="button"
+              @click="manageStage(stage)"
+            >
+              {{ isStudentCourse ? 'View cards' : 'Manage cards' }}
+            </button>
           </footer>
         </article>
       </div>
@@ -101,6 +124,20 @@ const course = computed(() => {
   return currentUser.value?.courses.find(item => item.id === id) ?? null
 })
 
+const isStudentCourse = computed(() => course.value?.role === 'student')
+
+const shareLink = computed(() => {
+  if (!course.value?.shareCode || isStudentCourse.value) {
+    return ''
+  }
+  if (typeof window === 'undefined') {
+    return ''
+  }
+  const { origin, pathname } = window.location
+  const base = `${origin}${pathname}`.replace(/index\.html$/, '').replace(/\/$/, '')
+  return `${base}/#/join/${course.value.shareCode}`
+})
+
 function resetForm() {
   stageForm.title = ''
   stageForm.description = ''
@@ -108,7 +145,7 @@ function resetForm() {
 }
 
 function createStage() {
-  if (!course.value) {
+  if (!course.value || isStudentCourse.value) {
     return
   }
   if (!stageForm.title.trim()) {
@@ -141,11 +178,42 @@ function createStage() {
 }
 
 function openStage(stage) {
+  if (!course.value) {
+    return
+  }
   router.push({ name: 'StageSession', params: { courseId: course.value.id, stageId: stage.id } })
 }
 
 function manageStage(stage) {
+  if (!course.value) {
+    return
+  }
   router.push({ name: 'StageDetail', params: { courseId: course.value.id, stageId: stage.id } })
+}
+
+async function copyShareLink() {
+  if (!shareLink.value) {
+    return
+  }
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareLink.value)
+    } else {
+      const helper = document.createElement('textarea')
+      helper.value = shareLink.value
+      helper.setAttribute('readonly', '')
+      helper.style.position = 'absolute'
+      helper.style.opacity = '0'
+      document.body.appendChild(helper)
+      helper.select()
+      document.execCommand('copy')
+      document.body.removeChild(helper)
+    }
+    emit('notify', 'Share link copied!')
+  } catch (error) {
+    console.warn('Copy failed', error)
+    emit('notify', 'Unable to copy automatically. Select the link and copy it manually.')
+  }
 }
 
 if (course.value) {
