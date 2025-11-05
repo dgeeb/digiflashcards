@@ -2,6 +2,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path from 'path'
+import fs from 'fs'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig(({ mode }) => {
@@ -9,36 +10,40 @@ export default defineConfig(({ mode }) => {
 	if (mode === 'dist') {
 		env = '.env'
 	}
-	return {
-		base: './',
-		plugins: [
-			vue(),
-			viteStaticCopy({
-				targets: [
-					{
-						src: path.resolve(__dirname, 'README.md'),
-						dest: './',
-					},
-					{
-						src: path.resolve(__dirname, 'LICENSE'),
-						dest: './',
-					},
-					{
-						src: path.resolve(__dirname, 'inc') + '/!(*.db)',
-						dest: './inc',
-					},
-					{
-						src: path.resolve(__dirname, 'fichiers'),
-						dest: './',
-					},
-					{
-						src: path.resolve(__dirname, env),
-						dest: './',
-						rename: '.env'
-					}
-				]
-			})
-		],
+        const envPath = path.resolve(__dirname, env)
+        const copyTargets = [
+                {
+                        src: path.resolve(__dirname, 'README.md'),
+                        dest: './'
+                },
+                {
+                        src: path.resolve(__dirname, 'LICENSE'),
+                        dest: './'
+                },
+                {
+                        src: path.resolve(__dirname, 'inc') + '/!(*.db)',
+                        dest: './inc'
+                },
+                {
+                        src: path.resolve(__dirname, 'fichiers'),
+                        dest: './'
+                }
+        ]
+        if (fs.existsSync(envPath)) {
+                copyTargets.push({
+                        src: envPath,
+                        dest: './',
+                        rename: '.env'
+                })
+        }
+        return {
+                base: './',
+                plugins: [
+                        vue(),
+                        viteStaticCopy({
+                                targets: copyTargets
+                        })
+                ],
 		resolve: {
 			alias: {
 				'@': fileURLToPath(new URL('./src', import.meta.url))

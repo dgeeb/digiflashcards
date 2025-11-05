@@ -1,77 +1,63 @@
 <template>
-	<main>
-		<div id="conteneur-chargement" :class="{'chargement-cartes': chargementTransparent}" v-if="chargement || chargementTransparent">
-			<div id="chargement">
-				<div class="spinner"><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /><div /></div>
-			</div>
-		</div>
-		<div id="conteneur-message" class="conteneur-modale" v-if="message">
-			<div id="message" class="modale" role="dialog">
-				<div class="conteneur">
-					<div class="contenu">
-						<div class="message" v-html="message" />
-						<div class="actions">
-							<span class="bouton" role="button" tabindex="0" @click="fermerMessage" @keydown.enter="fermerMessage">{{ $t('fermer') }}</span>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<router-view />
-	</main>
+  <div class="app-shell">
+    <header class="app-header" :class="{ 'app-header--guest': !isAuthenticated }">
+      <div class="brand" role="banner">
+        <router-link class="brand__link" :to="isAuthenticated ? { name: 'Dashboard' } : { name: 'Login' }">
+          <span class="brand__title">DigiSRS</span>
+          <span class="brand__subtitle">powered by Digiflashcards</span>
+        </router-link>
+      </div>
+      <nav v-if="isAuthenticated" class="app-nav" aria-label="Main navigation">
+        <router-link class="app-nav__link" :to="{ name: 'Dashboard' }">Dashboard</router-link>
+        <button type="button" class="app-nav__logout" @click="handleLogout">Logout</button>
+      </nav>
+      <div v-else class="guest-links">
+        <router-link class="app-nav__link" :to="{ name: 'Login' }">Login</router-link>
+        <router-link class="app-nav__link" :to="{ name: 'Register' }">Create account</router-link>
+      </div>
+      <div v-if="isAuthenticated" class="profile" role="presentation">
+        <div class="profile__name">{{ displayName }}</div>
+        <div class="profile__points" aria-label="Total points">{{ totalPoints }} pts</div>
+      </div>
+    </header>
+    <transition name="banner">
+      <div v-if="bannerMessage" class="app-banner" role="status">{{ bannerMessage }}</div>
+    </transition>
+    <main class="app-main">
+      <router-view v-slot="{ Component }">
+        <component :is="Component" @notify="openBanner" />
+      </router-view>
+    </main>
+  </div>
 </template>
 
-<script>
-export default {
-	name: 'App',
-	data () {
-		return {
-			hote: '',
-			chargement: true,
-			chargementTransparent: false,
-			message: '',
-			notification: '',
-			langues: ['fr', 'en', 'it'],
-			langue: 'fr',
-			elementPrecedent: null
-		}
-	},
-	watch: {
-		message: function (message) {
-			if (message !== '') {
-				this.elementPrecedent = (document.activeElement || document.body)
-				this.$nextTick(function () {
-					document.querySelector('#message .bouton').focus()
-				})
-			}
-		},
-		notification: function (notification) {
-			if (notification !== '') {
-				const element = document.createElement('div')
-				const id = 'notification_' + Date.now().toString(36) + Math.random().toString(36).substring(2)
-				element.id = id
-				element.textContent = notification
-				element.classList.add('notification')
-				document.querySelector('#app').appendChild(element)
-				this.notification = ''
-				setTimeout(function () {
-					element.parentNode.removeChild(element)
-				}, 2000)
-			}
-		}
-	},
-	created () {
-		this.hote = window.location.href.split('#')[0]
-	},
-	methods: {
-		fermerMessage () {
-			this.message = ''
-			if (this.elementPrecedent) {
-				this.elementPrecedent.focus()
-				this.elementPrecedent = null
-			}
-		}
-	}
+<script setup>
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { currentUser, useAuth } from './composables/useAuth'
+
+const router = useRouter()
+const { logout } = useAuth()
+const bannerMessage = ref('')
+
+const isAuthenticated = computed(() => Boolean(currentUser.value))
+const displayName = computed(() => currentUser.value?.displayName ?? '')
+const totalPoints = computed(() => currentUser.value?.points ?? 0)
+
+function handleLogout() {
+  logout()
+  router.push({ name: 'Login' })
+}
+
+function openBanner(message) {
+  if (!message) {
+    return
+  }
+  bannerMessage.value = message
+  window.clearTimeout(openBanner.timeout)
+  openBanner.timeout = window.setTimeout(() => {
+    bannerMessage.value = ''
+  }, 4000)
 }
 </script>
 
