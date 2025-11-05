@@ -1,3 +1,5 @@
+import { createId } from './id'
+
 const DAY_IN_MS = 86400000
 
 export const REVIEW_SHORTCUTS = [
@@ -51,6 +53,19 @@ function ensureCardShape(card) {
   card.intervalDays = typeof card.intervalDays === 'number' ? card.intervalDays : 0
   card.status = card.status || 'new'
   card.mastery = typeof card.mastery === 'number' ? card.mastery : 0
+  if (card.audio && typeof card.audio === 'object') {
+    card.audio.id = card.audio.id || createId()
+    card.audio.source = card.audio.source || 'upload'
+    card.audio.mimeType = card.audio.mimeType || 'audio/mpeg'
+    card.audio.textSource = card.audio.textSource || 'front'
+    if (card.audio.dataUrl || card.audio.url) {
+      card.audio.dataUrl = card.audio.dataUrl || card.audio.url
+    } else {
+      card.audio = null
+    }
+  } else {
+    card.audio = null
+  }
 }
 
 export function ensureStageStructure(stage) {
@@ -67,6 +82,10 @@ export function ensureStageStructure(stage) {
 export function ensureCourseStructure(course) {
   if (!course) {
     return course
+  }
+  course.role = course.role || 'creator'
+  if (course.role !== 'student') {
+    course.shareCode = course.shareCode || null
   }
   course.points = typeof course.points === 'number' ? course.points : 0
   course.stages = Array.isArray(course.stages) ? course.stages : []

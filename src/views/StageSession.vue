@@ -40,6 +40,10 @@
             <p v-if="showAnswer">{{ activeCard.back }}</p>
             <p v-else class="session-card__hidden">Press space or ↓ to reveal</p>
           </div>
+          <div v-if="activeCard.audio" class="session-card__audio">
+            <h3>Audio ({{ activeCard.audio.textSource === 'back' ? 'Answer' : 'Prompt' }})</h3>
+            <audio :src="activeCard.audio.dataUrl || activeCard.audio.url" :type="activeCard.audio.mimeType" controls preload="none"></audio>
+          </div>
         </div>
         <footer class="session-card__footer">
           <div class="session-navigation">
