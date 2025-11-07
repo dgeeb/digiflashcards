@@ -272,10 +272,6 @@ function grade(value) {
   if (!activeCard.value || !stage.value || !course.value) {
     return
   }
-  if (!showAnswer.value) {
-    emit('notify', 'Reveal the answer before selecting how well you remembered it.')
-    return
-  }
   stopAudio()
   const cardRef = activeCard.value
   let result = null
