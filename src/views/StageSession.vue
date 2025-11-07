@@ -4,7 +4,13 @@
       <div>
         <p class="session-header__breadcrumb">{{ course.title }} · {{ stage.title }}</p>
         <h1>Revision session</h1>
-        <p>Keyboard shortcuts: arrow keys to navigate, space to flip, numbers 1-4 to grade.</p>
+        <p>Keyboard shortcuts: ↓ reveal, space toggle, ←/→ navigate, 1–4 grade.</p>
+      </div>
+      <div class="session-header__controls">
+        <label class="audio-toggle" for="session-audio-toggle">
+          <input id="session-audio-toggle" type="checkbox" v-model="audioEnabled" />
+          <span>{{ audioEnabled ? 'Audio enabled' : 'Audio disabled' }}</span>
+        </label>
       </div>
       <div class="session-header__stats">
         <div>
@@ -28,21 +34,39 @@
       <article v-if="activeCard" class="session-card" :class="{ 'session-card--revealed': showAnswer }">
         <header class="session-card__header">
           <span>Card {{ sessionStats.completed + 1 }} of {{ sessionStats.total }}</span>
-          <span v-if="activeCard.note" class="session-card__note">{{ activeCard.note }}</span>
+          <span v-if="shouldShowNote" class="session-card__note">{{ activeCard.note }}</span>
         </header>
         <div class="session-card__body">
           <div class="session-card__face session-card__face--front">
-            <h2>Prompt</h2>
+            <div class="session-card__face-header">
+              <h2>Prompt</h2>
+              <button
+                v-if="hasFrontAudio"
+                class="audio-button"
+                type="button"
+                :disabled="!audioEnabled"
+                @click="playAudioClip('front')"
+              >
+                🔊<span class="sr-only">Play prompt audio</span>
+              </button>
+            </div>
             <p>{{ activeCard.front }}</p>
           </div>
           <div class="session-card__face session-card__face--back" aria-live="polite">
-            <h2>Answer</h2>
+            <div class="session-card__face-header">
+              <h2>Answer</h2>
+              <button
+                v-if="hasBackAudio"
+                class="audio-button"
+                type="button"
+                :disabled="!audioEnabled"
+                @click="playAudioClip('back')"
+              >
+                🔊<span class="sr-only">Play answer audio</span>
+              </button>
+            </div>
             <p v-if="showAnswer">{{ activeCard.back }}</p>
             <p v-else class="session-card__hidden">Press space or ↓ to reveal</p>
-          </div>
-          <div v-if="activeCard.audio" class="session-card__audio">
-            <h3>Audio ({{ activeCard.audio.textSource === 'back' ? 'Answer' : 'Prompt' }})</h3>
-            <audio :src="activeCard.audio.dataUrl || activeCard.audio.url" :type="activeCard.audio.mimeType" controls preload="none"></audio>
           </div>
         </div>
         <footer class="session-card__footer">
@@ -59,7 +83,7 @@
         <h2>How well did you remember?</h2>
         <ul>
           <li v-for="option in reviewShortcuts" :key="option.key">
-            <button class="button button--review" :style="{ '--accent': option.color }" type="button" @click="grade(option.value)" :disabled="!showAnswer">
+            <button class="button button--review" :style="{ '--accent': option.color }" type="button" @click="grade(option.value)">
               <span class="button__shortcut">{{ option.shortcut }}</span>
               <span class="button__label">{{ option.label }}</span>
             </button>
@@ -90,10 +114,10 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { currentUser, useAuth } from '../composables/useAuth'
-import { buildSessionQueue, computeStageMetrics, scheduleCard, REVIEW_SHORTCUTS } from '../utils/srs'
+import { buildSessionQueue, computeStageMetrics, scheduleCard, REVIEW_SHORTCUTS, DAILY_LIMITS, shouldShowCardNote } from '../utils/srs'
 
 const emit = defineEmits(['notify'])
 const route = useRoute()
@@ -134,8 +158,74 @@ const progressPercent = computed(() => {
 
 const reviewShortcuts = REVIEW_SHORTCUTS
 
+const audioEnabled = computed({
+  get: () => currentUser.value?.preferences?.audioEnabled !== false,
+  set: value => {
+    updateCurrentUser(user => {
+      user.preferences.audioEnabled = Boolean(value)
+    })
+    if (!value) {
+      stopAudio()
+    }
+  }
+})
+
+const shouldShowNote = computed(() => shouldShowCardNote(activeCard.value))
+const hasFrontAudio = computed(() => Boolean(activeCard.value?.audio?.front?.dataUrl))
+const hasBackAudio = computed(() => Boolean(activeCard.value?.audio?.back?.dataUrl))
+const currentAudio = ref(null)
+
+function stopAudio() {
+  if (!currentAudio.value) {
+    return
+  }
+  try {
+    currentAudio.value.pause()
+    currentAudio.value.currentTime = 0
+  } catch (error) {
+    // noop
+  }
+  currentAudio.value = null
+}
+
+function playAudioClip(side, { auto = false } = {}) {
+  const card = activeCard.value
+  if (!card || !card.audio) {
+    return
+  }
+  if (!audioEnabled.value) {
+    if (!auto) {
+      emit('notify', 'Audio is disabled for this session. Enable it to listen to pronunciations.')
+    }
+    return
+  }
+  if (auto) {
+    if (side === 'front' && !['front', 'both'].includes(card.audioSide)) {
+      return
+    }
+    if (side === 'back' && !['back', 'both'].includes(card.audioSide)) {
+      return
+    }
+  }
+  const clip = card.audio?.[side]
+  if (!clip?.dataUrl || typeof Audio === 'undefined') {
+    return
+  }
+  stopAudio()
+  try {
+    const element = new Audio(clip.dataUrl)
+    element.play().catch(error => {
+      console.warn('Audio playback failed', error)
+    })
+    currentAudio.value = element
+  } catch (error) {
+    console.warn('Unable to play audio clip', error)
+  }
+}
+
 function resetSessionState() {
-  queue.value = buildSessionQueue(stage.value, { limitNew: 15 })
+  stopAudio()
+  queue.value = buildSessionQueue(stage.value, { limitNew: DAILY_LIMITS.newCards, limitReview: DAILY_LIMITS.reviewCards })
   sessionStats.reviewed = 0
   sessionStats.completed = 0
   sessionStats.points = 0
@@ -154,6 +244,7 @@ function skipCard() {
   if (queue.value.length <= 1) {
     return
   }
+  stopAudio()
   const [card] = queue.value.splice(0, 1)
   queue.value.push(card)
   showAnswer.value = false
@@ -163,6 +254,7 @@ function goBack() {
   if (!previous.value.length) {
     return
   }
+  stopAudio()
   const previousId = previous.value.pop()
   const card = stage.value?.cards.find(item => item.id === previousId)
   if (!card) {
@@ -177,9 +269,14 @@ function goBack() {
 }
 
 function grade(value) {
-  if (!activeCard.value || !stage.value || !course.value || !showAnswer.value) {
+  if (!activeCard.value || !stage.value || !course.value) {
     return
   }
+  if (!showAnswer.value) {
+    emit('notify', 'Reveal the answer before selecting how well you remembered it.')
+    return
+  }
+  stopAudio()
   const cardRef = activeCard.value
   let result = null
   updateCurrentUser(user => {
@@ -259,6 +356,24 @@ watch(stage, (value) => {
   }
 }, { immediate: true })
 
+watch(activeCard, async card => {
+  stopAudio()
+  if (!card) {
+    return
+  }
+  showAnswer.value = false
+  await nextTick()
+  playAudioClip('front', { auto: true })
+})
+
+watch(showAnswer, value => {
+  if (value) {
+    nextTick(() => playAudioClip('back', { auto: true }))
+  } else {
+    stopAudio()
+  }
+})
+
 watch(() => route.params.stageId, () => {
   initialised.value = false
 })
@@ -269,5 +384,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKey)
+  stopAudio()
 })
 </script>
