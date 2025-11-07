@@ -266,8 +266,27 @@ export function computeStageMetrics(stage) {
       metrics.learning += 1
     }
   })
-  stage.metrics = metrics
-  return metrics
+  if (!stage.metrics || typeof stage.metrics !== 'object') {
+    stage.metrics = { ...metrics }
+    return stage.metrics
+  }
+  const target = stage.metrics
+  if (target.total !== metrics.total) {
+    target.total = metrics.total
+  }
+  if (target.due !== metrics.due) {
+    target.due = metrics.due
+  }
+  if (target.newCards !== metrics.newCards) {
+    target.newCards = metrics.newCards
+  }
+  if (target.mastered !== metrics.mastered) {
+    target.mastered = metrics.mastered
+  }
+  if (target.learning !== metrics.learning) {
+    target.learning = metrics.learning
+  }
+  return target
 }
 
 export function buildSessionQueue(stage, { limitNew = DAILY_LIMITS.newCards, limitReview = DAILY_LIMITS.reviewCards } = {}) {

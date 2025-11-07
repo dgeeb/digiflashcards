@@ -310,6 +310,14 @@ function toggleForm() {
   showForm.value = !showForm.value
 }
 
+function applyUserUpdate(mutator) {
+  const response = updateCurrentUser(mutator)
+  if (response?.warning) {
+    emit('notify', response.warning)
+  }
+  return response
+}
+
 function resetForm() {
   courseForm.title = ''
   courseForm.description = ''
@@ -321,7 +329,7 @@ function createCourse() {
     formError.value = 'A course title is required.'
     return
   }
-  updateCurrentUser(user => {
+  const response = applyUserUpdate(user => {
     user.courses.push({
       id: createId(),
       role: 'creator',
@@ -332,7 +340,9 @@ function createCourse() {
       stages: []
     })
   })
-  emit('notify', 'New course created! Add a stage to begin.')
+  if (!response?.warning) {
+    emit('notify', 'New course created! Add a stage to begin.')
+  }
   resetForm()
   showForm.value = false
 }
@@ -341,7 +351,10 @@ function switchMode(mode) {
   if (mode === workspaceMode.value) {
     return
   }
-  setWorkspaceMode(mode)
+  const response = setWorkspaceMode(mode)
+  if (response?.warning) {
+    emit('notify', response.warning)
+  }
   showForm.value = false
 }
 
@@ -399,7 +412,10 @@ async function handleJoinCourse() {
   joinError.value = ''
   joining.value = true
   try {
-    const course = await joinSharedCourse(joinInput.value)
+    const { course, warning } = await joinSharedCourse(joinInput.value)
+    if (warning) {
+      emit('notify', warning)
+    }
     if (course) {
       emit('notify', 'Course added to your student dashboard!')
       joinInput.value = ''

@@ -119,6 +119,14 @@ const stageForm = reactive({
 })
 const formError = ref('')
 
+function applyUserUpdate(mutator) {
+  const response = updateCurrentUser(mutator)
+  if (response?.warning) {
+    emit('notify', response.warning)
+  }
+  return response
+}
+
 const course = computed(() => {
   const id = route.params.courseId
   return currentUser.value?.courses.find(item => item.id === id) ?? null
@@ -152,7 +160,7 @@ function createStage() {
     formError.value = 'Stage name is required.'
     return
   }
-  updateCurrentUser(user => {
+  const response = applyUserUpdate(user => {
     const targetCourse = user.courses.find(item => item.id === course.value.id)
     if (!targetCourse) {
       return
@@ -173,7 +181,9 @@ function createStage() {
       }
     })
   })
-  emit('notify', 'Stage created! Add cards to prepare your review session.')
+  if (!response?.warning) {
+    emit('notify', 'Stage created! Add cards to prepare your review session.')
+  }
   resetForm()
 }
 

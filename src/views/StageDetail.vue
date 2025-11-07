@@ -126,9 +126,23 @@
         <button class="button button--success" type="submit">Add card</button>
       </form>
       <p v-if="importError" class="form-error" role="alert">{{ importError }}</p>
-      <section class="stage-detail__audio-settings">
-        <h3>Text-to-speech settings</h3>
-        <form class="inline-form inline-form--compact" @submit.prevent="saveElevenLabsConfig">
+      <section class="stage-detail__audio-settings" :class="{ 'stage-detail__audio-settings--collapsed': !showAudioSettings }">
+        <header class="stage-detail__audio-settings-header">
+          <div>
+            <h3>Text-to-speech settings</h3>
+            <p class="form-help form-help--status">
+              {{
+                elevenLabsForm.apiKey
+                  ? 'API key saved locally in this browser.'
+                  : 'No API key saved yet. Your credentials stay on this device.'
+              }}
+            </p>
+          </div>
+          <button class="button button--ghost" type="button" @click="showAudioSettings = !showAudioSettings">
+            {{ showAudioSettings ? 'Hide settings' : 'Edit settings' }}
+          </button>
+        </header>
+        <form v-if="showAudioSettings" class="inline-form inline-form--compact" @submit.prevent="saveElevenLabsConfig">
           <div class="form-grid">
             <div class="form-field">
               <label for="tts-key">ElevenLabs API key</label>
@@ -158,7 +172,7 @@
           </div>
           <button class="button button--ghost" type="submit">Save settings</button>
         </form>
-        <p class="form-help">Your ElevenLabs credentials are stored locally in this browser.</p>
+        <p v-if="showAudioSettings" class="form-help">Your ElevenLabs credentials are stored locally in this browser.</p>
       </section>
     </section>
 
@@ -448,6 +462,10 @@ watch(elevenLabsSettings, value => {
   elevenLabsForm.voiceId = value.voiceId || '21m00Tcm4TlvDq8ikWAM'
   elevenLabsForm.modelId = value.modelId || 'eleven_multilingual_v2'
   elevenLabsForm.outputFormat = value.outputFormat || 'mp3_44100_128'
+  if (!audioSettingsInitialised.value) {
+    showAudioSettings.value = !value.apiKey
+    audioSettingsInitialised.value = true
+  }
 }, { immediate: true })
 
 watch(() => cardForm.audioSide, value => {
@@ -581,7 +599,9 @@ function addCard() {
     })
     computeStageMetrics(targetStage)
   })
-  emit('notify', 'Card added to the stage!')
+  if (!response?.warning) {
+    emit('notify', 'Card added to the stage!')
+  }
   resetForm()
 }
 
@@ -589,7 +609,7 @@ function removeCard(cardId) {
   if (!stage.value || !course.value || isStudentCourse.value) {
     return
   }
-  updateCurrentUser(user => {
+  const response = applyUserUpdate(user => {
     const targetCourse = user.courses.find(item => item.id === course.value.id)
     if (!targetCourse) {
       return
@@ -601,7 +621,9 @@ function removeCard(cardId) {
     targetStage.cards = targetStage.cards.filter(card => card.id !== cardId)
     computeStageMetrics(targetStage)
   })
-  emit('notify', 'Card removed.')
+  if (!response?.warning) {
+    emit('notify', 'Card removed.')
+  }
 }
 
 function textForCard(card, side = 'front') {
@@ -741,13 +763,18 @@ async function generateAudioForForm() {
 }
 
 async function saveElevenLabsConfig() {
-  await saveElevenLabsSettings({
+  const response = await saveElevenLabsSettings({
     apiKey: elevenLabsForm.apiKey,
     voiceId: elevenLabsForm.voiceId,
     modelId: elevenLabsForm.modelId,
     outputFormat: elevenLabsForm.outputFormat
   })
+  if (response?.warning) {
+    emit('notify', response.warning)
+    return
+  }
   emit('notify', 'ElevenLabs settings saved.')
+  showAudioSettings.value = false
 }
 
 function downloadTemplate() {
@@ -871,7 +898,7 @@ async function processCsvResults(results) {
     importError.value = 'No valid cards were found in the file.'
     return
   }
-  updateCurrentUser(user => {
+  const response = applyUserUpdate(user => {
     const targetCourse = user.courses.find(item => item.id === course.value?.id)
     if (!targetCourse) {
       return
@@ -883,7 +910,9 @@ async function processCsvResults(results) {
     targetStage.cards.push(...cards)
     computeStageMetrics(targetStage)
   })
-  emit('notify', `${cards.length} card${cards.length === 1 ? '' : 's'} imported successfully.`)
+  if (!response?.warning) {
+    emit('notify', `${cards.length} card${cards.length === 1 ? '' : 's'} imported successfully.`)
+  }
   importError.value = ''
 }
 
@@ -921,7 +950,7 @@ function removeCardAudio(cardId, side) {
   if (!stage.value || !course.value || isStudentCourse.value) {
     return
   }
-  updateCurrentUser(user => {
+  const response = applyUserUpdate(user => {
     const targetCourse = user.courses.find(item => item.id === course.value.id)
     if (!targetCourse) {
       return
@@ -974,7 +1003,7 @@ async function regenerateCardAudio(card, sideOverride = null) {
   try {
     const blob = await requestElevenLabsAudio(text)
     const dataUrl = await blobToDataUrl(blob)
-    updateCurrentUser(user => {
+    const response = applyUserUpdate(user => {
       const targetCourse = user.courses.find(item => item.id === course.value.id)
       if (!targetCourse) {
         return
@@ -1035,7 +1064,7 @@ async function bulkGenerateAudio() {
       }
       const blob = await requestElevenLabsAudio(text)
       const dataUrl = await blobToDataUrl(blob)
-      updateCurrentUser(user => {
+      const response = applyUserUpdate(user => {
         const targetCourse = user.courses.find(item => item.id === course.value.id)
         if (!targetCourse) {
           return
@@ -1059,6 +1088,10 @@ async function bulkGenerateAudio() {
           createdAt: new Date().toISOString()
         }
       })
+      if (response?.warning) {
+        bulkStatus.error = response.warning
+        break
+      }
       bulkStatus.processed += 1
     }
     emit('notify', 'Audio generated for missing card sides.')

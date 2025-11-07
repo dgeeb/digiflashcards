@@ -275,7 +275,7 @@ function grade(value) {
   stopAudio()
   const cardRef = activeCard.value
   let result = null
-  updateCurrentUser(user => {
+  applyUserUpdate(user => {
     const targetCourse = user.courses.find(item => item.id === course.value.id)
     if (!targetCourse) {
       return

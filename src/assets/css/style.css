@@ -913,6 +913,22 @@ select:focus {
   gap: 1rem;
 }
 
+.stage-detail__audio-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.stage-detail__audio-settings--collapsed .button {
+  align-self: flex-start;
+}
+
+.form-help--status {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+}
+
 .stage-detail__audio-settings h3 {
   margin: 0;
 }

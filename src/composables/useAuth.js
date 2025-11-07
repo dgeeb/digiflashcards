@@ -19,6 +19,10 @@ export const SECRET_QUESTIONS = [
 
 const hasWindow = typeof window !== 'undefined'
 const hasLocalStorage = hasWindow && typeof window.localStorage !== 'undefined'
+const STORAGE_WARNING_MESSAGE =
+  'We could not save your latest changes because this browser\'s local storage is full. Remove some large audio clips or cards and try again.'
+
+const storageWarning = ref('')
 
 function normaliseUser(user) {
   if (!user) {
@@ -97,8 +101,29 @@ export const currentUser = computed(() => {
 })
 
 function persistUsers() {
-  if (hasLocalStorage) {
+  if (!hasLocalStorage) {
+    storageWarning.value = ''
+    return true
+  }
+  try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(users.value))
+    storageWarning.value = ''
+    return true
+  } catch (error) {
+    const isQuotaError =
+      error &&
+      (error.name === 'QuotaExceededError' ||
+        error.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+        error.code === 22 ||
+        error.code === 1014)
+    if (isQuotaError) {
+      storageWarning.value = STORAGE_WARNING_MESSAGE
+      console.warn('Local storage quota reached while saving users.', error)
+      return false
+    }
+    storageWarning.value = 'We could not save your changes right now.'
+    console.warn('Unable to persist users', error)
+    return false
   }
 }
 
@@ -221,8 +246,12 @@ export function useAuth() {
     mutator(user)
     normaliseUser(user)
     replaceUserInCollection(user)
-    persistUsers()
-    return user
+    const persisted = persistUsers()
+    return {
+      user,
+      persisted,
+      warning: storageWarning.value
+    }
   }
 
   function isAuthenticated() {
@@ -231,13 +260,13 @@ export function useAuth() {
 
   function setWorkspaceMode(mode) {
     const allowed = ['creator', 'student']
-    updateCurrentUser(user => {
+    return updateCurrentUser(user => {
       user.preferences.workspaceMode = allowed.includes(mode) ? mode : 'creator'
     })
   }
 
   function saveElevenLabsSettings(settings) {
-    updateCurrentUser(user => {
+    return updateCurrentUser(user => {
       user.integrations.elevenLabs = {
         ...user.integrations.elevenLabs,
         ...settings
@@ -257,7 +286,7 @@ export function useAuth() {
       throw new Error('We could not find a shared course for this code.')
     }
     let joinedCourse = null
-    updateCurrentUser(user => {
+    const response = updateCurrentUser(user => {
       const existing = user.courses.find(course => course.role === 'student' && course.sourceShareCode === snapshot.shareCode)
       if (existing) {
         applySnapshotToStudentCourse(existing, snapshot)
@@ -268,7 +297,11 @@ export function useAuth() {
       user.courses.push(mapped)
       joinedCourse = mapped
     })
-    return joinedCourse
+    return {
+      course: joinedCourse,
+      warning: response.warning,
+      persisted: response.persisted
+    }
   }
 
   return {
