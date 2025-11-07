@@ -83,7 +83,7 @@
         <h2>How well did you remember?</h2>
         <ul>
           <li v-for="option in reviewShortcuts" :key="option.key">
-            <button class="button button--review" :style="{ '--accent': option.color }" type="button" @click="grade(option.value)" :disabled="!showAnswer">
+            <button class="button button--review" :style="{ '--accent': option.color }" type="button" @click="grade(option.value)">
               <span class="button__shortcut">{{ option.shortcut }}</span>
               <span class="button__label">{{ option.label }}</span>
             </button>
@@ -269,7 +269,7 @@ function goBack() {
 }
 
 function grade(value) {
-  if (!activeCard.value || !stage.value || !course.value || !showAnswer.value) {
+  if (!activeCard.value || !stage.value || !course.value) {
     return
   }
   stopAudio()
