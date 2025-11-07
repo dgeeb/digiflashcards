@@ -1,6 +1,14 @@
 import { createId } from './id'
 
 const DAY_IN_MS = 86400000
+const LEARNING_STEPS = [0, 1, 3, 7]
+export const DAILY_LIMITS = {
+  newCards: 15,
+  reviewCards: 50,
+  studyTimeMinutes: 25
+}
+const MAX_INTERVAL_DAYS = 180
+const MIN_INTERVAL_DAYS = 1
 
 export const REVIEW_SHORTCUTS = [
   {
@@ -37,11 +45,86 @@ export const REVIEW_SHORTCUTS = [
   }
 ]
 
-const gradeConfiguration = {
-  1: { easeDelta: 0.15, intervalMultiplier: 3, baseInterval: 2, requeue: false, points: 15 },
-  2: { easeDelta: 0.05, intervalMultiplier: 2, baseInterval: 1, requeue: false, points: 10 },
-  3: { easeDelta: -0.05, intervalMultiplier: 1, baseInterval: 0.5, requeue: true, points: 4 },
-  4: { easeDelta: -0.2, intervalMultiplier: 0, baseInterval: 0.17, requeue: true, points: 1 }
+const RATING_POINTS = {
+  easy: 15,
+  good: 10,
+  hard: 4,
+  again: 1
+}
+
+const ratingMap = {
+  1: 'easy',
+  2: 'good',
+  3: 'hard',
+  4: 'again'
+}
+
+function normaliseAudioClip(clip, side) {
+  if (!clip) {
+    return null
+  }
+  const dataUrl = clip.dataUrl || clip.url || ''
+  if (!dataUrl) {
+    return null
+  }
+  return {
+    id: clip.id || createId(),
+    dataUrl,
+    url: clip.url || dataUrl,
+    mimeType: clip.mimeType || 'audio/mpeg',
+    source: clip.source || 'upload',
+    textSource: side,
+    createdAt: clip.createdAt || new Date().toISOString()
+  }
+}
+
+function ensureCardAudio(card) {
+  if (!card) {
+    return
+  }
+  const audio = card.audio
+  let front = null
+  let back = null
+  if (audio && typeof audio === 'object' && ('front' in audio || 'back' in audio)) {
+    front = normaliseAudioClip(audio.front, 'front')
+    back = normaliseAudioClip(audio.back, 'back')
+  } else if (audio && typeof audio === 'object' && (audio.dataUrl || audio.url)) {
+    const side = (audio.textSource || card.audioSide || 'front').toLowerCase()
+    const clip = normaliseAudioClip(audio, side === 'back' ? 'back' : 'front')
+    if (side === 'back') {
+      back = clip
+    } else {
+      front = clip
+    }
+  }
+  card.audio = front || back ? { front, back } : null
+  if (!card.audio) {
+    card.audioSide = 'none'
+  } else if (card.audio.front && card.audio.back) {
+    card.audioSide = 'both'
+  } else if (card.audio.front) {
+    card.audioSide = 'front'
+  } else if (card.audio.back) {
+    card.audioSide = 'back'
+  }
+}
+
+function ensureDailyProgress(stage) {
+  if (!stage) {
+    return { date: null, new: 0, review: 0 }
+  }
+  const today = new Date().toISOString().slice(0, 10)
+  const progress = stage.dailyProgress && typeof stage.dailyProgress === 'object' ? stage.dailyProgress : {}
+  if (progress.date !== today) {
+    stage.dailyProgress = { date: today, new: 0, review: 0 }
+  } else {
+    stage.dailyProgress = {
+      date: progress.date,
+      new: typeof progress.new === 'number' ? progress.new : 0,
+      review: typeof progress.review === 'number' ? progress.review : 0
+    }
+  }
+  return stage.dailyProgress
 }
 
 function ensureCardShape(card) {
@@ -53,19 +136,10 @@ function ensureCardShape(card) {
   card.intervalDays = typeof card.intervalDays === 'number' ? card.intervalDays : 0
   card.status = card.status || 'new'
   card.mastery = typeof card.mastery === 'number' ? card.mastery : 0
-  if (card.audio && typeof card.audio === 'object') {
-    card.audio.id = card.audio.id || createId()
-    card.audio.source = card.audio.source || 'upload'
-    card.audio.mimeType = card.audio.mimeType || 'audio/mpeg'
-    card.audio.textSource = card.audio.textSource || 'front'
-    if (card.audio.dataUrl || card.audio.url) {
-      card.audio.dataUrl = card.audio.dataUrl || card.audio.url
-    } else {
-      card.audio = null
-    }
-  } else {
-    card.audio = null
-  }
+  card.learningStep = typeof card.learningStep === 'number' ? card.learningStep : 0
+  card.lapseCount = typeof card.lapseCount === 'number' ? card.lapseCount : 0
+  card.repetitions = typeof card.repetitions === 'number' ? card.repetitions : 0
+  ensureCardAudio(card)
 }
 
 export function ensureStageStructure(stage) {
@@ -75,6 +149,7 @@ export function ensureStageStructure(stage) {
   stage.cards = Array.isArray(stage.cards) ? stage.cards : []
   stage.points = typeof stage.points === 'number' ? stage.points : 0
   stage.metrics = computeStageMetrics(stage)
+  ensureDailyProgress(stage)
   stage.cards.forEach(ensureCardShape)
   return stage
 }
@@ -95,36 +170,86 @@ export function ensureCourseStructure(course) {
 
 export function scheduleCard(card, gradeValue) {
   ensureCardShape(card)
-  const now = new Date()
-  const config = gradeConfiguration[gradeValue] || gradeConfiguration[4]
-  const ease = Math.max(1.3, (card.easeFactor || 2.5) + config.easeDelta)
-  let interval = card.intervalDays || config.baseInterval
-  if (card.status === 'new') {
-    interval = config.baseInterval
-  } else if (config.intervalMultiplier === 0) {
-    interval = Math.max(config.baseInterval, 0.15)
+  const rating = ratingMap[gradeValue] || 'again'
+  const now = Date.now()
+  const currentStep = typeof card.learningStep === 'number' ? card.learningStep : 0
+  const wasNew = card.status === 'new' || currentStep < LEARNING_STEPS.length
+  const previousInterval = typeof card.intervalDays === 'number' ? card.intervalDays : 0
+  let interval = MIN_INTERVAL_DAYS
+  let requeue = false
+
+  if (rating === 'again') {
+    if (previousInterval >= 7) {
+      card.lapseCount = (card.lapseCount || 0) + 1
+    }
+    const fallbackStep = currentStep <= 0 ? 0 : 1
+    card.learningStep = Math.max(0, Math.min(fallbackStep, LEARNING_STEPS.length - 1))
+    interval = 1
+    card.status = 'relearning'
+    card.repetitions = 0
+    requeue = true
+  } else if (currentStep < LEARNING_STEPS.length) {
+    const stepIndex = Math.max(0, Math.min(currentStep, LEARNING_STEPS.length - 1))
+    interval = LEARNING_STEPS[stepIndex]
+    requeue = interval === 0
+    const advance = rating === 'easy' ? 2 : rating === 'good' ? 1 : 0
+    card.learningStep = Math.min(stepIndex + Math.max(advance, 0), LEARNING_STEPS.length)
+    if (!requeue && interval < MIN_INTERVAL_DAYS) {
+      interval = MIN_INTERVAL_DAYS
+    }
+    card.status = card.learningStep >= LEARNING_STEPS.length ? 'review' : 'learning'
+    if (card.status === 'review') {
+      interval = Math.max(interval, LEARNING_STEPS[LEARNING_STEPS.length - 1])
+    }
   } else {
-    interval = Math.max(config.baseInterval, interval * ease * config.intervalMultiplier)
+    const base = Math.max(previousInterval || MIN_INTERVAL_DAYS, MIN_INTERVAL_DAYS)
+    const multiplier = rating === 'easy' ? 2.5 : rating === 'good' ? 2.0 : 1.2
+    interval = Math.round(base * multiplier)
+    interval = Math.max(MIN_INTERVAL_DAYS, Math.min(MAX_INTERVAL_DAYS, interval))
+    card.learningStep = LEARNING_STEPS.length
+    card.status = 'review'
   }
-  const dueTimestamp = now.getTime() + interval * DAY_IN_MS
+
+  const ease = (() => {
+    const current = typeof card.easeFactor === 'number' ? card.easeFactor : 2.5
+    if (rating === 'again') {
+      return Math.max(1.3, current - 0.2)
+    }
+    if (rating === 'hard') {
+      return Math.max(1.3, current - 0.05)
+    }
+    if (rating === 'good') {
+      return Math.max(1.3, current + 0.05)
+    }
+    return Math.max(1.3, current + 0.15)
+  })()
+
+  const masteryDelta = rating === 'easy' ? 6 : rating === 'good' ? 4 : rating === 'hard' ? 1 : -6
+  const dueTimestamp = now + interval * DAY_IN_MS
   card.easeFactor = ease
   card.intervalDays = interval
   card.due = new Date(dueTimestamp).toISOString()
-  card.lastReviewed = now.toISOString()
-  card.status = 'review'
-  const masteryDelta = gradeValue === 1 ? 4 : gradeValue === 2 ? 2 : gradeValue === 3 ? -1 : -3
+  card.lastReviewed = new Date(now).toISOString()
   card.mastery = Math.max(0, Math.min(100, (card.mastery || 0) + masteryDelta))
+  card.repetitions = rating === 'again' ? 0 : (card.repetitions || 0) + 1
   card.history.unshift({
-    grade: gradeValue,
-    timestamp: now.toISOString(),
+    grade: rating,
+    numericGrade: gradeValue,
+    timestamp: card.lastReviewed,
     intervalDays: interval
   })
+  if (card.history.length > 100) {
+    card.history.length = 100
+  }
   return {
     due: card.due,
     intervalDays: interval,
     easeFactor: ease,
-    points: config.points,
-    requeue: config.requeue
+    points: RATING_POINTS[rating] || RATING_POINTS.again,
+    requeue,
+    rating,
+    studyType: wasNew ? 'new' : 'review',
+    lapsed: rating === 'again' && previousInterval >= 7
   }
 }
 
@@ -157,7 +282,7 @@ export function computeStageMetrics(stage) {
     if ((card.mastery || 0) >= 60) {
       metrics.mastered += 1
     }
-    if (card.status === 'review' && card.mastery < 60) {
+    if ((card.status === 'learning' || card.status === 'relearning' || card.status === 'new') && card.mastery < 60) {
       metrics.learning += 1
     }
   })
@@ -165,10 +290,31 @@ export function computeStageMetrics(stage) {
   return metrics
 }
 
-export function buildSessionQueue(stage, { limitNew = 10 } = {}) {
+export function getDailyAllowances(stage, { newCards = DAILY_LIMITS.newCards, reviewCards = DAILY_LIMITS.reviewCards } = {}) {
+  if (!stage) {
+    return { new: newCards, review: reviewCards }
+  }
+  const progress = ensureDailyProgress(stage)
+  return {
+    new: Math.max(0, newCards - (progress.new || 0)),
+    review: Math.max(0, reviewCards - (progress.review || 0))
+  }
+}
+
+export function incrementDailyProgress(stage, type, delta = 1) {
+  if (!stage || (type !== 'new' && type !== 'review')) {
+    return
+  }
+  const progress = ensureDailyProgress(stage)
+  progress[type] = Math.max(0, (progress[type] || 0) + delta)
+  stage.dailyProgress = progress
+}
+
+export function buildSessionQueue(stage, { limitNew = DAILY_LIMITS.newCards, limitReview = DAILY_LIMITS.reviewCards } = {}) {
   if (!stage) {
     return []
   }
+  ensureStageStructure(stage)
   const now = Date.now()
   const due = []
   const fresh = []
@@ -185,8 +331,23 @@ export function buildSessionQueue(stage, { limitNew = 10 } = {}) {
     const bDue = b.due ? new Date(b.due).getTime() : 0
     return aDue - bDue
   })
-  const newSelection = fresh.slice(0, limitNew)
-  return [...due, ...newSelection]
+  const allowances = getDailyAllowances(stage, { newCards: limitNew, reviewCards: limitReview })
+  const reviewCap = Math.min(limitReview, allowances.review)
+  const newCap = Math.min(limitNew, allowances.new)
+  const dueSelection = reviewCap > 0 ? due.slice(0, reviewCap) : []
+  const newSelection = newCap > 0 ? fresh.slice(0, newCap) : []
+  const queue = []
+  let dueIndex = 0
+  let newIndex = 0
+  while (dueIndex < dueSelection.length || newIndex < newSelection.length) {
+    if (dueIndex < dueSelection.length) {
+      queue.push(dueSelection[dueIndex++])
+    }
+    if (newIndex < newSelection.length) {
+      queue.push(newSelection[newIndex++])
+    }
+  }
+  return queue
 }
 
 export function summariseDailyAssignments(courses) {
