@@ -131,6 +131,7 @@
           </div>
           <footer class="course-card__footer">
             <button class="button button--ghost" type="button" @click="viewCourse(course.id)">Manage course</button>
+            <button class="link-button link-button--danger" type="button" @click="deleteCourse(course.id)">Delete course</button>
           </footer>
         </article>
       </div>
@@ -200,6 +201,7 @@
           </dl>
           <footer class="course-card__footer">
             <button class="button button--ghost" type="button" @click="viewCourse(course.id)">Open course</button>
+            <button class="link-button link-button--danger" type="button" @click="leaveCourse(course.id)">Leave course</button>
           </footer>
         </article>
       </div>
@@ -308,6 +310,14 @@ function toggleForm() {
   showForm.value = !showForm.value
 }
 
+function applyUserUpdate(mutator) {
+  const response = updateCurrentUser(mutator)
+  if (response?.warning) {
+    emit('notify', response.warning)
+  }
+  return response
+}
+
 function resetForm() {
   courseForm.title = ''
   courseForm.description = ''
@@ -319,7 +329,7 @@ function createCourse() {
     formError.value = 'A course title is required.'
     return
   }
-  updateCurrentUser(user => {
+  const response = applyUserUpdate(user => {
     user.courses.push({
       id: createId(),
       role: 'creator',
@@ -330,7 +340,9 @@ function createCourse() {
       stages: []
     })
   })
-  emit('notify', 'New course created! Add a stage to begin.')
+  if (!response?.warning) {
+    emit('notify', 'New course created! Add a stage to begin.')
+  }
   resetForm()
   showForm.value = false
 }
@@ -339,7 +351,10 @@ function switchMode(mode) {
   if (mode === workspaceMode.value) {
     return
   }
-  setWorkspaceMode(mode)
+  const response = setWorkspaceMode(mode)
+  if (response?.warning) {
+    emit('notify', response.warning)
+  }
   showForm.value = false
 }
 
@@ -349,6 +364,24 @@ function openStage(item) {
 
 function viewCourse(courseId) {
   router.push({ name: 'CourseDetail', params: { courseId } })
+}
+
+function deleteCourse(courseId) {
+  const response = applyUserUpdate(user => {
+    user.courses = user.courses.filter(course => !(course.id === courseId && course.role !== 'student'))
+  })
+  if (!response?.warning) {
+    emit('notify', 'Course deleted from your creator workspace.')
+  }
+}
+
+function leaveCourse(courseId) {
+  const response = applyUserUpdate(user => {
+    user.courses = user.courses.filter(course => !(course.id === courseId && course.role === 'student'))
+  })
+  if (!response?.warning) {
+    emit('notify', 'Course removed from your student workspace.')
+  }
 }
 
 async function copyShareLink(link) {
@@ -383,7 +416,10 @@ async function handleJoinCourse() {
   joinError.value = ''
   joining.value = true
   try {
-    const course = await joinSharedCourse(joinInput.value)
+    const { course, warning } = await joinSharedCourse(joinInput.value)
+    if (warning) {
+      emit('notify', warning)
+    }
     if (course) {
       emit('notify', 'Course added to your student dashboard!')
       joinInput.value = ''

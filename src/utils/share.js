@@ -33,21 +33,45 @@ function writeSharedCourses(courses) {
   }
 }
 
-function normaliseAudioPayload(audio) {
-  if (!audio) {
+function normaliseAudioSegment(segment, side) {
+  if (!segment || typeof segment !== 'object') {
     return null
   }
-  const dataUrl = audio.dataUrl || audio.url || ''
+  const dataUrl = segment.dataUrl || segment.url || ''
   if (!dataUrl) {
     return null
   }
   return {
-    mimeType: audio.mimeType || 'audio/mpeg',
+    mimeType: segment.mimeType || 'audio/mpeg',
     dataUrl,
-    source: audio.source || 'upload',
-    textSource: audio.textSource || 'front',
-    createdAt: audio.createdAt || new Date().toISOString()
+    source: segment.source || 'upload',
+    textSource: side,
+    createdAt: segment.createdAt || new Date().toISOString()
   }
+}
+
+function normaliseAudioPayload(audio) {
+  if (!audio || typeof audio !== 'object') {
+    return null
+  }
+  let front = null
+  let back = null
+  if (audio.front || audio.back) {
+    front = normaliseAudioSegment(audio.front, 'front')
+    back = normaliseAudioSegment(audio.back, 'back')
+  } else if (audio.dataUrl || audio.url) {
+    const side = (audio.textSource || audio.side) === 'back' ? 'back' : 'front'
+    const segment = normaliseAudioSegment(audio, side)
+    if (side === 'front') {
+      front = segment
+    } else {
+      back = segment
+    }
+  }
+  if (!front && !back) {
+    return null
+  }
+  return { front, back }
 }
 
 function buildSnapshot(ownerId, ownerName, course, shareCode) {
@@ -69,7 +93,8 @@ function buildSnapshot(ownerId, ownerName, course, shareCode) {
                 front: card.front,
                 back: card.back,
                 note: card.note,
-                audio: normaliseAudioPayload(card.audio)
+                audio: normaliseAudioPayload(card.audio),
+                audioSide: card.audioSide || card.audio_side || 'back'
               }))
             : []
         }))
@@ -143,6 +168,7 @@ export function mapSnapshotToCourse(snapshot) {
         back: card.back,
         note: card.note || '',
         audio: normaliseAudioPayload(card.audio),
+        audioSide: card.audioSide || 'back',
         createdAt: new Date().toISOString(),
         status: 'new',
         history: [],
@@ -204,6 +230,7 @@ export function applySnapshotToStudentCourse(course, snapshot) {
           front: cardSnapshot.front,
           back: cardSnapshot.back,
           note: cardSnapshot.note || '',
+          audioSide: cardSnapshot.audioSide || 'back',
           createdAt: new Date().toISOString(),
           status: 'new',
           history: [],
@@ -218,6 +245,7 @@ export function applySnapshotToStudentCourse(course, snapshot) {
         card.note = cardSnapshot.note || ''
       }
       card.audio = normaliseAudioPayload(cardSnapshot.audio)
+      card.audioSide = cardSnapshot.audioSide || card.audioSide || 'back'
       nextCards.push(card)
     })
     stage.cards = nextCards
