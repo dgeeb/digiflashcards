@@ -34,6 +34,7 @@ function normaliseUser(user) {
   user.lastLogin = user.lastLogin || null
   user.preferences = user.preferences || {}
   user.preferences.workspaceMode = user.preferences.workspaceMode || 'creator'
+  user.preferences.audioEnabled = user.preferences.audioEnabled !== false
   user.integrations = user.integrations || {}
   const elevenLabs = user.integrations.elevenLabs || {}
   user.integrations.elevenLabs = {

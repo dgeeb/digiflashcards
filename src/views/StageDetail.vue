@@ -52,10 +52,18 @@
           <legend>Audio (optional)</legend>
           <div class="audio-fieldset__row">
             <div class="form-field">
-              <label for="audio-side">Generate audio for</label>
+              <label for="audio-side">Play audio on</label>
               <select id="audio-side" v-model="cardForm.audioSide">
-                <option value="front">Prompt</option>
-                <option value="back">Answer</option>
+                <option value="front">Prompt only</option>
+                <option value="back">Answer only</option>
+                <option value="both">Prompt and answer</option>
+              </select>
+            </div>
+            <div class="form-field" v-if="cardForm.audioSide === 'both'">
+              <label for="audio-target">Side to edit</label>
+              <select id="audio-target" v-model="audioTarget">
+                <option value="front">Prompt audio</option>
+                <option value="back">Answer audio</option>
               </select>
             </div>
             <div class="audio-fieldset__buttons">
@@ -65,7 +73,7 @@
                 @click="startRecording"
                 :disabled="!recordingSupported || isRecording"
               >
-                Record audio
+                Record {{ audioTargetLabel }} audio
               </button>
               <button
                 v-if="isRecording"
@@ -81,16 +89,38 @@
                 @click="generateAudioForForm"
                 :disabled="generatingAudio"
               >
-                {{ generatingAudio ? 'Generating…' : 'Generate with ElevenLabs' }}
+                {{ generatingAudio ? 'Generating…' : `Generate ${audioTargetLabel} with ElevenLabs` }}
               </button>
-              <button class="button button--ghost" type="button" @click="clearAudioAttachment" :disabled="!audioAttachment">
-                Remove audio
+              <button
+                class="button button--ghost"
+                type="button"
+                @click="clearAudioAttachment()"
+                :disabled="!audioAttachment[audioTarget]"
+              >
+                Remove {{ audioTargetLabel }} audio
+              </button>
+              <button
+                class="button button--ghost"
+                type="button"
+                @click="clearAudioAttachment('all')"
+                :disabled="!audioAttachment.front && !audioAttachment.back"
+              >
+                Clear all audio
               </button>
             </div>
           </div>
           <p v-if="!recordingSupported" class="form-help">Recording is not supported in this browser.</p>
           <p v-if="audioStatus" class="form-help">{{ audioStatus }}</p>
-          <audio v-if="audioPreviewUrl" class="audio-preview" :src="audioPreviewUrl" controls></audio>
+          <div class="audio-preview-grid">
+            <div v-if="audioAttachment.front" class="audio-preview-card">
+              <p class="audio-preview__label">Prompt audio ready</p>
+              <audio :src="audioPreviewUrl.front || audioAttachment.front.dataUrl" class="audio-preview" controls></audio>
+            </div>
+            <div v-if="audioAttachment.back" class="audio-preview-card">
+              <p class="audio-preview__label">Answer audio ready</p>
+              <audio :src="audioPreviewUrl.back || audioAttachment.back.dataUrl" class="audio-preview" controls></audio>
+            </div>
+          </div>
         </fieldset>
         <p v-if="formError" class="form-error" role="alert">{{ formError }}</p>
         <button class="button button--success" type="submit">Add card</button>
@@ -103,6 +133,10 @@
             <div class="form-field">
               <label for="tts-key">ElevenLabs API key</label>
               <input id="tts-key" v-model="elevenLabsForm.apiKey" type="password" autocomplete="off" placeholder="Paste your key" />
+              <p class="form-help">
+                Need help finding your key?
+                <button class="link-button" type="button" @click="showApiHelp = true">View quick guide</button>
+              </p>
             </div>
             <div class="form-field">
               <label for="tts-voice">Voice ID</label>
@@ -144,11 +178,6 @@
             Start revision
           </router-link>
           <template v-if="!isStudentCourse">
-            <label class="sr-only" for="bulk-audio-side">Generate audio from</label>
-            <select id="bulk-audio-side" v-model="bulkAudioSide">
-              <option value="front">Prompt text</option>
-              <option value="back">Answer text</option>
-            </select>
             <button
               class="button button--primary"
               type="button"
@@ -156,7 +185,7 @@
               @click="bulkGenerateAudio"
             >
               <span v-if="bulkStatus.running">Generating… {{ bulkStatus.processed }}/{{ bulkStatus.total }}</span>
-              <span v-else>Generate audio ({{ missingAudioCount }})</span>
+              <span v-else>Generate missing audio ({{ missingAudioCount }})</span>
             </button>
           </template>
         </div>
@@ -188,24 +217,85 @@
               <td>{{ card.due }}</td>
               <td>{{ card.mastery }}</td>
               <td class="card-table__audio">
-                <template v-if="card.audio">
-                  <audio :src="card.audio.url" :type="card.audio.mimeType" controls preload="none"></audio>
-                  <small>
-                    {{ card.audio.source === 'tts' ? 'Generated' : card.audio.source === 'recording' ? 'Recording' : 'Imported' }} ·
-                    {{ card.audio.textSource === 'back' ? 'Answer' : 'Prompt' }}
-                  </small>
-                </template>
-                <span v-else class="tag tag--muted">No audio</span>
+                <div class="card-audio-line" :class="{ 'card-audio-line--missing': card.needsFront }">
+                  <span class="card-audio-line__label">Front</span>
+                  <span class="card-audio-line__meta">
+                    <template v-if="['front', 'both'].includes(card.audioSide)">
+                      <template v-if="card.audio.front">
+                        {{ card.audio.front.source === 'tts' ? 'Generated' : card.audio.front.source === 'recording' ? 'Recording' : 'Imported' }}
+                      </template>
+                      <template v-else>Missing</template>
+                    </template>
+                    <template v-else>Not required</template>
+                  </span>
+                  <audio
+                    v-if="card.audio.front"
+                    :src="card.audio.front.url"
+                    :type="card.audio.front.mimeType"
+                    controls
+                    preload="none"
+                    class="card-audio-line__player"
+                  ></audio>
+                </div>
+                <div class="card-audio-line" :class="{ 'card-audio-line--missing': card.needsBack }">
+                  <span class="card-audio-line__label">Back</span>
+                  <span class="card-audio-line__meta">
+                    <template v-if="['back', 'both'].includes(card.audioSide)">
+                      <template v-if="card.audio.back">
+                        {{ card.audio.back.source === 'tts' ? 'Generated' : card.audio.back.source === 'recording' ? 'Recording' : 'Imported' }}
+                      </template>
+                      <template v-else>Missing</template>
+                    </template>
+                    <template v-else>Not required</template>
+                  </span>
+                  <audio
+                    v-if="card.audio.back"
+                    :src="card.audio.back.url"
+                    :type="card.audio.back.mimeType"
+                    controls
+                    preload="none"
+                    class="card-audio-line__player"
+                  ></audio>
+                </div>
+                <small class="card-audio-line__hint">Playback: {{ card.audioSide }}</small>
               </td>
               <td class="card-table__actions">
                 <template v-if="isStudentCourse">
                   <span class="tag tag--muted">Read-only</span>
                 </template>
                 <template v-else>
-                  <button class="link-button" type="button" @click="removeCard(card.id)">Remove</button>
-                  <button v-if="card.audio" class="link-button" type="button" @click="removeCardAudio(card.id)">Remove audio</button>
-                  <button class="link-button" type="button" @click="regenerateCardAudio(card)">
-                    {{ card.audio ? 'Regenerate audio' : 'Generate audio' }}
+                  <button class="link-button" type="button" @click="removeCard(card.id)">Remove card</button>
+                  <button
+                    v-if="['front', 'both'].includes(card.audioSide) && card.audio.front"
+                    class="link-button"
+                    type="button"
+                    @click="removeCardAudio(card.id, 'front')"
+                  >
+                    Remove front audio
+                  </button>
+                  <button
+                    v-if="['back', 'both'].includes(card.audioSide) && card.audio.back"
+                    class="link-button"
+                    type="button"
+                    @click="removeCardAudio(card.id, 'back')"
+                  >
+                    Remove back audio
+                  </button>
+                  <button
+                    v-if="['front', 'both'].includes(card.audioSide)"
+                    class="link-button"
+                    type="button"
+                    @click="regenerateCardAudio(card, 'front')"
+                  >
+                    {{ card.audio.front ? 'Regenerate front audio' : 'Generate front audio' }}
+                  </button>
+                  <button
+                    v-if="['back', 'both'].includes(card.audioSide)"
+                    class="link-button"
+                    type="button"
+                    @click="regenerateCardAudio(card, 'back')"
+                  >
+                    {{ card.audio.back ? 'Regenerate back audio' : 'Generate back audio' }}
                   </button>
                 </template>
               </td>
@@ -215,6 +305,22 @@
       </div>
     </section>
     <input ref="fileInput" class="sr-only" type="file" accept=".csv,text/csv" @change="handleCsvUpload" />
+    <div v-if="showApiHelp" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="api-help-title">
+      <div class="modal-card">
+        <h3 id="api-help-title">Finding your ElevenLabs API key</h3>
+        <ol>
+          <li>
+            Visit
+            <a href="https://elevenlabs.io" target="_blank" rel="noopener">elevenlabs.io</a>
+            and sign in to your account.
+          </li>
+          <li>Open your profile menu and choose <strong>API Keys</strong>.</li>
+          <li>Create or copy a key, then paste it into the field above.</li>
+        </ol>
+        <p class="form-help">Your key is stored locally in this browser only.</p>
+        <button class="button button--primary" type="button" @click="showApiHelp = false">Got it</button>
+      </div>
+    </div>
   </section>
   <section v-else class="dashboard dashboard--empty">
     <div class="empty-card">
@@ -241,20 +347,21 @@ const cardForm = reactive({
   front: '',
   back: '',
   note: '',
-  audioSide: 'front'
+  audioSide: 'back'
 })
+const audioTarget = ref('back')
 const formError = ref('')
 const importError = ref('')
 const audioStatus = ref('')
-const audioAttachment = ref(null)
-const audioPreviewUrl = ref('')
+const audioAttachment = reactive({ front: null, back: null })
+const audioPreviewUrl = reactive({ front: '', back: '' })
 const isRecording = ref(false)
 const mediaRecorder = ref(null)
 const recordingStream = ref(null)
 const generatingAudio = ref(false)
 const bulkStatus = reactive({ running: false, processed: 0, total: 0, error: '' })
-const bulkAudioSide = ref('front')
 const fileInput = ref(null)
+const showApiHelp = ref(false)
 
 const elevenLabsForm = reactive({
   apiKey: '',
@@ -279,26 +386,57 @@ const cardsView = computed(() => {
   if (!stage.value) {
     return []
   }
-  return [...stage.value.cards].map(card => ({
-    id: card.id,
-    front: card.front,
-    back: card.back,
-    note: card.note,
-    status: card.due ? (new Date(card.due).getTime() <= Date.now() ? 'Due' : 'Scheduled') : 'New',
-    due: formatDue(card.due),
-    mastery: `${Math.round((card.mastery || 0))}%`,
-    audio: card.audio
+  const now = Date.now()
+  return stage.value.cards.map(card => {
+    const frontAudio = card.audio?.front
       ? {
-          url: card.audio.dataUrl,
-          source: card.audio.source,
-          textSource: card.audio.textSource || 'front',
-          mimeType: card.audio.mimeType
+          url: card.audio.front.dataUrl,
+          source: card.audio.front.source,
+          mimeType: card.audio.front.mimeType
         }
       : null
-  }))
+    const backAudio = card.audio?.back
+      ? {
+          url: card.audio.back.dataUrl,
+          source: card.audio.back.source,
+          mimeType: card.audio.back.mimeType
+        }
+      : null
+    const side = card.audioSide || 'back'
+    return {
+      id: card.id,
+      front: card.front,
+      back: card.back,
+      note: card.note,
+      status: card.due ? (new Date(card.due).getTime() <= now ? 'Due' : 'Scheduled') : 'New',
+      due: formatDue(card.due),
+      mastery: `${Math.round(card.mastery || 0)}%`,
+      audio: { front: frontAudio, back: backAudio },
+      audioSide: side,
+      needsFront: ['front', 'both'].includes(side) && !frontAudio,
+      needsBack: ['back', 'both'].includes(side) && !backAudio
+    }
+  })
 })
 
-const missingAudioCount = computed(() => cardsView.value.filter(card => !card.audio).length)
+const missingAudioCount = computed(() => {
+  if (!stage.value) {
+    return 0
+  }
+  return stage.value.cards.reduce((total, card) => {
+    const side = card.audioSide || 'back'
+    let count = total
+    if (['front', 'both'].includes(side) && !card.audio?.front) {
+      count += 1
+    }
+    if (['back', 'both'].includes(side) && !card.audio?.back) {
+      count += 1
+    }
+    return count
+  }, 0)
+})
+
+const audioTargetLabel = computed(() => (audioTarget.value === 'front' ? 'prompt' : 'answer'))
 
 const elevenLabsSettings = computed(() => currentUser.value?.integrations?.elevenLabs ?? elevenLabsForm)
 
@@ -311,6 +449,18 @@ watch(elevenLabsSettings, value => {
   elevenLabsForm.modelId = value.modelId || 'eleven_multilingual_v2'
   elevenLabsForm.outputFormat = value.outputFormat || 'mp3_44100_128'
 }, { immediate: true })
+
+watch(() => cardForm.audioSide, value => {
+  if (value === 'front') {
+    audioTarget.value = 'front'
+    audioAttachment.back = null
+    cleanupPreview('back')
+  } else if (value === 'back') {
+    audioTarget.value = 'back'
+    audioAttachment.front = null
+    cleanupPreview('front')
+  }
+})
 
 function formatDue(date) {
   if (!date) {
@@ -337,28 +487,44 @@ function formatDue(date) {
 
 const recordingSupported = computed(() => typeof window !== 'undefined' && typeof navigator !== 'undefined' && typeof MediaRecorder !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia))
 
-function cleanupPreview() {
-  if (audioPreviewUrl.value) {
-    URL.revokeObjectURL(audioPreviewUrl.value)
-    audioPreviewUrl.value = ''
-  }
+function cleanupPreview(side) {
+  const targets = side ? [side] : ['front', 'back']
+  targets.forEach(name => {
+    const url = audioPreviewUrl[name]
+    if (url) {
+      URL.revokeObjectURL(url)
+      audioPreviewUrl[name] = ''
+    }
+  })
 }
 
-function clearAudioAttachment() {
+function clearAudioAttachment(side = audioTarget.value) {
   stopRecording(true)
-  audioAttachment.value = null
-  audioStatus.value = ''
-  cleanupPreview()
+  if (side === 'front' || side === 'back') {
+    audioAttachment[side] = null
+    cleanupPreview(side)
+  } else {
+    audioAttachment.front = null
+    audioAttachment.back = null
+    cleanupPreview()
+  }
+  if (!audioAttachment.front && !audioAttachment.back) {
+    audioStatus.value = ''
+  }
 }
 
 function resetForm() {
   cardForm.front = ''
   cardForm.back = ''
   cardForm.note = ''
-  cardForm.audioSide = 'front'
+  cardForm.audioSide = 'back'
+  audioTarget.value = 'back'
   formError.value = ''
   importError.value = ''
-  clearAudioAttachment()
+  audioAttachment.front = null
+  audioAttachment.back = null
+  cleanupPreview()
+  audioStatus.value = ''
 }
 
 function addCard() {
@@ -369,15 +535,26 @@ function addCard() {
     formError.value = 'Both sides of the card are required.'
     return
   }
-  const audio = audioAttachment.value
-    ? {
-        dataUrl: audioAttachment.value.dataUrl,
-        mimeType: audioAttachment.value.mimeType,
-        source: audioAttachment.value.source,
-        textSource: audioAttachment.value.textSource || cardForm.audioSide,
-        createdAt: new Date().toISOString()
-      }
-    : null
+  const audio = {
+    front: audioAttachment.front
+      ? {
+          dataUrl: audioAttachment.front.dataUrl,
+          mimeType: audioAttachment.front.mimeType,
+          source: audioAttachment.front.source,
+          textSource: 'front',
+          createdAt: new Date().toISOString()
+        }
+      : null,
+    back: audioAttachment.back
+      ? {
+          dataUrl: audioAttachment.back.dataUrl,
+          mimeType: audioAttachment.back.mimeType,
+          source: audioAttachment.back.source,
+          textSource: 'back',
+          createdAt: new Date().toISOString()
+        }
+      : null
+  }
   updateCurrentUser(user => {
     const targetCourse = user.courses.find(item => item.id === course.value.id)
     if (!targetCourse) {
@@ -399,7 +576,8 @@ function addCard() {
       easeFactor: 2.5,
       intervalDays: 0,
       due: null,
-      audio
+      audio: audio.front || audio.back ? audio : null,
+      audioSide: cardForm.audioSide
     })
     computeStageMetrics(targetStage)
   })
@@ -449,6 +627,11 @@ async function startRecording() {
   if (!recordingSupported.value || isRecording.value || isStudentCourse.value) {
     return
   }
+  const targetSide = cardForm.audioSide === 'both' ? audioTarget.value : cardForm.audioSide
+  if (!['front', 'back'].includes(targetSide)) {
+    audioStatus.value = 'Select which side should receive the recording first.'
+    return
+  }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     recordingStream.value = stream
@@ -462,8 +645,8 @@ async function startRecording() {
     recorder.onstop = async () => {
       try {
         const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' })
-        await attachAudioFromBlob(blob, 'recording', cardForm.audioSide)
-        audioStatus.value = 'Recording ready to attach.'
+        await attachAudioFromBlob(blob, 'recording', targetSide)
+        audioStatus.value = `Recording ready for the ${targetSide === 'front' ? 'prompt' : 'answer'}.`
       } catch (error) {
         console.warn('Unable to attach recording', error)
         audioStatus.value = 'Unable to process the recording.'
@@ -492,16 +675,19 @@ async function blobToDataUrl(blob) {
   })
 }
 
-async function attachAudioFromBlob(blob, source, textSource) {
+async function attachAudioFromBlob(blob, source, side) {
+  if (!['front', 'back'].includes(side)) {
+    return
+  }
   const dataUrl = await blobToDataUrl(blob)
-  audioAttachment.value = {
+  audioAttachment[side] = {
     dataUrl,
     mimeType: blob.type || 'audio/mpeg',
     source,
-    textSource
+    textSource: side
   }
-  cleanupPreview()
-  audioPreviewUrl.value = URL.createObjectURL(blob)
+  cleanupPreview(side)
+  audioPreviewUrl[side] = URL.createObjectURL(blob)
 }
 
 async function requestElevenLabsAudio(text) {
@@ -535,7 +721,8 @@ async function generateAudioForForm() {
   if (isStudentCourse.value) {
     return
   }
-  const text = cardForm.audioSide === 'back' ? cardForm.back.trim() : cardForm.front.trim()
+  const targetSide = cardForm.audioSide === 'both' ? audioTarget.value : cardForm.audioSide
+  const text = textForCard(cardForm, targetSide).trim()
   if (!text) {
     audioStatus.value = 'Enter text on the selected side before generating audio.'
     return
@@ -544,8 +731,8 @@ async function generateAudioForForm() {
     generatingAudio.value = true
     audioStatus.value = 'Generating audio…'
     const blob = await requestElevenLabsAudio(text)
-    await attachAudioFromBlob(blob, 'tts', cardForm.audioSide)
-    audioStatus.value = 'Audio generated with ElevenLabs.'
+    await attachAudioFromBlob(blob, 'tts', targetSide)
+    audioStatus.value = `Audio generated for the ${targetSide === 'front' ? 'prompt' : 'answer'}.`
   } catch (error) {
     audioStatus.value = error?.message || 'Unable to generate audio.'
   } finally {
@@ -566,8 +753,20 @@ async function saveElevenLabsConfig() {
 function downloadTemplate() {
   const fields = ['prompt', 'answer', 'note', 'audio', 'audio_side']
   const sample = [
-    { prompt: 'Bonjour', answer: 'Hello', note: 'French greeting', audio: '', audio_side: 'front' },
-    { prompt: 'Merci', answer: 'Thank you', note: 'Remember the accent!', audio: '', audio_side: 'front' }
+    {
+      prompt: "Comment dire 'salut' ?",
+      answer: 'Hey there!',
+      note: "Hey there! How's it going? – Casual greeting.",
+      audio: '',
+      audio_side: 'back'
+    },
+    {
+      prompt: 'You greet your manager in the morning. What do you say?',
+      answer: 'Good morning!',
+      note: 'Good morning! How are you today? – Polite workplace greeting.',
+      audio: '',
+      audio_side: 'both'
+    }
   ]
   const csv = Papa.unparse({ fields, data: sample.map(row => fields.map(field => row[field] ?? '')) })
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
@@ -620,12 +819,34 @@ async function processCsvResults(results) {
       continue
     }
     const note = (record.note || record.notes || '').trim()
-    const side = (record.audio_side || record.audioSide || 'front').toLowerCase() === 'back' ? 'back' : 'front'
-    let audio = null
+    const rawSide = String(record.audio_side || record.audioSide || 'back').toLowerCase()
+    const audioSide = ['front', 'back', 'both'].includes(rawSide) ? rawSide : 'back'
+    const audio = { front: null, back: null }
     const audioValue = (record.audio || record.audio_url || record.audioUrl || '').trim()
     if (audioValue) {
       try {
-        audio = await resolveAudioFromValue(audioValue, side)
+        if (audioSide === 'both' && audioValue.includes('|')) {
+          const [frontValue, backValue] = audioValue.split('|')
+          if (frontValue?.trim()) {
+            audio.front = await resolveAudioFromValue(frontValue.trim(), 'front')
+          }
+          if (backValue?.trim()) {
+            audio.back = await resolveAudioFromValue(backValue.trim(), 'back')
+          }
+        } else {
+          const preferredSide = audioSide === 'back' ? 'back' : 'front'
+          const clip = await resolveAudioFromValue(audioValue, preferredSide)
+          if (clip) {
+            if (audioSide === 'back') {
+              audio.back = clip
+            } else if (audioSide === 'front') {
+              audio.front = clip
+            } else {
+              audio.front = { ...clip, textSource: 'front', side: 'front' }
+              audio.back = { ...clip, textSource: 'back', side: 'back' }
+            }
+          }
+        }
       } catch (error) {
         console.warn('Unable to import audio for a row', error)
       }
@@ -642,7 +863,8 @@ async function processCsvResults(results) {
       easeFactor: 2.5,
       intervalDays: 0,
       due: null,
-      audio
+      audio: audio.front || audio.back ? audio : null,
+      audioSide
     })
   }
   if (!cards.length) {
@@ -695,7 +917,7 @@ async function resolveAudioFromValue(value, preferredSide) {
   return null
 }
 
-function removeCardAudio(cardId) {
+function removeCardAudio(cardId, side) {
   if (!stage.value || !course.value || isStudentCourse.value) {
     return
   }
@@ -712,16 +934,38 @@ function removeCardAudio(cardId) {
     if (!targetCard) {
       return
     }
-    targetCard.audio = null
+    const payload = targetCard.audio && typeof targetCard.audio === 'object'
+      ? targetCard.audio
+      : { front: null, back: null }
+    if (side === 'front' || side === 'back') {
+      payload[side] = null
+    } else {
+      payload.front = null
+      payload.back = null
+    }
+    targetCard.audio = payload
   })
-  emit('notify', 'Audio removed from the card.')
+  if (side === 'front' || side === 'back') {
+    emit('notify', `Removed ${side === 'front' ? 'prompt' : 'answer'} audio.`)
+  } else {
+    emit('notify', 'All audio removed from the card.')
+  }
 }
 
-async function regenerateCardAudio(card) {
+async function regenerateCardAudio(card, sideOverride = null) {
   if (!stage.value || !course.value || isStudentCourse.value) {
     return
   }
-  const side = card.audio?.textSource || bulkAudioSide.value || 'front'
+  let side = sideOverride
+  if (!side) {
+    if (card.needsBack && !card.needsFront) {
+      side = 'back'
+    } else if (card.needsFront && !card.needsBack) {
+      side = 'front'
+    } else {
+      side = 'back'
+    }
+  }
   const text = textForCard(card, side)
   if (!text) {
     emit('notify', 'This card has no text on the selected side to generate audio.')
@@ -743,7 +987,10 @@ async function regenerateCardAudio(card) {
       if (!targetCard) {
         return
       }
-      targetCard.audio = {
+      if (!targetCard.audio || typeof targetCard.audio !== 'object') {
+        targetCard.audio = { front: null, back: null }
+      }
+      targetCard.audio[side] = {
         dataUrl,
         mimeType: blob.type || 'audio/mpeg',
         source: 'tts',
@@ -751,7 +998,7 @@ async function regenerateCardAudio(card) {
         createdAt: new Date().toISOString()
       }
     })
-    emit('notify', 'Audio regenerated for the card.')
+    emit('notify', `Audio generated for the ${side === 'front' ? 'prompt' : 'answer'}.`)
   } catch (error) {
     emit('notify', error?.message || 'Unable to regenerate audio right now.')
   }
@@ -761,18 +1008,27 @@ async function bulkGenerateAudio() {
   if (!stage.value || !course.value || isStudentCourse.value || bulkStatus.running) {
     return
   }
-  const targets = stage.value.cards.filter(card => !card.audio)
-  if (!targets.length) {
-    emit('notify', 'All cards already have audio.')
+  const tasks = []
+  stage.value.cards.forEach(card => {
+    const side = card.audioSide || 'back'
+    if (['front', 'both'].includes(side) && !card.audio?.front) {
+      tasks.push({ card, side: 'front' })
+    }
+    if (['back', 'both'].includes(side) && !card.audio?.back) {
+      tasks.push({ card, side: 'back' })
+    }
+  })
+  if (!tasks.length) {
+    emit('notify', 'All cards already have audio on the required sides.')
     return
   }
   bulkStatus.running = true
   bulkStatus.processed = 0
-  bulkStatus.total = targets.length
+  bulkStatus.total = tasks.length
   bulkStatus.error = ''
   try {
-    for (const card of targets) {
-      const text = textForCard(card, bulkAudioSide.value)
+    for (const task of tasks) {
+      const text = textForCard(task.card, task.side)
       if (!text) {
         bulkStatus.processed += 1
         continue
@@ -788,21 +1044,24 @@ async function bulkGenerateAudio() {
         if (!targetStage) {
           return
         }
-        const targetCard = targetStage.cards.find(item => item.id === card.id)
+        const targetCard = targetStage.cards.find(item => item.id === task.card.id)
         if (!targetCard) {
           return
         }
-        targetCard.audio = {
+        if (!targetCard.audio || typeof targetCard.audio !== 'object') {
+          targetCard.audio = { front: null, back: null }
+        }
+        targetCard.audio[task.side] = {
           dataUrl,
           mimeType: blob.type || 'audio/mpeg',
           source: 'tts',
-          textSource: bulkAudioSide.value,
+          textSource: task.side,
           createdAt: new Date().toISOString()
         }
       })
       bulkStatus.processed += 1
     }
-    emit('notify', 'Audio generated for missing cards.')
+    emit('notify', 'Audio generated for missing card sides.')
   } catch (error) {
     console.warn('Bulk audio generation failed', error)
     bulkStatus.error = error?.message || 'Audio generation failed.'

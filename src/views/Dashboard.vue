@@ -131,6 +131,7 @@
           </div>
           <footer class="course-card__footer">
             <button class="button button--ghost" type="button" @click="viewCourse(course.id)">Manage course</button>
+            <button class="link-button link-button--danger" type="button" @click="deleteCourse(course.id)">Delete course</button>
           </footer>
         </article>
       </div>
@@ -200,6 +201,7 @@
           </dl>
           <footer class="course-card__footer">
             <button class="button button--ghost" type="button" @click="viewCourse(course.id)">Open course</button>
+            <button class="link-button link-button--danger" type="button" @click="leaveCourse(course.id)">Leave course</button>
           </footer>
         </article>
       </div>
@@ -349,6 +351,20 @@ function openStage(item) {
 
 function viewCourse(courseId) {
   router.push({ name: 'CourseDetail', params: { courseId } })
+}
+
+function deleteCourse(courseId) {
+  updateCurrentUser(user => {
+    user.courses = user.courses.filter(course => !(course.id === courseId && course.role !== 'student'))
+  })
+  emit('notify', 'Course deleted from your creator workspace.')
+}
+
+function leaveCourse(courseId) {
+  updateCurrentUser(user => {
+    user.courses = user.courses.filter(course => !(course.id === courseId && course.role === 'student'))
+  })
+  emit('notify', 'Course removed from your student workspace.')
 }
 
 async function copyShareLink(link) {
