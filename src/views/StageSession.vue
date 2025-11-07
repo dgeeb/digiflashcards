@@ -161,7 +161,7 @@ const reviewShortcuts = REVIEW_SHORTCUTS
 const audioEnabled = computed({
   get: () => currentUser.value?.preferences?.audioEnabled !== false,
   set: value => {
-    applyUserUpdate(user => {
+    updateCurrentUser(user => {
       user.preferences.audioEnabled = Boolean(value)
     })
     if (!value) {
@@ -174,14 +174,6 @@ const shouldShowNote = computed(() => shouldShowCardNote(activeCard.value))
 const hasFrontAudio = computed(() => Boolean(activeCard.value?.audio?.front?.dataUrl))
 const hasBackAudio = computed(() => Boolean(activeCard.value?.audio?.back?.dataUrl))
 const currentAudio = ref(null)
-
-function applyUserUpdate(mutator) {
-  const response = updateCurrentUser(mutator)
-  if (response?.warning) {
-    emit('notify', response.warning)
-  }
-  return response
-}
 
 function stopAudio() {
   if (!currentAudio.value) {
@@ -280,10 +272,6 @@ function grade(value) {
   if (!activeCard.value || !stage.value || !course.value) {
     return
   }
-  if (!showAnswer.value) {
-    emit('notify', 'Reveal the answer before selecting how well you remembered it.')
-    return
-  }
   stopAudio()
   const cardRef = activeCard.value
   let result = null
@@ -374,10 +362,9 @@ watch(activeCard, async card => {
   playAudioClip('front', { auto: true })
 })
 
-watch(showAnswer, async value => {
+watch(showAnswer, value => {
   if (value) {
-    await nextTick()
-    playAudioClip('back', { auto: true })
+    nextTick(() => playAudioClip('back', { auto: true }))
   } else {
     stopAudio()
   }

@@ -367,21 +367,17 @@ function viewCourse(courseId) {
 }
 
 function deleteCourse(courseId) {
-  const response = applyUserUpdate(user => {
+  updateCurrentUser(user => {
     user.courses = user.courses.filter(course => !(course.id === courseId && course.role !== 'student'))
   })
-  if (!response?.warning) {
-    emit('notify', 'Course deleted from your creator workspace.')
-  }
+  emit('notify', 'Course deleted from your creator workspace.')
 }
 
 function leaveCourse(courseId) {
-  const response = applyUserUpdate(user => {
+  updateCurrentUser(user => {
     user.courses = user.courses.filter(course => !(course.id === courseId && course.role === 'student'))
   })
-  if (!response?.warning) {
-    emit('notify', 'Course removed from your student workspace.')
-  }
+  emit('notify', 'Course removed from your student workspace.')
 }
 
 async function copyShareLink(link) {

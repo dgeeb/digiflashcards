@@ -376,16 +376,6 @@ const generatingAudio = ref(false)
 const bulkStatus = reactive({ running: false, processed: 0, total: 0, error: '' })
 const fileInput = ref(null)
 const showApiHelp = ref(false)
-const showAudioSettings = ref(false)
-const audioSettingsInitialised = ref(false)
-
-function applyUserUpdate(mutator) {
-  const response = updateCurrentUser(mutator)
-  if (response?.warning) {
-    emit('notify', response.warning)
-  }
-  return response
-}
 
 const elevenLabsForm = reactive({
   apiKey: '',
@@ -583,7 +573,7 @@ function addCard() {
         }
       : null
   }
-  const response = applyUserUpdate(user => {
+  updateCurrentUser(user => {
     const targetCourse = user.courses.find(item => item.id === course.value.id)
     if (!targetCourse) {
       return
@@ -984,12 +974,10 @@ function removeCardAudio(cardId, side) {
     }
     targetCard.audio = payload
   })
-  if (!response?.warning) {
-    if (side === 'front' || side === 'back') {
-      emit('notify', `Removed ${side === 'front' ? 'prompt' : 'answer'} audio.`)
-    } else {
-      emit('notify', 'All audio removed from the card.')
-    }
+  if (side === 'front' || side === 'back') {
+    emit('notify', `Removed ${side === 'front' ? 'prompt' : 'answer'} audio.`)
+  } else {
+    emit('notify', 'All audio removed from the card.')
   }
 }
 
@@ -1039,9 +1027,7 @@ async function regenerateCardAudio(card, sideOverride = null) {
         createdAt: new Date().toISOString()
       }
     })
-    if (!response?.warning) {
-      emit('notify', `Audio generated for the ${side === 'front' ? 'prompt' : 'answer'}.`)
-    }
+    emit('notify', `Audio generated for the ${side === 'front' ? 'prompt' : 'answer'}.`)
   } catch (error) {
     emit('notify', error?.message || 'Unable to regenerate audio right now.')
   }
@@ -1108,9 +1094,7 @@ async function bulkGenerateAudio() {
       }
       bulkStatus.processed += 1
     }
-    if (!bulkStatus.error) {
-      emit('notify', 'Audio generated for missing card sides.')
-    }
+    emit('notify', 'Audio generated for missing card sides.')
   } catch (error) {
     console.warn('Bulk audio generation failed', error)
     bulkStatus.error = error?.message || 'Audio generation failed.'
