@@ -4,7 +4,10 @@
       <div>
         <p class="session-header__breadcrumb">{{ course.title }} · {{ stage.title }}</p>
         <h1>Revision session</h1>
-        <p>Keyboard shortcuts: arrow keys to navigate, space to flip, numbers 1-4 to grade.</p>
+        <p>Keyboard shortcuts: ←/→ to navigate, space to flip, ↓ to reveal, numbers 1-4 to grade.</p>
+        <p class="session-header__limits">
+          Daily allowance remaining · {{ dailyAllowance.review }} review · {{ dailyAllowance.new }} new cards.
+        </p>
       </div>
       <div class="session-header__stats">
         <div>
@@ -19,16 +22,23 @@
           <span class="meta-label">Queue</span>
           <span class="meta-value">{{ sessionStats.completed }}/{{ sessionStats.total }}</span>
         </div>
+        <div class="session-header__control">
+          <label class="toggle" for="session-audio-toggle">
+            <input id="session-audio-toggle" type="checkbox" v-model="audioEnabled" />
+            <span>{{ audioEnabled ? 'Audio on' : 'Audio muted' }}</span>
+          </label>
+        </div>
       </div>
     </header>
     <div class="progress-bar" role="progressbar" :aria-valuenow="progressPercent" aria-valuemin="0" aria-valuemax="100">
       <div class="progress-bar__value" :style="{ width: progressPercent + '%' }"></div>
     </div>
+    <p v-if="limitNotice" class="session-limit" role="status">{{ limitNotice }}</p>
     <section v-if="!sessionComplete" class="session-content">
       <article v-if="activeCard" class="session-card" :class="{ 'session-card--revealed': showAnswer }">
         <header class="session-card__header">
           <span>Card {{ sessionStats.completed + 1 }} of {{ sessionStats.total }}</span>
-          <span v-if="activeCard.note" class="session-card__note">{{ activeCard.note }}</span>
+          <span v-if="shouldShowNote" class="session-card__note">{{ activeCard.note }}</span>
         </header>
         <div class="session-card__body">
           <div class="session-card__face session-card__face--front">
@@ -40,9 +50,37 @@
             <p v-if="showAnswer">{{ activeCard.back }}</p>
             <p v-else class="session-card__hidden">Press space or ↓ to reveal</p>
           </div>
-          <div v-if="activeCard.audio" class="session-card__audio">
-            <h3>Audio ({{ activeCard.audio.textSource === 'back' ? 'Answer' : 'Prompt' }})</h3>
-            <audio :src="activeCard.audio.dataUrl || activeCard.audio.url" :type="activeCard.audio.mimeType" controls preload="none"></audio>
+          <div v-if="hasAudio" class="session-card__audio">
+            <div class="session-card__audio-header">
+              <h3>Audio support</h3>
+              <label class="toggle" for="card-audio-toggle">
+                <input id="card-audio-toggle" type="checkbox" v-model="audioEnabled" />
+                <span>{{ audioEnabled ? 'Disable audio' : 'Enable audio' }}</span>
+              </label>
+            </div>
+            <div v-if="activeCard.audio?.front" class="session-card__audio-track">
+              <h4>Prompt</h4>
+              <audio
+                :key="`${activeCard.id}-front`"
+                ref="frontAudioRef"
+                :src="activeCard.audio.front.dataUrl || activeCard.audio.front.url"
+                :type="activeCard.audio.front.mimeType"
+                controls
+                preload="auto"
+              ></audio>
+            </div>
+            <div v-if="activeCard.audio?.back" class="session-card__audio-track">
+              <h4>Answer</h4>
+              <audio
+                :key="`${activeCard.id}-back`"
+                ref="backAudioRef"
+                :src="activeCard.audio.back.dataUrl || activeCard.audio.back.url"
+                :type="activeCard.audio.back.mimeType"
+                controls
+                preload="auto"
+              ></audio>
+            </div>
+            <p v-if="audioEnabled && !hasPlayableAudio" class="session-card__audio-warning">Audio clip missing for this side.</p>
           </div>
         </div>
         <footer class="session-card__footer">
@@ -73,6 +111,7 @@
         <h2>Session complete!</h2>
         <p v-if="sessionStats.total === 0">No cards were scheduled for review right now. Check back tomorrow or add new cards.</p>
         <p v-else>You reviewed {{ sessionStats.completed }} card{{ sessionStats.completed === 1 ? '' : 's' }} and earned {{ sessionStats.points }} points.</p>
+        <p class="session-complete__note">Take a 5-minute break before starting another session to maximise spacing benefits.</p>
         <div class="session-complete__actions">
           <router-link class="button button--primary" :to="{ name: 'StageDetail', params: { courseId: course.id, stageId: stage.id } }">Review stage</router-link>
           <router-link class="button button--ghost" :to="{ name: 'Dashboard' }">Back to dashboard</router-link>
@@ -90,10 +129,18 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { currentUser, useAuth } from '../composables/useAuth'
-import { buildSessionQueue, computeStageMetrics, scheduleCard, REVIEW_SHORTCUTS } from '../utils/srs'
+import {
+  buildSessionQueue,
+  computeStageMetrics,
+  scheduleCard,
+  REVIEW_SHORTCUTS,
+  DAILY_LIMITS,
+  getDailyAllowances,
+  incrementDailyProgress
+} from '../utils/srs'
 
 const emit = defineEmits(['notify'])
 const route = useRoute()
@@ -111,6 +158,14 @@ const sessionStats = reactive({
 const repeats = reactive({})
 const previous = ref([])
 const initialised = ref(false)
+const frontAudioRef = ref(null)
+const backAudioRef = ref(null)
+const AUDIO_PREF_KEY = 'digiflashcards.audioEnabled'
+const hasWindow = typeof window !== 'undefined'
+const storedPreference = hasWindow ? window.localStorage.getItem(AUDIO_PREF_KEY) : null
+const audioEnabled = ref(storedPreference ? storedPreference !== 'false' : true)
+
+let sessionDailyRecord = { new: new Set(), review: new Set() }
 
 const course = computed(() => {
   const courseId = route.params.courseId
@@ -133,9 +188,54 @@ const progressPercent = computed(() => {
 })
 
 const reviewShortcuts = REVIEW_SHORTCUTS
+const dailyAllowance = computed(() => {
+  if (!stage.value) {
+    return { new: DAILY_LIMITS.newCards, review: DAILY_LIMITS.reviewCards }
+  }
+  return getDailyAllowances(stage.value, DAILY_LIMITS)
+})
+const shouldShowNote = computed(() => {
+  const card = activeCard.value
+  if (!card || !card.note) {
+    return false
+  }
+  const mastery = typeof card.mastery === 'number' ? card.mastery : 0
+  return card.status !== 'review' || mastery < 60
+})
+const hasAudio = computed(() => {
+  const card = activeCard.value
+  return Boolean(card?.audio?.front || card?.audio?.back)
+})
+const hasPlayableAudio = computed(() => {
+  const card = activeCard.value
+  if (!card) {
+    return false
+  }
+  if (showAnswer.value) {
+    return Boolean(card.audio?.back)
+  }
+  return Boolean(card.audio?.front)
+})
+const limitNotice = computed(() => {
+  if (!stage.value) {
+    return ''
+  }
+  const allowance = dailyAllowance.value
+  const parts = []
+  if (allowance.review === 0 && (stage.value.metrics?.due || 0) > 0) {
+    parts.push('Daily review limit reached. Remaining cards will return tomorrow.')
+  }
+  if (allowance.new === 0 && (stage.value.metrics?.newCards || 0) > 0) {
+    parts.push('Daily new card limit reached. New cards unlock on the next study day.')
+  }
+  return parts.join(' ')
+})
 
 function resetSessionState() {
-  queue.value = buildSessionQueue(stage.value, { limitNew: 15 })
+  queue.value = buildSessionQueue(stage.value, {
+    limitNew: DAILY_LIMITS.newCards,
+    limitReview: DAILY_LIMITS.reviewCards
+  })
   sessionStats.reviewed = 0
   sessionStats.completed = 0
   sessionStats.points = 0
@@ -143,7 +243,9 @@ function resetSessionState() {
   sessionComplete.value = sessionStats.total === 0
   showAnswer.value = false
   previous.value = []
+  sessionDailyRecord = { new: new Set(), review: new Set() }
   Object.keys(repeats).forEach(key => { delete repeats[key] })
+  resetAudioPlayback()
 }
 
 function toggleAnswer() {
@@ -154,6 +256,7 @@ function skipCard() {
   if (queue.value.length <= 1) {
     return
   }
+  resetAudioPlayback()
   const [card] = queue.value.splice(0, 1)
   queue.value.push(card)
   showAnswer.value = false
@@ -163,6 +266,7 @@ function goBack() {
   if (!previous.value.length) {
     return
   }
+  resetAudioPlayback()
   const previousId = previous.value.pop()
   const card = stage.value?.cards.find(item => item.id === previousId)
   if (!card) {
@@ -181,6 +285,7 @@ function grade(value) {
     return
   }
   const cardRef = activeCard.value
+  const studyType = cardRef.status === 'new' ? 'new' : 'review'
   let result = null
   updateCurrentUser(user => {
     const targetCourse = user.courses.find(item => item.id === course.value.id)
@@ -197,11 +302,16 @@ function grade(value) {
     }
     result = scheduleCard(targetCard, value)
     targetStage.points = (targetStage.points || 0) + result.points
+    if (studyType && !sessionDailyRecord[studyType].has(cardRef.id)) {
+      incrementDailyProgress(targetStage, studyType)
+      sessionDailyRecord[studyType].add(cardRef.id)
+    }
     computeStageMetrics(targetStage)
   })
   if (!result) {
     return
   }
+  resetAudioPlayback()
   sessionStats.reviewed += 1
   sessionStats.points += result.points
   previous.value.push(cardRef.id)
@@ -269,5 +379,81 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKey)
+})
+
+function stopAudio(side) {
+  const element = side === 'back' ? backAudioRef.value : frontAudioRef.value
+  if (element) {
+    try {
+      element.pause()
+    } catch (error) {
+      // Ignore pause errors (e.g. element already stopped)
+    }
+    element.currentTime = 0
+  }
+}
+
+function resetAudioPlayback() {
+  stopAudio('front')
+  stopAudio('back')
+}
+
+async function playAudio(side) {
+  if (!audioEnabled.value) {
+    return
+  }
+  const element = side === 'back' ? backAudioRef.value : frontAudioRef.value
+  if (!element) {
+    return
+  }
+  try {
+    element.currentTime = 0
+    await element.play()
+  } catch (error) {
+    // Playback can be blocked by browser policies; ignore silently
+  }
+}
+
+watch(activeCard, async card => {
+  resetAudioPlayback()
+  if (!card) {
+    return
+  }
+  await nextTick()
+  if (audioEnabled.value && card.audio?.front) {
+    await playAudio('front')
+  }
+})
+
+watch(showAnswer, async value => {
+  if (!value) {
+    stopAudio('back')
+    if (audioEnabled.value && activeCard.value?.audio?.front) {
+      await nextTick()
+      await playAudio('front')
+    }
+    return
+  }
+  await nextTick()
+  if (audioEnabled.value && activeCard.value?.audio?.back) {
+    await playAudio('back')
+  }
+})
+
+watch(audioEnabled, value => {
+  if (hasWindow) {
+    window.localStorage.setItem(AUDIO_PREF_KEY, value ? 'true' : 'false')
+  }
+  if (!value) {
+    resetAudioPlayback()
+    return
+  }
+  nextTick(async () => {
+    if (showAnswer.value && activeCard.value?.audio?.back) {
+      await playAudio('back')
+    } else if (activeCard.value?.audio?.front) {
+      await playAudio('front')
+    }
+  })
 })
 </script>
